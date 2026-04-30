@@ -110,8 +110,22 @@ The migration is **not** model-swap. It is architecture-swap. Pete has been in p
 
 ## Files for the deck
 
-- `pete-24apr-xxprefix.jpg` — input image
-- `pete-14mar-duplicates.png` — v0 buggy output screenshot
-- `pete-24apr-agent-run.txt` — full terminal capture of v2 run
-- `pete-24apr-xxprefix.extraction.json` — structured output
-- `PETE-DEMO.md` — this doc
+- `pete-24apr-xxprefix.jpg` — input image (Pete's email attachment)
+- `pete-14mar-duplicates.png` — v0 buggy production screenshot
+- `pete-24apr-agent-run.txt` — full terminal capture of v2 CLI run
+- `pete-24apr-xxprefix.extraction.json` — structured agent output
+- `web-shots/01-home.png` — landing page ("built to reason, not to parse")
+- `web-shots/02-streaming.png` — live reasoning stream mid-flight
+- `web-shots/03-flags.png` — flag panel showing 15 prefix-stripped artefacts
+                             including Pete's exact "xxxCALL ME GORGEOUS" bug
+- `web-shots/04-races.png` — clean race cards rendered after extraction
+- `web-shots/05-reasoning.png` — full reasoning trace with image preview
+
+## Live demo URL (local, dev only)
+
+```
+cd packages/web && pnpm dev
+# → http://127.0.0.1:5173
+# Click the "Pete 24 Apr · xx prefix" fixture button
+# Watch reasoning stream + flags + race cards render live
+```

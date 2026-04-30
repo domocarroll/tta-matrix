@@ -1,0 +1,98 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-bg-deep: #0a0a0c;
+  --color-bg-surface: #111114;
+  --color-bg-card: #18181c;
+  --color-bg-card-hover: #1e1e24;
+  --color-bg-input: #0e0e11;
+  --color-border: #2a2a32;
+  --color-border-focus: #4a4a5a;
+  --color-text-primary: #e8e6e3;
+  --color-text-secondary: #8a8a96;
+  --color-text-muted: #5a5a66;
+  --color-accent: #c8a87c;
+  --color-accent-dim: #a08860;
+  --color-accent-bright: #e0c8a0;
+  --color-success: #6ec87c;
+  --color-warning: #c8a040;
+  --color-error: #c86c6c;
+
+  --font-serif: 'Cormorant Garamond', 'Source Serif Pro', Georgia, serif;
+  --font-sans: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background: var(--color-bg-deep);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  font-feature-settings: 'cv11', 'ss01';
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: var(--color-bg-deep);
+}
+
+.serif {
+  font-family: var(--font-serif);
+  letter-spacing: -0.01em;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-text-muted) 0%,
+    var(--color-text-primary) 50%,
+    var(--color-text-muted) 100%
+  );
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 2.4s ease-in-out infinite;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-up {
+  animation: fade-in-up 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+.pulse-dot {
+  animation: pulse-dot 1.6s ease-in-out infinite;
+}

@@ -1,0 +1,9 @@
+{
+	"/": [],
+	"/api/extract": [
+		"src/routes/api/extract/+server.ts"
+	],
+	"/api/health": [
+		"src/routes/api/health/+server.ts"
+	]
+}
