@@ -1,0 +1,17 @@
+name = "tta-scraper"
+main = "src/index.ts"
+compatibility_date = "2025-03-21"
+
+[triggers]
+crons = [
+  "0 8 * * *",
+  "0 20 * * *",
+  "*/15 1-10 * * *",
+]
+
+[vars]
+CONVEX_URL = ""
+
+# Browser rendering (requires paid plan or beta access)
+# [browser]
+# binding = "BROWSER"

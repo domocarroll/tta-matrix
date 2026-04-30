@@ -1,0 +1,7 @@
+GEPA Optimization:   0%|          | 0/10 [00:00<?, ?rollouts/s]GEPA Optimization:  10%|#         | 1/10 [00:03<00:31,  3.49s/rollouts]/home/dom/.local/lib/python3.14/site-packages/gepa/core/engine.py:430: UserWarning: cloudpickle is not installed; falling back to standard pickle. Install it with: pip install gepa[full]  or  pip install cloudpickle
+  state.save(self.run_dir, use_cloudpickle=self.use_cloudpickle)
+GEPA Optimization:  30%|###       | 3/10 [00:50<02:08, 18.40s/rollouts]/home/dom/.local/lib/python3.14/site-packages/gepa/core/engine.py:430: UserWarning: cloudpickle is not installed; falling back to standard pickle. Install it with: pip install gepa[full]  or  pip install cloudpickle
+  state.save(self.run_dir, use_cloudpickle=self.use_cloudpickle)
+GEPA Optimization:  50%|#####     | 5/10 [01:37<01:44, 20.91s/rollouts]GEPA Optimization:  70%|#######   | 7/10 [02:24<01:06, 22.01s/rollouts]GEPA Optimization:  90%|######### | 9/10 [03:10<00:22, 22.35s/rollouts]GEPA Optimization:  90%|######### | 9/10 [03:56<00:26, 26.29s/rollouts]
+/home/dom/.local/lib/python3.14/site-packages/gepa/core/engine.py:623: UserWarning: cloudpickle is not installed; falling back to standard pickle. Install it with: pip install gepa[full]  or  pip install cloudpickle
+  state.save(self.run_dir, use_cloudpickle=self.use_cloudpickle)

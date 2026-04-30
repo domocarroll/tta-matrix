@@ -1,0 +1,27 @@
+{
+  "name": "tta-matrix",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The TipAnalyser v2 — Horse racing tip aggregation intelligence",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@10.31.0",
+  "scripts": {
+    "dev:convex": "pnpm --filter @tta/convex dev",
+    "dev:agent": "pnpm --filter @tta/agent dev",
+    "dev:bot": "pnpm --filter @tta/matrix-bot dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "jsonrepair": "^3.13.3"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0"
+  }
+}

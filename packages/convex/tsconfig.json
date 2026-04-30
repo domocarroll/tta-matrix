@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022"],
+    "strict": true,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "outDir": "./dist",
+    "isolatedModules": true
+  },
+  "include": ["convex/**/*.ts"]
+}

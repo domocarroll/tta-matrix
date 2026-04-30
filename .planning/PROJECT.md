@@ -97,15 +97,28 @@ tta-matrix/
 ## Milestones
 
 ```
-M0: Foundation          — Convex schema + Claude Agent SDK core
-M1: Race Data Pipeline  — Cloudflare Worker scrapes all AU races → Convex
+M0: Foundation          — Convex schema + agent core + extraction tool          ✅ COMPLETE
+M1: Race Data Pipeline  — CF Worker scrapes all AU races → Convex
 M2: Matrix Bot          — Bot in channel, processes images, responds to commands
-M3: Tip Matching        — Tips matched against pre-populated horse data
-M4: Intelligence        — Weighted aggregation + tipster stats + feedback loop
-M5: Prediction Market   — Play-money market per race + leaderboard (parked)
-M6: ZK Reputation       — Anonymous identity + provable track records (parked)
-M7: Polish              — Pre-race summaries, web dashboard, notifications
+M3: WhatsApp Bridge     — mautrix-whatsapp on VPS, Tier 1 bot DMs
+M4: Tip Matching        — Tips matched against pre-populated horse data
+M5: Intelligence        — Weighted aggregation + tipster stats + feedback loop
+M6: Prediction Market   — QV-weighted play-money market per race
+M7: ZK Reputation       — Anonymous identity + provable track records
+M8: QV Engine           — Quadratic voting for conviction-weighted aggregation
+M9: International       — Hong Kong, Singapore, UK racing expansion
+M10: Polish             — Pre-race summaries, web dashboard, notifications
 ```
+
+## Three-Tier Architecture
+
+```
+Tier 1 (WhatsApp):  Free/low — 1:1 bot DMs, consensus tips, results
+Tier 2 (Matrix):    Mid — group intelligence, leaderboards, prediction market
+Tier 3 (Premium):   High — ZK reputation, QV conviction, international, API
+```
+
+CTA: "Message or call us on WhatsApp, or download our app to join the community"
 
 ## MVP Target
 

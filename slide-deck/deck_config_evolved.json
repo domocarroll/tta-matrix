@@ -1,0 +1,379 @@
+{
+  "meta": {
+    "title": "The Conviction Game",
+    "author": "Dom Carroll"
+  },
+  "theme": {
+    "bg": "#0d1117",
+    "title_color": "#f0c040",
+    "body_color": "#c8c8d0",
+    "accent_color": "#e94560",
+    "dim_color": "#737380",
+    "title_font": "Montserrat",
+    "body_font": "Open Sans",
+    "mono_font": "Roboto Mono"
+  },
+  "frozen": {
+    "thesis": "Collective intelligence from private conviction under quadratic cost, verified against ground truth",
+    "concepts": [
+      "Ground Truth",
+      "Conviction",
+      "Quadratic Cost",
+      "Zero-Knowledge",
+      "Anti-Collusion",
+      "Social Deduction"
+    ],
+    "financials": {
+      "break_even": 4,
+      "tiers": [
+        0,
+        25,
+        100
+      ]
+    },
+    "audience": "Warwick - racing insider, NOT tech/crypto. Understands punters, tipsters, bookmakers, corporate boxes."
+  },
+  "slides": [
+    {
+      "id": "title",
+      "layout": "center",
+      "title": {
+        "text": "THE CONVICTION GAME",
+        "size": "3.5rem"
+      },
+      "subtitle": "Rewilding the Punter Commons"
+    },
+    {
+      "id": "every_sat",
+      "layout": "title-body",
+      "title": "Every Saturday...",
+      "body": "Thousands study form.\nArgue with mates.\nDevelop private convictions.\n\nThen bet individually into a system\ndesigned to take their money."
+    },
+    {
+      "id": "intelligence",
+      "layout": "center",
+      "title": {
+        "text": "Their collective intelligence\nbeats any tipster.",
+        "color": "#ffffff",
+        "size": "2.6rem"
+      },
+      "subtitle": "But it's never captured.\nNever aggregated.\nNever returned."
+    },
+    {
+      "id": "problem_section",
+      "layout": "section",
+      "bg": "#170f0d",
+      "title": {
+        "text": "THE PROBLEM",
+        "color": "#e94560"
+      }
+    },
+    {
+      "id": "thirty_two_b",
+      "layout": "stat",
+      "value": "$32B",
+      "label": "Australian wagering market, annually",
+      "body": "Three operators control it.\nSportsbet. Ladbrokes. TAB.\n\nInformation extractors."
+    },
+    {
+      "id": "flows_one_way",
+      "layout": "title-body",
+      "title": "Intelligence flows one way.",
+      "body": "The punter commons existed.\nPubs. The track. WhatsApp groups.\n\nIndustrialised bookmaking enclosed it.\n\nNo venue aggregates it honestly\nand returns it to its creators."
+    },
+    {
+      "id": "pub_think",
+      "layout": "center",
+      "title": {
+        "text": "What if the pub\ncould think?",
+        "size": "3rem"
+      },
+      "subtitle": {
+        "text": "The WhatsApp group. The track.",
+        "color": "#737380"
+      }
+    },
+    {
+      "id": "concepts_section",
+      "layout": "section",
+      "bg": "#110d19",
+      "title": "SIX CONCEPTS",
+      "subtitle": "Each one earns the next."
+    },
+    {
+      "id": "ground_truth",
+      "layout": "split",
+      "num": "01",
+      "title": {
+        "text": "GROUND TRUTH",
+        "color": "#f0c040"
+      },
+      "body": "Racing delivers objective truth\nevery thirty minutes.\n\nNo committee.\nThe horse crossed first.",
+      "sidebar": {
+        "text": "~200\nevents\nper week",
+        "size": "2.2rem",
+        "color": "#f0c040",
+        "bold": true,
+        "align": "center"
+      }
+    },
+    {
+      "id": "conviction",
+      "layout": "title-body",
+      "num": "02",
+      "title": {
+        "text": "CONVICTION",
+        "color": "#f0c040"
+      },
+      "body": "\"CERTAIN Horse 5 wins Race 3.\"\n\"THINK Horse 2 has a chance.\"\n\"Race 4? No idea.\"\n\nThree conviction levels.\nEvery tipping platform treats them the same.\n\nA budget forces honesty about\nwhere you actually have an edge."
+    },
+    {
+      "id": "quadratic",
+      "layout": "split",
+      "num": "03",
+      "title": {
+        "text": "QUADRATIC COST",
+        "color": "#f0c040"
+      },
+      "body": "Cost grows as the square.\n\n1 vote  =   1 credit\n2 votes =   4 credits\n3 votes =   9 credits\n5 votes = 25 credits\n\nDouble conviction.\nFour times the cost.",
+      "sidebar": {
+        "text": "3.3×\nmore signal\nfrom honesty",
+        "size": "2.4rem",
+        "color": "#f0c040",
+        "bold": true,
+        "align": "center"
+      }
+    },
+    {
+      "id": "zk",
+      "layout": "title-body",
+      "num": "04",
+      "title": {
+        "text": "SEALED ENVELOPES",
+        "color": "#f0c040"
+      },
+      "body": "Prove something without revealing anything else.\n\n\"I'm in this community\" — without saying who.\n\n\"I predicted Horse 5\" — sealed envelope opened after.\n\n\"My strike rate is 34%\" — without revealing identity."
+    },
+    {
+      "id": "maci",
+      "layout": "title-body",
+      "num": "05",
+      "title": {
+        "text": "ANTI-COLLUSION",
+        "color": "#f0c040"
+      },
+      "body": "Five mates in WhatsApp:\n\"We're all piling on Horse 3.\"\n\nBut any member can secretly change their vote.\nThe ringleader can't tell.\n\nRational move: silently defect, vote honestly.\n\nDoesn't catch cartels.\nMakes them impossible to coordinate."
+    },
+    {
+      "id": "social_ded",
+      "layout": "split",
+      "num": "06",
+      "title": {
+        "text": "SOCIAL DEDUCTION",
+        "color": "#f0c040"
+      },
+      "body": "Among Us. Blood on the Clocktower.\n\nNight — secret actions.\nDay — public discussion.\n\nSome honest. Some lying.\nNobody knows who.\n\nThe drama is emergent.",
+      "sidebar": {
+        "text": "Punters who'd\nnever care about\ncrypto tech\n\nWILL care about\ncatching someone\ngaming it.",
+        "size": "1.1rem",
+        "color": "#e94560",
+        "bold": true,
+        "align": "center"
+      }
+    },
+    {
+      "id": "synthesis_section",
+      "layout": "section",
+      "bg": "#110d19",
+      "title": "THE SYNTHESIS",
+      "subtitle": "Six concepts. One system."
+    },
+    {
+      "id": "closed_loop",
+      "layout": "title-body",
+      "title": "The Closed System",
+      "body": "Ground Truth → exam for\n  Conviction → priced by\n    Quadratic Cost → protected by\n      Sealed Envelopes → hardened by\n        Anti-Collusion → experienced as\n          Social Deduction → validated by\n            Ground Truth ← loop closes"
+    },
+    {
+      "id": "thirty_min",
+      "layout": "title-body",
+      "title": "The 30-Minute Cycle",
+      "body": "NIGHT — Allocate. Private. Hidden.\n\nDAWN — Race runs. Truth arrives. Credits settle.\n\nDAY — Forensics. \"Unusual pattern in Race 4.\"\n\nDUSK — Discussion. Who called it?\n\n↻ Repeat. 8–10 times per meeting."
+    },
+    {
+      "id": "honesty",
+      "layout": "center",
+      "title": {
+        "text": "Honesty becomes\nthe dominant strategy.",
+        "color": "#ffffff",
+        "size": "2.8rem"
+      },
+      "subtitle": {
+        "text": "Not an aspiration. A mathematical property.",
+        "color": "#737380"
+      }
+    },
+    {
+      "id": "game_section",
+      "layout": "section",
+      "bg": "#110d19",
+      "title": "THE GAME",
+      "subtitle": "What it feels like to play."
+    },
+    {
+      "id": "saturday",
+      "layout": "title-body",
+      "title": "A Saturday Inside",
+      "body": "MORNING — Tip sheets. Study form. Allocate.\n\nRACE 1 — Allocations close. Race runs. Settle.\n\nBETWEEN — Forensics surface. Community discusses.\n\nRACE 2 — Loop repeats. 8–10 times.\n\nEVENING — Daily stats. Leaderboard moves."
+    },
+    {
+      "id": "archetypes",
+      "layout": "grid-2x2",
+      "title": "Four Kinds of Player",
+      "cells": [
+        {
+          "title": "THE ANALYST",
+          "body": "Studies form obsessively.\nLives for the leaderboard.\nProves they're the best."
+        },
+        {
+          "title": "THE PUNTER",
+          "body": "Hunches. Longshots.\nThrill of the unlikely call.\nFinds overlays."
+        },
+        {
+          "title": "THE SOCIALISER",
+          "body": "Lives in chat.\nCommunity IS the product.\nBelonging over winning."
+        },
+        {
+          "title": {
+            "text": "THE SHARK",
+            "color": "#e94560"
+          },
+          "body": "Hunts anomaly patterns.\nExposes manipulation.\nThe immune system."
+        }
+      ]
+    },
+    {
+      "id": "shark",
+      "layout": "center",
+      "title": {
+        "text": "The Shark doesn't exist\non tipping platforms today.",
+        "color": "#ffffff",
+        "size": "2.6rem"
+      },
+      "subtitle": "Social deduction creates the Shark.\nCatching someone gaming is genuinely fun.\n\nThe Shark plays for free."
+    },
+    {
+      "id": "box_section",
+      "layout": "section",
+      "bg": "#170f0d",
+      "title": {
+        "text": "THE DIGITAL\nCORPORATE BOX",
+        "size": "3rem"
+      },
+      "subtitle": "Your punters are at the track.\nWe built the boxes."
+    },
+    {
+      "id": "tiers",
+      "layout": "grid-2x2",
+      "title": "Three Seats at the Track",
+      "cells": [
+        {
+          "title": {
+            "text": "GRANDSTAND",
+            "color": "#737380"
+          },
+          "body": "Free • WhatsApp\n\nRace fields, consensus tips, results.\n\nView from the hill."
+        },
+        {
+          "title": {
+            "text": "MEMBERS",
+            "color": "#ffffff"
+          },
+          "body": "$25/mo • Matrix\n\nFull conviction game, leaderboard,\nforensics, community.\n\nInside the fence."
+        },
+        {
+          "title": {
+            "text": "BOX SEAT",
+            "color": "#f0c040"
+          },
+          "body": "$100/mo • Premium\n\nPersonal AI tuned to your form.\nAdvanced analytics.\n\nYour name on the door."
+        },
+        {
+          "title": "",
+          "body": ""
+        }
+      ]
+    },
+    {
+      "id": "breakeven",
+      "layout": "center",
+      "title": {
+        "text": "Break-even at\n4 paying users.",
+        "size": "3rem"
+      },
+      "subtitle": {
+        "text": "Infrastructure: $22–100/month.\nEssentially unkillable on a cash basis.",
+        "color": "#737380"
+      }
+    },
+    {
+      "id": "bookmaker_box",
+      "layout": "split",
+      "title": "Every Bookmaker Gets a Box",
+      "body": "Same track. Same races.\nDifferent box. Different brand.\n\nBookmakers don't build racecourses.\nThey lease boxes.\n\nMarginal cost per box → near zero.",
+      "sidebar": {
+        "text": "\"Which box called\nmore winners?\"\n\nSportsbet: 7 of 10.\nLadbrokes: 5.\n\nThat's content.\nTribal identity.",
+        "size": "1.1rem",
+        "color": "#e94560",
+        "bold": true,
+        "align": "center"
+      }
+    },
+    {
+      "id": "moat_section",
+      "layout": "section",
+      "bg": "#110d19",
+      "title": "THE MOAT",
+      "subtitle": "Five layers. Each reinforces the others."
+    },
+    {
+      "id": "five_layers",
+      "layout": "title-body",
+      "title": "Five Layers Deep",
+      "body": "1. THE ROOM\n    People inside each box. Can't clone pub trust.\n\n2. DATA\n    Months of conviction-vs-truth. Can't fake.\n\n3. MECHANISM\n    12–18 months to replicate.\n\n4. PERSONAL AI\n    Co-evolved. Non-transferable.\n\n5. CROSS-BOX VIEW\n    Only the box-builder sees all boxes."
+    },
+    {
+      "id": "asymmetry",
+      "layout": "split",
+      "title": {
+        "text": "The Asymmetry",
+        "align": "center"
+      },
+      "body": {
+        "text": "DOWNSIDE\n$50–100/month\ninfrastructure",
+        "color": "#737380",
+        "align": "center"
+      },
+      "sidebar": {
+        "text": "UPSIDE\nThe racecourse\nin a $32B market",
+        "size": "1.5rem",
+        "color": "#f0c040",
+        "bold": true,
+        "align": "center"
+      }
+    },
+    {
+      "id": "ask",
+      "layout": "center",
+      "title": {
+        "text": "The game doesn't need\nto be explained.",
+        "color": "#ffffff",
+        "size": "2.8rem"
+      },
+      "subtitle": {
+        "text": "It needs to be played.\n\nLet's build it.\n\nWant a box with your logo on it?",
+        "color": "#f0c040"
+      }
+    }
+  ]
+}

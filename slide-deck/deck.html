@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Conviction Game</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Open+Sans:wght@300;400;600;700&family=Roboto+Mono:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d1117;
+  --title-color: #f0c040;
+  --body-color: #bbbbc2;
+  --accent: #e94560;
+  --dim: #737380;
+  --title-font: 'Montserrat', sans-serif;
+  --body-font: 'Open Sans', sans-serif;
+  --mono-font: 'Roboto Mono', monospace;
+}
+
+/* Reset reveal.js defaults */
+.reveal { background: var(--bg); }
+.reveal .slides section {
+  text-align: left;
+  padding: 40px 80px;
+  box-sizing: border-box;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+/* Typography */
+.reveal h1, .reveal h2, .reveal h3 {
+  font-family: var(--title-font);
+  color: var(--title-color);
+  text-transform: none;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.4em 0;
+  line-height: 1.2;
+}
+.reveal h1 { font-size: 3.2rem; }
+.reveal h2 { font-size: 2.4rem; }
+.reveal h3 { font-size: 1.8rem; }
+
+.reveal p, .reveal li {
+  font-family: var(--body-font);
+  color: var(--body-color);
+  font-size: 1.15rem;
+  line-height: 1.6;
+  margin: 0 0 0.5em 0;
+}
+
+.reveal .dim { color: var(--dim); }
+.reveal .accent { color: var(--accent); }
+.reveal .gold { color: var(--title-color); }
+
+.reveal code, .reveal pre {
+  font-family: var(--mono-font);
+  font-size: 0.95em;
+}
+
+/* Layouts */
+.slide-center {
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center;
+}
+
+.slide-section {
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center;
+}
+.slide-section h1 {
+  font-size: 3rem;
+}
+
+.slide-split {
+  flex-direction: row !important;
+  align-items: flex-start;
+  gap: 40px;
+}
+.slide-split .main { flex: 1.2; }
+.slide-split .sidebar {
+  flex: 0.8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60%;
+}
+
+.slide-stat {
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center;
+}
+.slide-stat .stat-value {
+  font-family: var(--title-font);
+  font-size: 5rem;
+  font-weight: 700;
+  color: var(--title-color);
+  line-height: 1;
+  margin: 0.2em 0;
+}
+.slide-stat .stat-label {
+  font-size: 1.4rem;
+  color: var(--dim);
+}
+
+.slide-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto 1fr 1fr;
+  gap: 20px;
+  padding-top: 30px !important;
+}
+.slide-grid h2 {
+  grid-column: 1 / -1;
+  margin-bottom: 0;
+}
+.slide-grid .cell {
+  padding: 15px;
+}
+.slide-grid .cell h3 {
+  font-size: 1.1rem;
+  margin-bottom: 0.3em;
+}
+.slide-grid .cell p {
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.slide-quote {
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center;
+}
+.slide-quote blockquote {
+  font-family: var(--title-font);
+  font-size: 1.8rem;
+  color: var(--body-color);
+  border: none;
+  font-style: italic;
+  max-width: 80%;
+  line-height: 1.5;
+  padding: 0;
+  margin: 0;
+}
+.slide-quote .attribution {
+  color: var(--dim);
+  font-size: 1rem;
+  margin-top: 1em;
+  font-style: normal;
+}
+
+/* Body text preserves newlines */
+.body-text {
+  white-space: pre-line;
+  line-height: 1.65;
+}
+
+/* Number badge for concept slides */
+.num-badge {
+  font-family: var(--title-font);
+  font-size: 0.85rem;
+  color: var(--dim);
+  font-weight: 700;
+  margin-bottom: 0.2em;
+}
+
+/* Progress bar */
+.reveal .progress { color: var(--title-color); height: 3px; }
+.reveal .controls { color: var(--dim); }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<section data-background-color="#0d1117" class="slide-center">
+<h1 style="font-size:3.2rem">THE CONVICTION GAME</h1>
+<p class="dim">Rewilding the Punter Commons</p>
+
+</section>
+
+<section data-background-color="#0d1117">
+
+<h2>Every Saturday...</h2>
+<div class="body-text">Thousands of punters study the form.<br>They read the tip sheets.<br>They argue with their mates.<br>They develop private convictions.<br><br>Then they bet — individually —<br>into a system designed to take their money.</div>
+
+</section>
+
+<section data-background-color="#0d1117" class="slide-center">
+<h1 style="color:#ffffff">Their collective intelligence<br>is extraordinary.</h1>
+<p class="dim">It consistently outperforms any individual tipster.<br><br>But that intelligence is never captured.<br>Never aggregated.<br>Never returned to the people who generated it.</p>
+
+</section>
+
+<section data-background-color="#170f0d" class="slide-section">
+<h1 style="color:#e94560">THE PROBLEM</h1>
+
+
+</section>
+
+<section data-background-color="#0d1117" class="slide-stat">
+
+<div class="stat-value">$32B</div>
+<div class="stat-label">Australian wagering market, annually</div>
+<div class="body-text dim">Three operators control it.<br>Sportsbet. Ladbrokes. TAB.<br><br>They are information extractors.</div>
+
+</section>
+
+<section data-background-color="#0d1117">
+
+<h2>Intelligence flows one way.</h2>
+<div class="body-text">The punter commons existed.<br>In pubs. At the track. In WhatsApp groups.<br>Every gathering place where punters sit together.<br><br>Industrialised bookmaking enclosed it.<br>Not destroyed. Enclosed.<br><br>There’s just no venue that aggregates it honestly<br>and returns it to the people who generated it.</div>
+
+</section>
+
+<section data-background-color="#0d1117" class="slide-center">
+<h1 style="font-size:2.8rem">What if the pub<br>could think?</h1>
+<p class="dim" style="color:#737380">The WhatsApp group. The track. Any place punters gather.</p>
+
+</section>
+
+<section data-background-color="#110d19" class="slide-section">
+<h1>SIX CONCEPTS</h1>
+<p class="dim">Each one earns the next.</p>
+
+</section>
+
+<section data-background-color="#0d1117" class="slide-split">
+<div class="main">
+<div class="num-badge">01</div>
+<h2 style="color:#f0c040">GROUND TRUTH</h2>
+<div class="body-text">Horse racing delivers objective,<br>unchallengeable, publicly verifiable truth<br>every thirty minutes.<br><br>No committee decides.<br>The horse crossed the line first.</div>
+</div>
+<div class="sidebar">
+<div class="body-text" style="font-size:2rem;color:#f0c040;text-align:center;font-weight:700">~200<br>truth events<br>per week</div>
+</div>
+
+</section>
+
+<section data-background-color="#0d1117">
+<div class="num-badge">02</div>
+<h2 style="color:#f0c040">CONVICTION</h2>
+<div class="body-text">“I’m CERTAIN Horse 5 wins Race 3.”<br>“I THINK Horse 2 has a chance in Race 7.”<br>“Race 4? No idea.”<br><br>These are three different levels of conviction.<br>Every tipping platform treats them identically.<br><br>A conviction allocation captures the gradient.<br>The budget forces honesty about where you<br>actually have an edge.</div>
+
+</section>
+
+<section data-background-color="#0d1117" class="slide-split">
+<div class="main">
+<div class="num-badge">03</div>
+<h2 style="color:#f0c040">QUADRATIC COST</h2>
+<div class="body-text">The cost of expressing conviction<br>grows as the square.<br><br>1 vote  =   1 credit<br>2 votes =   4 credits<br>3 votes =   9 credits<br>5 votes = 25 credits<br><br>Double the conviction.<br>Four times the cost.</div>
+</div>
+<div class="sidebar">
+<div class="body-text" style="font-size:2.2rem;color:#f0c040;text-align:center;font-weight:700">3.3×<br>more signal<br>from honesty</div>
+</div>
+
+</section>
+
+<section data-background-color="#0d1117">
+<div class="num-badge">04</div>
+<h2 style="color:#f0c040">ZERO-KNOWLEDGE PROOFS</h2>
+<div class="body-text">Prove something is true<br>without revealing anything else.<br><br>“I am a member of this community”<br>— without revealing which member.<br><br>“I predicted Horse 5 would win”<br>— proved by opening a sealed envelope after the race.<br><br>“My track record is 34% strike rate”<br>— without revealing who I am.</div>
+
+</section>
+
+<section data-background-color="#0d1117">
+<div class="num-badge">05</div>
+<h2 style="color:#f0c040">ANTI-COLLUSION</h2>
+<div class="body-text">Five mates agree in a WhatsApp group:<br>“We’re all piling on Horse 3 to skew the signal.”<br><br>But any member can secretly change their vote.<br>And the ringleader can’t tell.<br><br>The override is invisible until the final tally.<br>The rational move is to silently defect<br>and vote honestly.<br><br>This doesn’t catch cartels.<br>It makes them impossible to coordinate.</div>
+
+</section>
+
+<section data-background-color="#0d1117" class="slide-split">
+<div class="main">
+<div class="num-badge">06</div>
+<h2 style="color:#f0c040">SOCIAL DEDUCTION</h2>
+<div class="body-text">Games like Among Us<br>and Blood on the Clocktower:<br><br>Night phase — secret actions.<br>Day phase — public discussion.<br><br>Some players are honest.<br>Some are lying.<br>Nobody knows who.<br><br>The drama is emergent.<br>That IS the engagement.</div>
+</div>
+<div class="sidebar">
+<div class="body-text" style="font-size:1rem;color:#e94560;text-align:center;font-weight:700">Punters who<br>would never care<br>about ZK proofs<br><br>WILL care about<br>catching someone<br>gaming the system.</div>
+</div>
+
+</section>
+
+<section data-background-color="#110d19" class="slide-section">
+<h1>THE SYNTHESIS</h1>
+<p class="dim">Six concepts. One system.</p>
+
+</section>
+
+<section data-background-color="#0d1117">
+
+<h2>The Closed System</h2>
+<div class="body-text">Ground Truth  →  provides the exam for<br>    Conviction  →  priced by<br>        Quadratic Cost  →  protected by<br>            Zero-Knowledge  →  hardened by<br>                Anti-Collusion  →  experienced as<br>                    Social Deduction  →  validated by<br>                        Ground Truth  ←  the loop closes</div>
+
+</section>
+
+<section data-background-color="#0d1117">
+
+<h2>The 30-Minute Cycle</h2>
+<div class="body-text">NIGHT  —  Allocate conviction. Private. Simultaneous. Hidden.<br><br>DAWN  —  Race runs. Ground truth arrives. Credits settle.<br><br>DAY   —  Forensics. Patterns surface. “Unusual concentration in Race 4.”<br><br>DUSK  —  Discussion. Who called it? Voluntary reveals.<br><br>↻  Repeat. 8–10 times per meeting.</div>
+
+</section>
+
+<section data-background-color="#0d1117" class="slide-center">
+<h1 style="color:#ffffff">Honesty is the dominant strategy<br>after ~20 races.</h1>
+<p class="dim" style="color:#737380">This isn’t an aspiration.<br>It’s a mathematical property of the mechanism.</p>
+
+</section>
+
+<section data-background-color="#110d19" class="slide-section">
+<h1>THE GAME</h1>
+<p class="dim">What it feels like to play.</p>
+
+</section>
+
+<section data-background-color="#0d1117">
+
+<h2>A Saturday Inside</h2>
+<div class="body-text">MORNING   Tip sheets arrive. AI extracts data.<br>          Study form. Allocate conviction.<br><br>RACE 1    Allocations close 5 min before.<br>          Race runs. Ground truth. Credits settle.<br><br>BETWEEN   Forensics surface. Community discusses.<br>          “Unusual pattern in Race 1.” Who called it?<br><br>RACE 2    The loop repeats. 8–10 times per meeting.<br><br>EVENING   Daily stats. Leaderboard moves.</div>
+
+</section>
+
+<section data-background-color="#0d1117" class="slide-grid">
+<h2>Four Kinds of Player</h2>
+<div class="cell">
+<h3>THE ANALYST</h3>
+<p class="body-text">Studies form obsessively.<br>Lives for the leaderboard.<br>Wants to prove they’re the best.</p>
+</div>
+<div class="cell">
+<h3>THE PUNTER</h3>
+<p class="body-text">Hunches. Longshots.<br>The thrill of the unlikely call.<br>Finds overlays nobody else saw.</p>
+</div>
+<div class="cell">
+<h3>THE SOCIALISER</h3>
+<p class="body-text">Lives in chat.<br>Community IS the product.<br>Belonging over winning.</p>
+</div>
+<div class="cell">
+<h3 style="color:#e94560">THE SHARK</h3>
+<p class="body-text">Hunts anomaly patterns.<br>Exposes manipulation.<br>The immune system.</p>
+</div>
+
+
+</section>
+
+<section data-background-color="#0d1117" class="slide-center">
+<h1 style="color:#ffffff">The Shark doesn’t exist<br>on any tipping platform today.</h1>
+<p class="dim">Social deduction creates the Shark archetype.<br>Catching someone gaming the system is genuinely fun.<br><br>The Shark is the immune system.<br>And they play for free.</p>
+
+</section>
+
+<section data-background-color="#170f0d" class="slide-section">
+<h1 style="font-size:2.8rem">THE DIGITAL<br>CORPORATE BOX</h1>
+<p class="dim">Your punters are already at the track.<br>We built the boxes.</p>
+
+</section>
+
+<section data-background-color="#0d1117" class="slide-grid">
+<h2>Three Seats at the Track</h2>
+<div class="cell">
+<h3 style="color:#737380">GRANDSTAND</h3>
+<p class="body-text">Free • WhatsApp<br><br>Race fields, consensus tips, results.<br><br>You can see the race from the hill.</p>
+</div>
+<div class="cell">
+<h3 style="color:#ffffff">MEMBERS</h3>
+<p class="body-text">$25/mo • Matrix<br><br>Full conviction game, leaderboard,<br>forensics, community chat.<br><br>Inside the fence.</p>
+</div>
+<div class="cell">
+<h3 style="color:#f0c040">BOX SEAT</h3>
+<p class="body-text">$100/mo • Premium<br><br>Personal AI swarm tuned to your form.<br>Advanced analytics.<br><br>Your name on the door.</p>
+</div>
+<div class="cell">
+<h3></h3>
+<p class="body-text"></p>
+</div>
+
+
+</section>
+
+<section data-background-color="#0d1117" class="slide-center">
+<h1 style="font-size:2.8rem">Break-even at<br>4 paying users.</h1>
+<p class="dim" style="color:#737380">Infrastructure costs: $22–100/month.<br>The business is essentially unkillable on a cash basis.</p>
+
+</section>
+
+<section data-background-color="#0d1117" class="slide-split">
+<div class="main">
+
+<h2>Every Bookmaker Gets Their Own Box</h2>
+<div class="body-text">Same track. Same races.<br>Different box. Different brand.<br><br>The bookmaker doesn’t build<br>the racecourse.<br>They lease a box.<br><br>Marginal cost per new box → near zero.<br>Boxes compete on race day.</div>
+</div>
+<div class="sidebar">
+<div class="body-text" style="font-size:1rem;color:#e94560;text-align:center;font-weight:700">“Which box called<br>more winners?”<br><br>Sportsbet’s box: 7 of 10.<br>Ladbrokes’ box: 5.<br><br>That’s content.<br>That’s tribal identity.</div>
+</div>
+
+</section>
+
+<section data-background-color="#110d19" class="slide-section">
+<h1>THE MOAT</h1>
+<p class="dim">Five layers. Each reinforces the others.</p>
+
+</section>
+
+<section data-background-color="#0d1117">
+
+<h2>Five Layers Deep</h2>
+<div class="body-text">1.  THE ROOM<br>     The people inside each box.<br>     Can’t clone a WhatsApp group. Can’t manufacture pub trust.<br><br>2.  DATA<br>     Months of conviction-vs-truth. Can’t fake. Can’t generate retroactively.<br><br>3.  MECHANISM<br>     QV + ZK + MACI. 12–18 months to replicate.<br><br>4.  PERSONAL SWARMS<br>     Co-evolved with each punter. Non-transferable.<br><br>5.  THE VIEW ACROSS ALL BOXES<br>     Cross-community signal. Exclusively ours.<br>     Only the box-builder does.</div>
+
+</section>
+
+<section data-background-color="#0d1117" class="slide-split">
+<div class="main">
+
+<h2 style="text-align:center">The Asymmetry</h2>
+<div class="body-text" style="color:#737380;text-align:center">DOWNSIDE<br>$50–100/month<br>in infrastructure</div>
+</div>
+<div class="sidebar">
+<div class="body-text" style="font-size:1.3rem;color:#f0c040;text-align:center;font-weight:700">UPSIDE<br>The racecourse<br>in a $32B market</div>
+</div>
+
+</section>
+
+<section data-background-color="#0d1117" class="slide-center">
+<h1 style="font-size:2.5rem;color:#ffffff">The game doesn’t need<br>to be explained.</h1>
+<p class="dim" style="color:#f0c040">It needs to be played.<br><br>Let’s build it.<br><br>Want a box with your logo on it?</p>
+
+</section>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.esm.js" type="module"></script>
+<script type="module">
+import Reveal from 'https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.esm.js';
+Reveal.initialize({
+  hash: true,
+  transition: 'fade',
+  transitionSpeed: 'slow',
+  controls: true,
+  progress: true,
+  center: false,
+  width: 1280,
+  height: 720,
+});
+</script>
+</body>
+</html>

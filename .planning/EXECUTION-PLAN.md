@@ -629,27 +629,158 @@ From the Hyprsphere kernel, this project exercises:
 
 ---
 
-## Milestone Sequence
+## Three-Tier Channel Architecture
+
+The product isn't a single channel — it's a tiered intelligence platform where
+each tier compounds more signal. The CTA: "Message us on WhatsApp, or download
+our app to join the community."
 
 ```
-M0: Foundation          — Convex schema + Claude Agent SDK core + extraction tool
-M1: Race Data Pipeline  — Cloudflare Worker scrapes all AU races → Convex (fields + results)
-M2: Matrix Bot          — Bot joins channel, processes images, responds to commands
-M3: Tip Matching        — Tips matched against pre-populated race/horse data
-M4: Intelligence        — Weighted aggregation + tipster stats + auto-feedback loop
-M5: Prediction Market   — Play-money market per race + leaderboard
-M6: ZK Reputation       — Anonymous identity + provable track records
-M7: Polish              — Pre-race summaries, web dashboard, notifications
+┌─────────────────────────────────────────────────────────────────────┐
+│ TIER 1: WhatsApp (Free / Low)                                       │
+│ "Message or call us on WhatsApp"                                    │
+│                                                                     │
+│ - 1:1 bot DMs — zero friction, no app download                     │
+│ - Basic tips: aggregated consensus picks per race                   │
+│ - Auto results + "your tipster was right/wrong"                     │
+│ - Onramp to Tier 2                                                  │
+│ Transport: mautrix-whatsapp bridge on VPS → same TipBot agent       │
+└──────────────────────────┬──────────────────────────────────────────┘
+                           │ upgrade
+┌──────────────────────────▼──────────────────────────────────────────┐
+│ TIER 2: Matrix Community (Mid)                                      │
+│ "Download our app to join the community"                            │
+│                                                                     │
+│ - Group intelligence — punters + bot + banter                       │
+│ - Full tip extraction from images                                   │
+│ - Named tipster leaderboards + tipster stats                        │
+│ - Prediction market (play money, QV-weighted)                       │
+│ - Pre-race summaries, quaddie calculations                          │
+│ - Whitelabelled Element X app ("The TipAnalyser")                  │
+│ Transport: Matrix rooms on subfrac.cloud Synapse                    │
+└──────────────────────────┬──────────────────────────────────────────┘
+                           │ upgrade
+┌──────────────────────────▼──────────────────────────────────────────┐
+│ TIER 3: Premium Channels (High)                                     │
+│ "For serious punters"                                               │
+│                                                                     │
+│ - Expanded racing: Hong Kong, Singapore, UK, Japan                  │
+│ - Deeper analysis: track condition models, trainer/jockey stats     │
+│ - ZK reputation: provable track records, anonymous conviction       │
+│ - Quadratic voting: conviction-weighted intelligence aggregation    │
+│ - Access-gated Matrix rooms (paid subscription)                     │
+│ - API access for algorithmic punters                                │
+│ Transport: Same Matrix, premium rooms + API endpoints               │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+The agent and Convex are **channel-agnostic**. Same brain, different surfaces.
+The scraper feeds all tiers. Intelligence layers unlock per tier.
+
+---
+
+## Quadratic Voting + ZK Reputation Engine
+
+### The Problem with Simple Aggregation
+
+v0 counts tips equally: Tony's win pick = Nick's win pick = 1 signal.
+But Tony has a 60% strike rate and Nick has 20%. And neither wants
+the other to know what they're backing before the race.
+
+### Atomised Intelligence via QV + ZK
+
+**Quadratic Voting (QV)**: The cost of additional votes on the same horse
+grows quadratically. 1 vote = 1 credit, 2 votes = 4 credits, 3 votes = 9.
+
+This means:
+- Punters express *intensity* of conviction, not just binary picks
+- No whale can dominate the signal (quadratic cost prevents flooding)
+- Scarce credits force genuine allocation — that allocation IS intelligence
+
+**Zero-Knowledge proofs**: Conviction commitments are private. Reputation is public.
+Nobody sees what you voted. Everyone can verify your track record.
+
+```
+Each punter per race day:
+  Budget: 100 QV credits (earned from history + base allocation)
+
+  Horse 5 → 16 credits (4 votes)   ← strong conviction
+  Horse 2 → 4 credits (2 votes)    ← moderate hedge
+  Horse 7 → 1 credit (1 vote)      ← long shot flutter
+  Total spend: 21 credits           ← 79 saved for other races
+
+  All commitments: hash(selection + salt) → on-chain
+  After race: ZK proof of "I voted, here's my result" without revealing picks
+```
+
+### The Aggregation Formula
+
+```
+Horse score = Σ (QV_votes_i × reputation_weight_i)
+
+Where:
+  QV_votes_i     = √(credits_spent) for punter i on this horse
+  reputation_weight_i = ZK-proven strike rate of punter i (0-1)
+
+All computed WITHOUT revealing who voted what.
+```
+
+This produces **atomised intelligence**: each QV credit is the smallest unit
+of conviction. Aggregated blindly. Verified cryptographically. Self-correcting
+because bad allocators deplete credits, good ones accumulate.
+
+### Properties
+
+| Property | Mechanism |
+|----------|-----------|
+| Sybil-resistant | QV cost means fake accounts can't cheaply flood |
+| Strategy-proof | ZK hides allocations — can't see others before committing |
+| Conviction-weighted | Quadratic cost reveals genuine belief intensity |
+| Self-correcting | Credit balance reflects historical accuracy |
+| Privacy-preserving | Edge stays private, reputation goes public |
+| Composable | Same atoms aggregate differently per tier |
+
+### Implementation Architecture
+
+```
+Punter commits     → hash(horse_id, credits, salt) → Convex + on-chain
+Race results in    → Scraper records result
+Settlement         → Convex action verifies commitments against results
+ZK proof gen       → Circom circuit: "I am member of group AND my ROI > X%"
+Reputation update  → Merkle tree of group members updates
+Credit rebalance   → Winners earn credits, losers spend them
+Leaderboard        → Anonymous ZK-proven rankings (strike rate, ROI)
+```
+
+Stack: Semaphore v4 (group membership) + Circom (custom reputation circuits)
++ Convex (commitment storage + settlement) + on-chain anchoring (Base L2, cheap)
+
+---
+
+## Milestone Sequence (Updated)
+
+```
+M0: Foundation          — Convex schema + agent core + extraction tool          ✅ COMPLETE
+M1: Race Data Pipeline  — CF Worker scrapes all AU races → Convex
+M2: Matrix Bot          — Bot in channel, processes images, responds to commands
+M3: WhatsApp Bridge     — mautrix-whatsapp on VPS, Tier 1 bot DMs
+M4: Tip Matching        — Tips matched against pre-populated horse data
+M5: Intelligence        — Weighted aggregation + tipster stats + feedback loop
+M6: Prediction Market   — QV-weighted play-money market per race
+M7: ZK Reputation       — Anonymous identity + provable track records
+M8: QV Engine           — Quadratic voting for conviction-weighted aggregation
+M9: International       — Hong Kong, Singapore, UK racing (scraper expansion)
+M10: Polish             — Pre-race summaries, web dashboard, notifications
 ```
 
 ---
 
-## Open Questions for Discussion
+## Open Questions
 
-1. **Project name**: "TTA Matrix"? "TipNet"? "The Form Guide"? Client preference?
-2. **Matrix space name**: Client-facing name for the space + channel structure?
-3. **Play money vs real stakes**: Legal implications for AU gambling regulation
-4. **Tipster identity**: Are newspaper tipsters always named? Only punters need ZK?
-5. **Model choice**: Claude Sonnet for extraction (fast + cheap) or Opus (best quality)?
-6. **Client's existing group**: Is there already a Matrix/Signal/WhatsApp group to bridge?
-7. **Scrape target**: Racenet.com.au (best structured data, Apify scraper exists) or racing.com?
+1. **WhatsApp delivery**: WhatsApp Business API (Cloud API, official) vs mautrix-whatsapp bridge (self-hosted, less official but more flexible)?
+2. **QV credit economics**: How are credits initially distributed? Earned through accuracy? Purchased? Both?
+3. **On-chain choice**: Base L2 (cheap, Coinbase ecosystem) vs Polygon (established) vs custom rollup?
+4. **International data**: What's the scrape target for HK racing? HKJC.com? Different data structure.
+5. **Subscription pricing**: What are the tier price points? Free → $X/month → $Y/month?
+6. **Legal**: AU gambling regulation for QV credits that have monetary value?
+7. **Scrape target**: Racenet.com.au confirmed? Or racing.com?
