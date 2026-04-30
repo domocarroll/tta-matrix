@@ -3,6 +3,7 @@
   import ReasoningStream from '$lib/components/ReasoningStream.svelte'
   import RaceCards from '$lib/components/RaceCards.svelte'
   import FlagPanel from '$lib/components/FlagPanel.svelte'
+  import V0Comparison from '$lib/components/V0Comparison.svelte'
   import type { ExtractionResult, StreamEvent } from '$lib/types'
 
   type RunStatus = 'idle' | 'streaming' | 'parsed' | 'error'
@@ -171,9 +172,9 @@
         </div>
       {/if}
     {:else}
-      <div class="grid gap-8 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-        <!-- Left: image + meta -->
-        <aside class="space-y-4">
+      <div class="grid gap-8 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] items-start">
+        <!-- Left: image + meta (sticky on desktop) -->
+        <aside class="space-y-4 md:sticky md:top-8 self-start">
           <div class="rounded-md border border-border bg-bg-surface overflow-hidden">
             {#if imagePreview}
               <img
@@ -233,6 +234,7 @@
           {#if result}
             <FlagPanel flags={result.flags} />
             <RaceCards races={result.races} />
+            <V0Comparison />
           {/if}
         </div>
       </div>

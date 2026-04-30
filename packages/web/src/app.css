@@ -96,3 +96,31 @@ body {
 .pulse-dot {
   animation: pulse-dot 1.6s ease-in-out infinite;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-up,
+  .pulse-dot,
+  .shimmer {
+    animation: none !important;
+  }
+}
+
+button:focus-visible,
+[role='button']:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.text-accent { color: var(--color-accent); }
+.text-success { color: var(--color-success); }
+.text-warning { color: var(--color-warning); }
+.text-error { color: var(--color-error); }
+.bg-accent\/5 { background: rgba(200, 168, 124, 0.05); }
+.bg-error\/5 { background: rgba(200, 108, 108, 0.05); }
+.bg-success\/5 { background: rgba(110, 200, 124, 0.05); }
+.border-accent\/40 { border-color: rgba(200, 168, 124, 0.4); }
+.border-error\/40 { border-color: rgba(200, 108, 108, 0.4); }
+.border-error\/60 { border-color: rgba(200, 108, 108, 0.6); }
+.border-success\/40 { border-color: rgba(110, 200, 124, 0.4); }
