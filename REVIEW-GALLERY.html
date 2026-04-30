@@ -1,0 +1,1719 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TTA Matrix · Pete Pitch · Review Gallery</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter+Tight:wght@300..700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-deep: #0a0a0c;
+        --bg-surface: #111114;
+        --bg-card: #18181c;
+        --bg-card-hover: #1e1e24;
+        --border: #2a2a32;
+        --border-soft: rgba(42, 42, 50, 0.6);
+        --text: #f0eee9;
+        --text-secondary: #8a8a96;
+        --text-muted: #5a5a66;
+        --accent: #c8a87c;
+        --accent-bright: #e0c8a0;
+        --accent-dim: #a08860;
+        --success: #6ec87c;
+        --warning: #c8a040;
+        --error: #c86c6c;
+        --serif: 'Fraunces', 'Source Serif 4', Georgia, serif;
+        --sans: 'Inter Tight', -apple-system, BlinkMacSystemFont, sans-serif;
+        --mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--bg-deep);
+        color: var(--text);
+        font-family: var(--sans);
+        font-size: 16px;
+        line-height: 1.55;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      ::selection {
+        background: var(--accent);
+        color: var(--bg-deep);
+      }
+
+      a {
+        color: var(--accent);
+        text-decoration: none;
+        transition: color 0.15s;
+      }
+      a:hover {
+        color: var(--accent-bright);
+      }
+
+      img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      .serif {
+        font-family: var(--serif);
+        letter-spacing: -0.01em;
+      }
+      .mono {
+        font-family: var(--mono);
+      }
+
+      .micro {
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+      .micro.accent {
+        color: var(--accent);
+      }
+      .micro.error {
+        color: var(--error);
+      }
+      .micro.success {
+        color: var(--success);
+      }
+      .micro.warning {
+        color: var(--warning);
+      }
+
+      .dim {
+        color: var(--text-secondary);
+      }
+      .muted {
+        color: var(--text-muted);
+      }
+      .accent {
+        color: var(--accent);
+      }
+      .success {
+        color: var(--success);
+      }
+      .error {
+        color: var(--error);
+      }
+
+      /* ═══ Layout ═══ */
+      header.topbar {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        backdrop-filter: blur(12px) saturate(1.1);
+        background: rgba(10, 10, 12, 0.78);
+        border-bottom: 1px solid var(--border);
+      }
+      .topbar-inner {
+        max-width: 1320px;
+        margin: 0 auto;
+        padding: 18px 32px;
+        display: flex;
+        align-items: baseline;
+        gap: 28px;
+        flex-wrap: wrap;
+      }
+      .topbar-title {
+        font-family: var(--serif);
+        font-size: 1.3rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+      .topbar-subtitle {
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+      .topbar-nav {
+        margin-left: auto;
+        display: flex;
+        gap: 22px;
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+      .topbar-nav a {
+        color: var(--text-secondary);
+      }
+      .topbar-nav a:hover {
+        color: var(--accent);
+      }
+
+      .container {
+        max-width: 1320px;
+        margin: 0 auto;
+        padding: 0 32px;
+      }
+
+      section.block {
+        padding: 88px 0 56px;
+        border-top: 1px solid var(--border-soft);
+      }
+      section.block:first-of-type {
+        border-top: none;
+      }
+      .block > .container > header {
+        display: flex;
+        align-items: baseline;
+        gap: 20px;
+        margin-bottom: 32px;
+      }
+      .block > .container > header .rule {
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+      }
+
+      h1,
+      h2,
+      h3 {
+        font-family: var(--serif);
+        font-weight: 600;
+        margin: 0 0 0.4em;
+        letter-spacing: -0.015em;
+        text-wrap: balance;
+        color: #faf8f4;
+      }
+      h2 {
+        font-size: 2.6rem;
+        line-height: 1.05;
+      }
+      h3 {
+        font-size: 1.3rem;
+        line-height: 1.25;
+      }
+      p {
+        margin: 0 0 0.8em;
+      }
+
+      /* ═══ Hero ═══ */
+      .hero {
+        padding: 96px 0 32px;
+      }
+      .hero h1 {
+        font-size: clamp(3rem, 7vw, 6rem);
+        line-height: 0.98;
+        margin-bottom: 0.4em;
+      }
+      .hero .subtitle {
+        font-family: var(--serif);
+        font-style: italic;
+        font-weight: 400;
+        font-size: clamp(1.4rem, 2.4vw, 2.1rem);
+        color: var(--accent);
+        max-width: 32ch;
+        line-height: 1.3;
+      }
+      .hero .lede {
+        font-size: 1.1rem;
+        color: var(--text-secondary);
+        max-width: 60ch;
+        line-height: 1.6;
+        margin-top: 1.5rem;
+      }
+
+      .stats-bar {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 1.5rem;
+        margin-top: 3rem;
+        padding: 2rem 0;
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+      }
+      .stat {
+        font-family: var(--mono);
+      }
+      .stat .num {
+        font-family: var(--serif);
+        font-size: 2.4rem;
+        font-weight: 500;
+        line-height: 1;
+        color: var(--accent);
+      }
+      .stat .num.success {
+        color: var(--success);
+      }
+      .stat .num small {
+        font-size: 1rem;
+        color: var(--text-muted);
+      }
+      .stat .label {
+        margin-top: 0.4rem;
+        font-size: 0.7rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+
+      /* ═══ Cards & grids ═══ */
+      .grid {
+        display: grid;
+        gap: 1.5rem;
+      }
+      .grid-2 {
+        grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      }
+      .grid-3 {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      }
+      .grid-4 {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      }
+
+      .card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+        transition: background 0.18s, border-color 0.18s, transform 0.18s;
+        display: flex;
+        flex-direction: column;
+      }
+      .card:hover {
+        background: var(--bg-card-hover);
+        border-color: rgba(200, 168, 124, 0.3);
+        transform: translateY(-2px);
+      }
+      .card.muted-on-hover:hover {
+        transform: none;
+      }
+      .card-body {
+        padding: 1.4rem 1.6rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+      }
+      .card-title {
+        font-family: var(--serif);
+        font-size: 1.4rem;
+        font-weight: 500;
+        line-height: 1.2;
+        margin: 0;
+        color: #faf8f4;
+      }
+      .card-tag {
+        font-family: var(--mono);
+        font-size: 0.65rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+      .card-tag.error {
+        color: var(--error);
+      }
+      .card-tag.success {
+        color: var(--success);
+      }
+      .card-tag.warning {
+        color: var(--warning);
+      }
+      .card-desc {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+        line-height: 1.55;
+      }
+      .card-cta {
+        margin-top: auto;
+        padding-top: 0.4rem;
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+      .card-cta::after {
+        content: ' →';
+      }
+
+      .thumb {
+        background: var(--bg-surface);
+        aspect-ratio: 16 / 10;
+        overflow: hidden;
+        position: relative;
+        border-bottom: 1px solid var(--border);
+      }
+      .thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: top center;
+        transition: transform 0.4s;
+      }
+      .card:hover .thumb img {
+        transform: scale(1.02);
+      }
+      .thumb.contain img {
+        object-fit: contain;
+        object-position: top center;
+      }
+
+      pre.code,
+      pre.terminal {
+        margin: 0;
+        padding: 1.4rem 1.6rem;
+        background: #08080a;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-family: var(--mono);
+        font-size: 0.85rem;
+        line-height: 1.55;
+        color: var(--text);
+        overflow-x: auto;
+        white-space: pre;
+      }
+      pre.code .key {
+        color: var(--accent);
+      }
+      pre.code .str {
+        color: #b8d09c;
+      }
+      pre.code .num {
+        color: #d4a896;
+      }
+      pre.code .com {
+        color: var(--text-muted);
+      }
+
+      blockquote {
+        margin: 0;
+        padding: 0 0 0 1.2em;
+        border-left: 2px solid var(--accent);
+        font-family: var(--serif);
+        font-style: italic;
+        font-size: 1.4rem;
+        line-height: 1.45;
+        color: #faf8f4;
+      }
+
+      /* ═══ Timeline ═══ */
+      .timeline {
+        display: flex;
+        flex-direction: column;
+        font-family: var(--mono);
+      }
+      .timeline-row {
+        display: grid;
+        grid-template-columns: 110px 140px 1fr;
+        align-items: baseline;
+        gap: 1.4rem;
+        padding: 1.1rem 0;
+        border-top: 1px solid var(--border);
+        font-size: 0.95rem;
+      }
+      .timeline-row .date {
+        color: var(--accent);
+        font-weight: 500;
+      }
+      .timeline-row .label {
+        color: var(--error);
+      }
+      .timeline-row .label.ok {
+        color: var(--success);
+      }
+      .timeline-row .label.dim {
+        color: var(--text-muted);
+      }
+      .timeline-row .body {
+        font-family: var(--sans);
+        color: var(--text);
+        font-size: 1rem;
+      }
+
+      /* ═══ Pill row ═══ */
+      .pill-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin: 0.6rem 0;
+      }
+      .pill {
+        font-family: var(--mono);
+        font-size: 0.65rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        padding: 0.3rem 0.7rem;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        color: var(--text-muted);
+      }
+      .pill.accent {
+        color: var(--accent);
+        border-color: rgba(200, 168, 124, 0.4);
+      }
+      .pill.success {
+        color: var(--success);
+        border-color: rgba(110, 200, 124, 0.4);
+      }
+      .pill.error {
+        color: var(--error);
+        border-color: rgba(200, 108, 108, 0.4);
+      }
+      .pill.warning {
+        color: var(--warning);
+        border-color: rgba(200, 160, 64, 0.4);
+      }
+
+      /* ═══ Commit list ═══ */
+      .commit {
+        display: grid;
+        grid-template-columns: 100px 1fr 130px;
+        align-items: baseline;
+        gap: 1.5rem;
+        padding: 1rem 0;
+        border-top: 1px solid var(--border);
+        font-family: var(--mono);
+        font-size: 0.85rem;
+      }
+      .commit .hash {
+        color: var(--accent);
+      }
+      .commit .subject {
+        font-family: var(--sans);
+        color: var(--text);
+        font-size: 0.95rem;
+      }
+      .commit .date {
+        color: var(--text-muted);
+        text-align: right;
+      }
+
+      /* ═══ Featured callout ═══ */
+      .callout {
+        background: linear-gradient(180deg, rgba(200, 168, 124, 0.08), rgba(200, 168, 124, 0.02));
+        border: 1px solid rgba(200, 168, 124, 0.25);
+        border-radius: 10px;
+        padding: 2rem 2.4rem;
+      }
+      .callout.error {
+        background: linear-gradient(180deg, rgba(200, 108, 108, 0.08), rgba(200, 108, 108, 0.02));
+        border-color: rgba(200, 108, 108, 0.25);
+      }
+      .callout.success {
+        background: linear-gradient(180deg, rgba(110, 200, 124, 0.08), rgba(110, 200, 124, 0.02));
+        border-color: rgba(110, 200, 124, 0.25);
+      }
+
+      /* ═══ Lightbox ═══ */
+      .lightbox {
+        position: fixed;
+        inset: 0;
+        background: rgba(10, 10, 12, 0.92);
+        backdrop-filter: blur(8px);
+        z-index: 100;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 40px;
+        cursor: zoom-out;
+      }
+      .lightbox.open {
+        display: flex;
+      }
+      .lightbox img {
+        max-width: 100%;
+        max-height: 100%;
+        border-radius: 6px;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+      }
+      .lightbox .caption {
+        position: absolute;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-family: var(--mono);
+        font-size: 0.75rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+      }
+
+      /* ═══ Footer ═══ */
+      footer.foot {
+        margin-top: 4rem;
+        padding: 3rem 0 5rem;
+        border-top: 1px solid var(--border);
+      }
+      .foot-line {
+        display: flex;
+        justify-content: space-between;
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+
+      @media (max-width: 720px) {
+        .topbar-nav {
+          display: none;
+        }
+        .timeline-row {
+          grid-template-columns: 70px 1fr;
+        }
+        .timeline-row .label {
+          display: none;
+        }
+        .commit {
+          grid-template-columns: 1fr;
+          gap: 0.4rem;
+        }
+        .commit .date {
+          text-align: left;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <span class="topbar-title">TTA Matrix</span>
+        <span class="topbar-subtitle">review · 30 apr 2026</span>
+        <nav class="topbar-nav">
+          <a href="#demo">demo</a>
+          <a href="#deck">deck</a>
+          <a href="#evidence">evidence</a>
+          <a href="#code">code</a>
+          <a href="#docs">docs</a>
+          <a href="#git">git</a>
+          <a href="#memory">memory</a>
+        </nav>
+      </div>
+    </header>
+
+    <!-- ═══════════════════════════ HERO ═══════════════════════════ -->
+    <section class="hero container">
+      <div class="micro accent" style="margin-bottom: 1.5rem">
+        for pete · pitch tomorrow 11:00 aest
+      </div>
+      <h1>Tonight,<br />in artifacts.</h1>
+      <p class="subtitle">
+        Eight commits. Four working surfaces. Twenty-one slides. One bug, four
+        months overdue, structurally fixed.
+      </p>
+      <p class="lede">
+        Pete has been chasing the same class of bug since January — a
+        deterministic OCR pipeline that breaks differently with every
+        publication. Tonight we replaced the pipeline with an agent that
+        reasons. Same upload UX. Honest failure mode underneath. This page is
+        an inventory of what that produced.
+      </p>
+
+      <div class="stats-bar">
+        <div class="stat">
+          <div class="num">8</div>
+          <div class="label">commits</div>
+        </div>
+        <div class="stat">
+          <div class="num">5,313</div>
+          <div class="label">lines of code</div>
+        </div>
+        <div class="stat">
+          <div class="num">192</div>
+          <div class="label">selections extracted</div>
+        </div>
+        <div class="stat">
+          <div class="num">15</div>
+          <div class="label">artefacts stripped</div>
+        </div>
+        <div class="stat">
+          <div class="num success">0</div>
+          <div class="label">phantom horses</div>
+        </div>
+        <div class="stat">
+          <div class="num">$0.027</div>
+          <div class="label">per extraction</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════ LIVE DEMO ═══════════════════════════ -->
+    <section id="demo" class="block">
+      <div class="container">
+        <header>
+          <span class="micro accent">01</span>
+          <h2 style="margin: 0">The live demo</h2>
+          <span class="rule"></span>
+          <span class="micro">three surfaces · all running</span>
+        </header>
+
+        <div class="grid grid-3" style="margin-bottom: 2.5rem">
+          <a class="card" href="http://127.0.0.1:5180/" target="_blank">
+            <div class="thumb contain">
+              <img src="demo-fixtures/web-shots/01-home.png" alt="Web UI home" loading="lazy" />
+            </div>
+            <div class="card-body">
+              <span class="card-tag">live · sveltekit</span>
+              <h3 class="card-title">Web UI</h3>
+              <p class="card-desc">
+                Drop a tip sheet. Reasoning streams in real-time. Flag panel
+                shows what was cleaned up. Race cards animate in. v0
+                comparison toggle reveals Pete's email quote alongside the
+                buggy production screenshot.
+              </p>
+              <div class="card-cta">localhost:5180</div>
+            </div>
+          </a>
+
+          <a class="card" href="http://127.0.0.1:5180/?cached=pete-24apr" target="_blank">
+            <div class="thumb contain">
+              <img src="demo-fixtures/web-shots/02-streaming.png" alt="Streaming reasoning" loading="lazy" />
+            </div>
+            <div class="card-body">
+              <span class="card-tag success">cached · zero network</span>
+              <h3 class="card-title">Cached replay</h3>
+              <p class="card-desc">
+                Identical UX — image preview, trickled reasoning bullets, flag
+                panel — but loaded from saved JSON. No live API call. Pete's
+                safety net if WiFi flakes mid-pitch.
+              </p>
+              <div class="card-cta">/?cached=pete-24apr</div>
+            </div>
+          </a>
+
+          <a class="card" href="file:///home/dom/tta-matrix/packages/agent/src/demo.ts">
+            <div class="thumb">
+              <img src="demo-fixtures/web-shots/03-flags.png" alt="CLI fallback" loading="lazy" />
+            </div>
+            <div class="card-body">
+              <span class="card-tag warning">terminal · backup</span>
+              <h3 class="card-title">CLI demo</h3>
+              <p class="card-desc">
+                <span class="mono accent">tsx demo.ts &lt;image&gt; --save</span>.
+                Single-shot extraction with reasoning trace + structured
+                output + saved JSON. Last-resort fallback if the web UI is
+                completely dead.
+              </p>
+              <div class="card-cta">packages/agent/src/demo.ts</div>
+            </div>
+          </a>
+        </div>
+
+        <div class="grid grid-2">
+          <div>
+            <div class="micro accent" style="margin-bottom: 0.6rem">
+              streaming reasoning · live capture
+            </div>
+            <a href="demo-fixtures/web-shots/05-reasoning.png" target="_blank">
+              <img
+                src="demo-fixtures/web-shots/05-reasoning.png"
+                alt="Streaming reasoning panel"
+                loading="lazy"
+                style="border: 1px solid var(--border); border-radius: 8px"
+              />
+            </a>
+            <p class="dim" style="margin-top: 0.8rem; font-size: 0.9rem">
+              The agent narrates what it sees in the order it sees it. Each
+              bullet fades up as the JSON array element closes server-side.
+              No explanation gap, no parse-then-pray.
+            </p>
+          </div>
+          <div>
+            <div class="micro accent" style="margin-bottom: 0.6rem">
+              flag panel · pete's bug, named
+            </div>
+            <a href="demo-fixtures/web-shots/03-flags.png" target="_blank">
+              <img
+                src="demo-fixtures/web-shots/03-flags.png"
+                alt="Flag panel"
+                loading="lazy"
+                style="border: 1px solid var(--border); border-radius: 8px"
+              />
+            </a>
+            <p class="dim" style="margin-top: 0.8rem; font-size: 0.9rem">
+              Row five from the top —
+              <span class="mono accent"
+                >Mitch Cohen R4 · 9 xxxCALL ME GORGEOUS — xxx prefix stripped → Call Me Gorgeous</span
+              >. Pete's exact bug, named in the agent's words, in the same UI
+              that produced it.
+            </p>
+          </div>
+        </div>
+
+        <div class="grid grid-2" style="margin-top: 1.5rem">
+          <div>
+            <div class="micro accent" style="margin-bottom: 0.6rem">
+              race cards · clean output
+            </div>
+            <a href="demo-fixtures/web-shots/04-races.png" target="_blank">
+              <img
+                src="demo-fixtures/web-shots/04-races.png"
+                alt="Race cards"
+                loading="lazy"
+                style="border: 1px solid var(--border); border-radius: 8px"
+              />
+            </a>
+          </div>
+          <div>
+            <div class="micro accent" style="margin-bottom: 0.6rem">
+              v0 comparison · what would have happened
+            </div>
+            <a href="demo-fixtures/web-shots/06-v0-comparison.png" target="_blank">
+              <img
+                src="demo-fixtures/web-shots/06-v0-comparison.png"
+                alt="v0 comparison panel"
+                loading="lazy"
+                style="border: 1px solid var(--border); border-radius: 8px"
+              />
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════ THE DECK ═══════════════════════════ -->
+    <section id="deck" class="block">
+      <div class="container">
+        <header>
+          <span class="micro accent">02</span>
+          <h2 style="margin: 0">The pitch deck</h2>
+          <span class="rule"></span>
+          <span class="micro">21 slides · 4 acts · ~30 minutes</span>
+        </header>
+
+        <div class="callout" style="margin-bottom: 2rem">
+          <p style="margin: 0; font-size: 1rem">
+            <a href="slide-deck/pete-pitch-deck.html" target="_blank"
+              ><span class="mono">slide-deck/pete-pitch-deck.html</span></a
+            >
+            · open in Chrome · press
+            <span class="mono accent">s</span> for speaker notes ·
+            <span class="mono accent">f</span> for fullscreen
+          </p>
+        </div>
+
+        <div class="grid grid-3">
+          <a class="card" href="demo-fixtures/deck-shots/01-title.png" target="_blank">
+            <div class="thumb contain"><img src="demo-fixtures/deck-shots/01-title.png" alt="" loading="lazy" /></div>
+            <div class="card-body">
+              <span class="card-tag">slide 1 · title</span>
+              <h3 class="card-title">The TipAnalyser</h3>
+              <p class="card-desc dim">
+                <span class="serif" style="font-style: italic">built to reason, not to parse.</span>
+              </p>
+            </div>
+          </a>
+
+          <a class="card" href="demo-fixtures/deck-shots/03-timeline.png" target="_blank">
+            <div class="thumb contain"><img src="demo-fixtures/deck-shots/03-timeline.png" alt="" loading="lazy" /></div>
+            <div class="card-body">
+              <span class="card-tag error">slide 3 · diagnosis</span>
+              <h3 class="card-title">A pattern, not isolated incidents.</h3>
+              <p class="card-desc dim">
+                Pete's 4-month bug timeline. Phantom horses → cross-race
+                contamination → race numbers as strings → prefix-bleed
+                duplicates. One root cause.
+              </p>
+            </div>
+          </a>
+
+          <a class="card" href="demo-fixtures/deck-shots/10-flag-panel.png" target="_blank">
+            <div class="thumb contain"><img src="demo-fixtures/deck-shots/10-flag-panel.png" alt="" loading="lazy" /></div>
+            <div class="card-body">
+              <span class="card-tag accent">slide 10 · the killer</span>
+              <h3 class="card-title">Honest failure mode.</h3>
+              <p class="card-desc dim">
+                The flag panel screenshot. Pete's xxxCALL ME GORGEOUS bug
+                literally named in the agent's words. Stop here. Let him
+                read.
+              </p>
+            </div>
+          </a>
+
+          <a class="card" href="demo-fixtures/deck-shots/13-architecture.png" target="_blank">
+            <div class="thumb contain"><img src="demo-fixtures/deck-shots/13-architecture.png" alt="" loading="lazy" /></div>
+            <div class="card-body">
+              <span class="card-tag">slide 13 · architecture</span>
+              <h3 class="card-title">Pipeline → Agent.</h3>
+              <p class="card-desc dim">
+                v0 ASCII diagram (Vercel + Gemini, brittle, jsonrepair, no
+                memory) versus v2 (SvelteKit + Claude + Convex, agentic,
+                stateful, provider-agnostic).
+              </p>
+            </div>
+          </a>
+
+          <a class="card" href="demo-fixtures/deck-shots/17-build-order.png" target="_blank">
+            <div class="thumb contain"><img src="demo-fixtures/deck-shots/17-build-order.png" alt="" loading="lazy" /></div>
+            <div class="card-body">
+              <span class="card-tag warning">slide 17 · roadmap</span>
+              <h3 class="card-title">From extractor to platform.</h3>
+              <p class="card-desc dim">
+                Six steps. Each ships independently. Each monetisable on its
+                own. Pete can stop after step 3 (leaderboard) and still have
+                a 10× better product.
+              </p>
+            </div>
+          </a>
+
+          <a class="card" href="demo-fixtures/deck-shots/20-the-ask.png" target="_blank">
+            <div class="thumb contain"><img src="demo-fixtures/deck-shots/20-the-ask.png" alt="" loading="lazy" /></div>
+            <div class="card-body">
+              <span class="card-tag accent">slide 20 · the ask</span>
+              <h3 class="card-title">Where to from here?</h3>
+              <p class="card-desc dim">
+                Three options — cut over, partner, keep talking. No same-day
+                pressure. The proof was the demo. The ask is to keep the
+                conversation going.
+              </p>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════ EVIDENCE ═══════════════════════════ -->
+    <section id="evidence" class="block">
+      <div class="container">
+        <header>
+          <span class="micro accent">03</span>
+          <h2 style="margin: 0">Pete's evidence</h2>
+          <span class="rule"></span>
+          <span class="micro">verbatim · screenshots · email-derived</span>
+        </header>
+
+        <div class="grid grid-2" style="margin-bottom: 2.5rem">
+          <div class="callout error">
+            <span class="micro error">verbatim · 24 apr 2026 · 12:53 pm</span>
+            <blockquote style="margin-top: 1rem">
+              "Just tested a race with the tip data that adds the xxx in
+              front of the horses name. It doesn't show in the preview to
+              advise the AI.<br /><br />
+              If you look at race 4 it is a prime example. The horse name is
+              <span class="accent" style="font-style: normal"
+                >Call Me Geregeous</span
+              >
+              also shows as
+              <span class="error" style="font-style: normal"
+                >xxxxCall Me Gergegeous</span
+              >."
+            </blockquote>
+            <p class="dim mono" style="margin-top: 1.2rem; font-size: 0.75rem; letter-spacing: 0.14em">
+              peter@blacmacproductions.com → dom@subfrac.com
+            </p>
+          </div>
+
+          <div class="callout">
+            <span class="micro accent">bug history · jan-apr 2026</span>
+            <div class="timeline" style="margin-top: 0.6rem">
+              <div class="timeline-row">
+                <span class="date">23 Jan</span>
+                <span class="label dim">handover</span>
+                <span class="body">Activate Studios pass support to me</span>
+              </div>
+              <div class="timeline-row">
+                <span class="date">06 Mar</span>
+                <span class="label">phantom horses</span>
+                <span class="body">"Race 1 has a thousand horses in it"</span>
+              </div>
+              <div class="timeline-row">
+                <span class="date">14 Mar</span>
+                <span class="label">cross-race</span>
+                <span class="body">"Double-ups again — horses added into races that aren't there"</span>
+              </div>
+              <div class="timeline-row">
+                <span class="date">16 Mar</span>
+                <span class="label ok">patched</span>
+                <span class="body">Gemini returning race numbers as strings "0" / "11"</span>
+              </div>
+              <div class="timeline-row">
+                <span class="date">21 Mar</span>
+                <span class="label dim">audit</span>
+                <span class="body">Pete sends inputs/outputs to validate fixes</span>
+              </div>
+              <div class="timeline-row">
+                <span class="date">24 Apr</span>
+                <span class="label">regression</span>
+                <span class="body">Pete back from US — same class of bug. xxx prefix duplicates</span>
+              </div>
+              <div class="timeline-row">
+                <span class="date">30 Apr</span>
+                <span class="label ok">v2 ships</span>
+                <span class="body">Agentic loop. Bug class structurally absent.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-3">
+          <a class="card" href="demo-fixtures/pete-24apr-xxprefix.jpg" target="_blank">
+            <div class="thumb contain">
+              <img src="demo-fixtures/pete-24apr-xxprefix.jpg" alt="Pete's 24 Apr image" loading="lazy" />
+            </div>
+            <div class="card-body">
+              <span class="card-tag accent">input · 24 apr</span>
+              <h3 class="card-title">The image Pete sent</h3>
+              <p class="card-desc">
+                TAB Racing 31 · Royal Randwick · 8 races · 6 tipsters · 596 KB.
+                Source of every demo run. The "xxx prefix" markup is visible
+                on bold top picks throughout.
+              </p>
+              <div class="card-cta">view full image</div>
+            </div>
+          </a>
+
+          <a class="card" href="demo-fixtures/pete-14mar-duplicates.png" target="_blank">
+            <div class="thumb contain">
+              <img src="demo-fixtures/pete-14mar-duplicates.png" alt="14 Mar v0 production buggy output" loading="lazy" />
+            </div>
+            <div class="card-body">
+              <span class="card-tag error">v0 output · 14 mar</span>
+              <h3 class="card-title">Cross-race contamination</h3>
+              <p class="card-desc">
+                Production screenshot from thetipanalyser.com. Wootton Verni
+                appears in BOTH Race 5 (21 votes) and Race 6 (1 vote). Just
+                Fine appears in both too. Silent corruption.
+              </p>
+              <div class="card-cta">view full screenshot</div>
+            </div>
+          </a>
+
+          <a class="card" href="demo-fixtures/pete-14mar-attachment2.png" target="_blank">
+            <div class="thumb contain">
+              <img src="demo-fixtures/pete-14mar-attachment2.png" alt="14 Mar second attachment - typo dupes" loading="lazy" />
+            </div>
+            <div class="card-body">
+              <span class="card-tag error">v0 output · 14 mar #2</span>
+              <h3 class="card-title">Typo-fuzzy duplicates</h3>
+              <p class="card-desc">
+                You Wahng (4 votes) AND You Waihng (2 votes) — same horse,
+                fuzzy spelling. Savvy Hallie & Savy Hallie. Sixties &
+                Top Reward bleeding from R7 into R8. Same root cause.
+              </p>
+              <div class="card-cta">view full screenshot</div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════ V2 EXTRACTION OUTPUT ═══════════════════════════ -->
+    <section class="block">
+      <div class="container">
+        <header>
+          <span class="micro success">04</span>
+          <h2 style="margin: 0">v2 extraction output</h2>
+          <span class="rule"></span>
+          <span class="micro">110.5s · sonnet 4.6 · 2,357 in / 7,588 out · zero phantoms</span>
+        </header>
+
+        <div class="grid grid-2">
+          <div>
+            <div class="micro accent" style="margin-bottom: 0.6rem">
+              what the agent wrote · reasoning trace excerpt
+            </div>
+            <pre class="code" style="font-size: 0.78rem; line-height: 1.55">
+01. Publication identified as TAB Racing 31 / TAB.com.au
+    tip sheet, Royal Randwick races Saturday, TAB CODE: SR.
+
+02. Six tipster columns identified left-to-right: Shayne
+    O'Cass, Mitch Cohen, Adam Sherry, Clinton Payne,
+    Adam Dobbin, Ian Russell.
+
+03. Each race block shows the tipster's top pick in bold
+    (with horse number), followed by 3 more selections
+    (positions 2-4).
+
+<span class="key">04. Prefix 'xx' and 'xxx' appear on bold (1st pick)
+    horse names throughout — these are publication
+    markup highlighting the top pick, not part of the
+    horse name. They must be stripped.</span>
+
+11. Race 4 Mitch Cohen: '9 xxxCALL ME GORGEOUS' — 'xxx'
+    prefix stripped → Call Me Gorgeous.
+
+12. Race 4 Adam Dobbin: '9 xxxCALL ME GORGEOUS' — same
+    prefix stripped → Call Me Gorgeous.
+
+23. Race 8 is partially cut off at the bottom of the
+    image; only the visible selections are included.
+    Clinton Payne's 4th pick and Ian Russell's full list
+    for race 8 may be incomplete.</pre>
+
+            <p class="dim" style="margin-top: 1rem; font-size: 0.9rem">
+              The agent recognised the publication's bold-pick markup
+              convention by itself. Step 4 is the entire pitch, in one
+              bullet, generated unprompted.
+            </p>
+          </div>
+
+          <div>
+            <div class="micro accent" style="margin-bottom: 0.6rem">
+              structured output · race 4 · clean
+            </div>
+            <pre class="code" style="font-size: 0.78rem; line-height: 1.55">
+{
+  <span class="key">"raceNumber"</span>: 4,
+  <span class="key">"tips"</span>: [
+    {
+      <span class="key">"tipsterName"</span>: <span class="str">"Shayne O'Cass"</span>,
+      <span class="key">"selections"</span>: [
+        { <span class="key">"position"</span>: 1, <span class="key">"horseName"</span>: <span class="str">"Hillier"</span>, <span class="key">"horseNumber"</span>: 5 }
+      ]
+    },
+    {
+      <span class="key">"tipsterName"</span>: <span class="str">"Mitch Cohen"</span>,
+      <span class="key">"selections"</span>: [
+        { <span class="key">"position"</span>: 1, <span class="key">"horseName"</span>: <span class="str">"Call Me Gorgeous"</span>, <span class="key">"horseNumber"</span>: 9 }
+      ]
+    },
+    {
+      <span class="key">"tipsterName"</span>: <span class="str">"Adam Sherry"</span>,
+      <span class="key">"selections"</span>: [
+        { <span class="key">"position"</span>: 1, <span class="key">"horseName"</span>: <span class="str">"Hay Street"</span>, <span class="key">"horseNumber"</span>: 13 }
+      ]
+    },
+    {
+      <span class="key">"tipsterName"</span>: <span class="str">"Adam Dobbin"</span>,
+      <span class="key">"selections"</span>: [
+        { <span class="key">"position"</span>: 1, <span class="key">"horseName"</span>: <span class="str">"Call Me Gorgeous"</span>, <span class="key">"horseNumber"</span>: 9 }
+      ]
+    },
+    {
+      <span class="key">"tipsterName"</span>: <span class="str">"Ian Russell"</span>,
+      <span class="key">"selections"</span>: [
+        { <span class="key">"position"</span>: 1, <span class="key">"horseName"</span>: <span class="str">"Call Me Gorgeous"</span>, <span class="key">"horseNumber"</span>: 9 }
+      ]
+    }
+  ]
+}</pre>
+
+            <p class="dim" style="margin-top: 1rem; font-size: 0.9rem">
+              <span class="success">Three tipsters all picking 9 Call Me Gorgeous.</span>
+              Zero phantom xxxx entries. Pete's reported bug is structurally
+              absent — not patched.
+              <a href="demo-fixtures/pete-24apr-xxprefix.extraction.json" target="_blank">view full json</a>
+            </p>
+          </div>
+        </div>
+
+        <div style="margin-top: 2.5rem">
+          <div class="micro accent" style="margin-bottom: 0.6rem">terminal capture · run from CLI · saved at demo-fixtures/pete-24apr-agent-run.txt</div>
+          <a href="demo-fixtures/pete-24apr-agent-run.txt" target="_blank">
+            <pre class="terminal" style="font-size: 0.74rem; line-height: 1.5; max-height: 320px; overflow: hidden; position: relative">
+<span class="muted">▸ pete-24apr-xxprefix.jpg  (582KB)
+▸ model=claude-sonnet-4-6  reasoning + structured extraction
+▸ thinking...</span>
+
+<span class="accent">═══ TipBot v2 — Agentic Extraction ═══</span>
+
+<span class="muted">Publication:</span>  TAB Racing (Racing 31 / TAB.com.au)
+<span class="muted">Meeting:</span>      Royal Randwick (SR)
+<span class="muted">Tipsters:</span>     6 — Shayne O'Cass, Mitch Cohen, Adam Sherry,
+              Clinton Payne, Adam Dobbin, Ian Russell
+<span class="muted">Races:</span>        8
+<span class="muted">Selections:</span>   192
+
+<span class="accent">FLAGS</span>
+  <span class="warning">[publication_artefact_stripped r4]</span> Mitch Cohen Race 4
+    top pick: '9 xxxCALL ME GORGEOUS' — 'xxx' prefix stripped
+    → Call Me Gorgeous.
+  <span class="warning">[publication_artefact_stripped r4]</span> Adam Dobbin Race 4
+    top pick: '9 xxxCALL ME GORGEOUS' — 'xxx' prefix stripped
+    → Call Me Gorgeous.
+  ...
+  <span class="warning">[uncertain r8]</span> Race 8 is partially cut off at the
+    bottom of the image. Only clearly visible selections
+    have been included.
+
+<span class="muted">model=claude-sonnet-4-6  tokens=2357in/7588out  time=91249ms</span>
+            </pre>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════ CODE ═══════════════════════════ -->
+    <section id="code" class="block">
+      <div class="container">
+        <header>
+          <span class="micro accent">05</span>
+          <h2 style="margin: 0">Code architecture</h2>
+          <span class="rule"></span>
+          <span class="micro">5,313 lines · typescript end-to-end · monorepo</span>
+        </header>
+
+        <div class="grid grid-3">
+          <div class="card">
+            <div class="card-body">
+              <span class="card-tag success">complete</span>
+              <h3 class="card-title">packages/agent</h3>
+              <div class="pill-row">
+                <span class="pill accent">9 tools</span>
+                <span class="pill">tool-use loop</span>
+                <span class="pill">vision</span>
+                <span class="pill">prompt cache</span>
+              </div>
+              <p class="card-desc">
+                The agentic core. <span class="mono accent">demo.ts</span> is
+                tonight's single-shot extraction with reasoning trace.
+                <span class="mono">agent.ts</span> is the longer-running tool-use
+                loop. Convex client + Anthropic SDK.
+              </p>
+              <div class="mono muted" style="font-size: 0.78rem; margin-top: 0.5rem">
+                agent.ts · 185<br />
+                demo.ts · 335<br />
+                extract.ts · 201<br />
+                tool-handler.ts · 364<br />
+                tools.ts · 215<br />
+                <span class="accent">total: 1,176 lines</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-body">
+              <span class="card-tag success">complete</span>
+              <h3 class="card-title">packages/web</h3>
+              <div class="pill-row">
+                <span class="pill accent">sveltekit</span>
+                <span class="pill">svelte 5 runes</span>
+                <span class="pill">tailwind v4</span>
+                <span class="pill">SSE streaming</span>
+              </div>
+              <p class="card-desc">
+                The pitch surface. Streams Anthropic vision output as SSE
+                events, parses reasoning bullets out of the live JSON, renders
+                fade-up cards. Sticky aside with image preview.
+                <span class="mono accent">?cached=pete-24apr</span>
+                replays the saved JSON.
+              </p>
+              <div class="mono muted" style="font-size: 0.78rem; margin-top: 0.5rem">
+                +page.svelte · 319<br />
+                +server.ts (SSE) · 290<br />
+                FlagPanel · 85<br />
+                ImageDropzone · 100<br />
+                RaceCards · 83<br />
+                ReasoningStream · 47<br />
+                V0Comparison · 75<br />
+                <span class="accent">total: 999 lines</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-body">
+              <span class="card-tag success">deployed</span>
+              <h3 class="card-title">packages/convex</h3>
+              <div class="pill-row">
+                <span class="pill accent">7-table schema</span>
+                <span class="pill">auto-settlement</span>
+                <span class="pill">deployed</span>
+              </div>
+              <p class="card-desc">
+                Persistent ground truth. Live at
+                <span class="mono accent">dev:ardent-hound-725</span>. Schema:
+                meetings, races, horses, tips, tipsters, predictions,
+                aggregations. HTTP actions wired. Cron stubs ready for the
+                results scraper.
+              </p>
+              <div class="mono muted" style="font-size: 0.78rem; margin-top: 0.5rem">
+                schema.ts · 172<br />
+                tips/tipsters/horses · 265<br />
+                predictions · 128<br />
+                races · 189<br />
+                aggregations · 45<br />
+                http + scraping + crons · 433<br />
+                seed · 221<br />
+                <span class="accent">total: 1,453 lines</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-body">
+              <span class="card-tag success">complete</span>
+              <h3 class="card-title">packages/shared</h3>
+              <div class="pill-row">
+                <span class="pill">domain types</span>
+                <span class="pill">vitest</span>
+                <span class="pill">aggregation</span>
+              </div>
+              <p class="card-desc">
+                Cross-package types and pure logic. Aggregation rules,
+                quaddie/trifecta/first-four math, refusal phrase detection,
+                JSON repair, retry/backoff, abbreviated-key expansion. All
+                tested.
+              </p>
+              <div class="mono muted" style="font-size: 0.78rem; margin-top: 0.5rem">
+                aggregation · 214<br />
+                types · 124<br />
+                extraction · 123<br />
+                errors · 121<br />
+                constants · 90<br />
+                index · 67<br />
+                <span class="accent">total: 739 lines</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-body">
+              <span class="card-tag warning">scaffold</span>
+              <h3 class="card-title">packages/matrix-bot</h3>
+              <div class="pill-row">
+                <span class="pill">matrix-bot-sdk</span>
+                <span class="pill">command parser</span>
+                <span class="pill">image processor</span>
+              </div>
+              <p class="card-desc">
+                Wired but not deployed yet. Bot takes images dropped in a
+                Matrix room, runs them through the agent, posts structured
+                results back. Slash commands for !tip / !race / !tipster /
+                !leaderboard.
+              </p>
+              <div class="mono muted" style="font-size: 0.78rem; margin-top: 0.5rem">
+                ready for step 5 of the build order
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-body">
+              <span class="card-tag warning">deprecated path</span>
+              <h3 class="card-title">packages/scraper</h3>
+              <div class="pill-row">
+                <span class="pill">cloudflare workers</span>
+                <span class="pill">stubs only</span>
+              </div>
+              <p class="card-desc">
+                Original CF Worker scraper plan. Research finding: replace
+                with Convex crons (one less deployment target). Stubs kept
+                for reference until step 3 of the build order ships.
+              </p>
+              <div class="mono muted" style="font-size: 0.78rem; margin-top: 0.5rem">
+                superseded by convex crons + cfBrowserScraper action
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout" style="margin-top: 2rem">
+          <span class="micro accent">the killer code</span>
+          <h3 style="margin-top: 0.6rem">The system prompt that found the pattern</h3>
+          <p class="dim" style="font-size: 0.95rem">
+            Excerpted from <span class="mono accent">packages/web/src/routes/api/extract/+server.ts</span>. The
+            agent's reasoning capability comes from this prompt — not from
+            tool use, not from memory, not from clever code. The prompt
+            instructs Claude to <span class="accent">reason about ambiguity</span>
+            before extracting.
+          </p>
+          <pre class="code" style="margin-top: 1rem; font-size: 0.78rem; line-height: 1.6">
+You replace a deterministic OCR pipeline that has failed for months on edge cases:
+  - publication-specific prefix markup (e.g. "XX" / "xxx" prefix bleeding into horse names)
+  - cross-race contamination (horses appearing in races they don't belong to)
+  - phantom horses (rows from headers/footers being treated as picks)
+  - duplicate tipsters (same person, different abbreviation)
+  - silent corruption when race numbers are missing or ambiguous
+
+Your job is to <span class="key">REASON about the image first, then extract.</span>
+
+Process:
+  1. Identify the publication
+  2. Identify the meeting and racing category
+  3. Identify the tipsters
+  4. For each race, extract each tipster's selections IN ORDER
+  5. NORMALISE horse names: strip publication prefixes, title-case consistently
+  6. DE-DUPLICATE: if a horse appears with and without a prefix, treat as one
+  <span class="key">7. FLAG ambiguity: if you can't tell which race a tip belongs to, flag it — never guess</span>
+  <span class="key">8. NARRATE every non-trivial decision</span></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════ DOCUMENTS ═══════════════════════════ -->
+    <section id="docs" class="block">
+      <div class="container">
+        <header>
+          <span class="micro accent">06</span>
+          <h2 style="margin: 0">Documents</h2>
+          <span class="rule"></span>
+          <span class="micro">read in order tomorrow morning</span>
+        </header>
+
+        <div class="grid grid-2">
+          <a class="card" href="PITCH-MORNING-HANDOFF.md" target="_blank">
+            <div class="card-body">
+              <span class="card-tag accent">read first · tomorrow 10:30 am</span>
+              <h3 class="card-title">PITCH-MORNING-HANDOFF.md</h3>
+              <p class="card-desc">
+                Pre-call setup checklist (start dev server, open three tabs,
+                verify cached fallback). Slide-by-slide timing for the 30-min
+                flow. Failure-mode fixes table. File reference. Thesis
+                reminder so the conversation doesn't drift into "Claude vs
+                Gemini."
+              </p>
+              <div class="card-cta">open handoff</div>
+            </div>
+          </a>
+
+          <a class="card" href="slide-deck/PETE-PITCH-CHEATSHEET.md" target="_blank">
+            <div class="card-body">
+              <span class="card-tag accent">cheat sheet · phone/print</span>
+              <h3 class="card-title">PETE-PITCH-CHEATSHEET.md</h3>
+              <p class="card-desc">
+                Slide-by-slide narration cues. Live-demo timestamps with
+                what to say at each beat. Cached-replay URL as the safety
+                net. Lines to remember. Things NOT to say. Pete's likely
+                signal-reading guide. After-call follow-up checklist.
+              </p>
+              <div class="card-cta">open cheat sheet</div>
+            </div>
+          </a>
+
+          <a class="card" href="demo-fixtures/PETE-DEMO.md" target="_blank">
+            <div class="card-body">
+              <span class="card-tag success">post-call · email-able</span>
+              <h3 class="card-title">PETE-DEMO.md</h3>
+              <p class="card-desc">
+                Pitch-ready evidence summary. Pete's bug history table, his
+                verbatim 24 Apr quote, v0 production output description, v2
+                agentic output stats, the architectural pitch frame. Send to
+                Pete after the call as the recap.
+              </p>
+              <div class="card-cta">open demo memo</div>
+            </div>
+          </a>
+
+          <a class="card" href="slide-deck/pete-pitch-deck.html" target="_blank">
+            <div class="card-body">
+              <span class="card-tag accent">the deck</span>
+              <h3 class="card-title">pete-pitch-deck.html</h3>
+              <p class="card-desc">
+                21 slides. Reveal.js. Embedded screenshots from the live demo
+                + Pete's images. Speaker notes per slide via reveal-notes
+                plugin. Open in Chrome, fullscreen, run.
+              </p>
+              <div class="card-cta">open deck</div>
+            </div>
+          </a>
+
+          <a class="card" href=".planning/PROJECT.md" target="_blank">
+            <div class="card-body">
+              <span class="card-tag">strategy · long-form</span>
+              <h3 class="card-title">.planning/PROJECT.md</h3>
+              <p class="card-desc">
+                The original v2 project brief. Codes, states, tip sources,
+                tech stack, monorepo layout, milestones, infrastructure.
+                Reference if Pete asks technical questions about scope.
+              </p>
+              <div class="card-cta">open project brief</div>
+            </div>
+          </a>
+
+          <a class="card" href=".planning/SITUATION-ANALYSIS.md" target="_blank">
+            <div class="card-body">
+              <span class="card-tag">strategy · investment-grade</span>
+              <h3 class="card-title">.planning/SITUATION-ANALYSIS.md</h3>
+              <p class="card-desc">
+                Competitive landscape, financial model, fundraising comps
+                (Polymarket $9B, Kalshi $22B), unit economics, LTV/CAC, risk
+                register. Source material for if Pete asks about market size
+                or competition.
+              </p>
+              <div class="card-cta">open situation analysis</div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════ GIT HISTORY ═══════════════════════════ -->
+    <section id="git" class="block">
+      <div class="container">
+        <header>
+          <span class="micro accent">07</span>
+          <h2 style="margin: 0">Git history</h2>
+          <span class="rule"></span>
+          <span class="micro">8 commits · all local · 30 apr 2026</span>
+        </header>
+
+        <div>
+          <div class="commit">
+            <span class="hash">729bad0</span>
+            <span class="subject">
+              <span class="accent mono" style="font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase">fix(deck)</span>
+              · explicit dark bg on .reveal .backgrounds — agent-browser was rendering on white
+            </span>
+            <span class="date">16:27</span>
+          </div>
+          <div class="commit">
+            <span class="hash">83ee424</span>
+            <span class="subject">
+              <span class="accent mono" style="font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase">docs</span>
+              · pitch morning handoff — start here tomorrow
+            </span>
+            <span class="date">16:23</span>
+          </div>
+          <div class="commit">
+            <span class="hash">7958f50</span>
+            <span class="subject">
+              <span class="accent mono" style="font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase">feat</span>
+              · cached replay mode (?cached=pete-24apr) — pitch safety net
+            </span>
+            <span class="date">16:22</span>
+          </div>
+          <div class="commit">
+            <span class="hash">0950c38</span>
+            <span class="subject">
+              <span class="accent mono" style="font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase">feat</span>
+              · pete-pitch deck + cheat sheet + v0 comparison panel
+            </span>
+            <span class="date">16:20</span>
+          </div>
+          <div class="commit">
+            <span class="hash">e9929e0</span>
+            <span class="subject">
+              <span class="muted mono" style="font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase">chore</span>
+              · untrack packages/web/.svelte-kit (generated)
+            </span>
+            <span class="date">16:06</span>
+          </div>
+          <div class="commit">
+            <span class="hash">5472b83</span>
+            <span class="subject">
+              <span class="accent mono" style="font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase">feat</span>
+              · web UI for Pete demo — SvelteKit transpose of wip-engine pattern
+            </span>
+            <span class="date">15:49</span>
+          </div>
+          <div class="commit">
+            <span class="hash">5caba90</span>
+            <span class="subject">
+              <span class="success mono" style="font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase">demo</span>
+              · agentic extraction proves out on Pete's 24-Apr "xx-prefix" image
+            </span>
+            <span class="date">14:55</span>
+          </div>
+          <div class="commit">
+            <span class="hash">261ab72</span>
+            <span class="subject">
+              <span class="accent mono" style="font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase">feat</span>
+              · scaffold TTA v2 monorepo + Conviction Game pitch artefacts
+            </span>
+            <span class="date">14:54</span>
+          </div>
+        </div>
+
+        <p class="dim" style="margin-top: 2rem; font-size: 0.95rem">
+          From scaffold to pitch-ready in
+          <span class="accent">93 minutes of commit time</span> (14:54 → 16:27).
+          All commits on <span class="mono accent">main</span>, none pushed to
+          remote yet — your call whether to push before tomorrow.
+        </p>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════ MEMORY ═══════════════════════════ -->
+    <section id="memory" class="block">
+      <div class="container">
+        <header>
+          <span class="micro accent">08</span>
+          <h2 style="margin: 0">Saved memory</h2>
+          <span class="rule"></span>
+          <span class="micro">future sessions inherit these</span>
+        </header>
+
+        <div class="grid grid-2">
+          <div class="callout">
+            <span class="micro accent">project memory</span>
+            <h3 style="margin: 0.6rem 0">Migration thesis — agentic over deterministic</h3>
+            <p class="dim" style="font-size: 0.95rem">
+              The TTA v2 migration is <span class="accent">not</span> "Claude
+              &gt; Gemini." It is
+              <span class="accent">agentic &gt; deterministic pipeline</span>.
+              When pitching, demoing, or designing, frame everything around
+              "watch it think" and "honest failure." Never let the
+              conversation slide back to model-vs-model framing.
+            </p>
+            <p class="mono muted" style="font-size: 0.72rem; letter-spacing: 0.12em; margin-top: 1rem">
+              ~/.claude/projects/-home-dom-tta-matrix/memory/<br />
+              tta-thesis-agentic-vs-deterministic.md
+            </p>
+          </div>
+
+          <div class="callout">
+            <span class="micro accent">project memory</span>
+            <h3 style="margin: 0.6rem 0">Pete Blackburn — TipAnalyser owner</h3>
+            <p class="dim" style="font-size: 0.95rem">
+              Peter Blackburn at Blacmac Productions ·
+              peter@blacmacproductions.com · standing Friday call. Inherited
+              from Activate Studios (Ty Curtis / Louisa Busfield) Jan 2026.
+              4-month deterministic-pipeline failure history. 24 Apr "xxxx
+              Call Me Gergegeous" image is the demo fixture.
+            </p>
+            <p class="mono muted" style="font-size: 0.72rem; letter-spacing: 0.12em; margin-top: 1rem">
+              ~/.claude/projects/-home-dom-tta-matrix/memory/<br />
+              pete-blackburn-tipanalyser.md
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════ DEFERRED ═══════════════════════════ -->
+    <section class="block">
+      <div class="container">
+        <header>
+          <span class="micro warning">09</span>
+          <h2 style="margin: 0">Deliberately deferred</h2>
+          <span class="rule"></span>
+          <span class="micro">good ideas · wrong moment</span>
+        </header>
+
+        <div class="grid grid-3">
+          <div class="card muted-on-hover">
+            <div class="card-body">
+              <span class="card-tag warning">deferred</span>
+              <h3 class="card-title">TTA Cloud brand world</h3>
+              <p class="card-desc">
+                Whitelabel Element X mockups, Spaces hierarchy, #tips room,
+                #leaderboard, conviction allocation surface. Slide 18 covers
+                the concept verbally — visuals can land in follow-up if Pete
+                bites on Option B (partner).
+              </p>
+              <div class="muted mono" style="font-size: 0.7rem; margin-top: 0.5rem">~3 hours · would have eaten dry-run time</div>
+            </div>
+          </div>
+
+          <div class="card muted-on-hover">
+            <div class="card-body">
+              <span class="card-tag warning">deferred</span>
+              <h3 class="card-title">Pre-recorded demo video</h3>
+              <p class="card-desc">
+                Initially planned as the live-demo backup. Superseded by the
+                cached-replay URL —
+                <span class="mono accent">?cached=pete-24apr</span> gives
+                identical UX with zero network risk. Better fallback than a
+                static video.
+              </p>
+              <div class="muted mono" style="font-size: 0.7rem; margin-top: 0.5rem">superseded by cached replay</div>
+            </div>
+          </div>
+
+          <div class="card muted-on-hover">
+            <div class="card-body">
+              <span class="card-tag warning">deferred</span>
+              <h3 class="card-title">Deeper better-casey polish</h3>
+              <p class="card-desc">
+                More motion choreography, microcopy reflow, breakpoint
+                tuning, mobile pass. The demo runs and the deck reads.
+                Diminishing returns past this point.
+              </p>
+              <div class="muted mono" style="font-size: 0.7rem; margin-top: 0.5rem">~2 hours · returns measured against pitch impact</div>
+            </div>
+          </div>
+
+          <div class="card muted-on-hover">
+            <div class="card-body">
+              <span class="card-tag warning">deferred</span>
+              <h3 class="card-title">Matrix bot live demo</h3>
+              <p class="card-desc">
+                Drop image in #tips room → bot extracts → posts results.
+                Code is ready (packages/matrix-bot) but standing up the bot
+                user, joining the room, and deploying takes hours we don't
+                have. Step 5 of the build order.
+              </p>
+              <div class="muted mono" style="font-size: 0.7rem; margin-top: 0.5rem">step 5 of 6 — 6 weeks out</div>
+            </div>
+          </div>
+
+          <div class="card muted-on-hover">
+            <div class="card-body">
+              <span class="card-tag warning">deferred</span>
+              <h3 class="card-title">Push to remote</h3>
+              <p class="card-desc">
+                All 8 commits are local on
+                <span class="mono">main</span>. Whether to push to
+                <span class="mono">domocarroll/tta-matrix</span> before the
+                pitch is a judgement call — push if you want backup;
+                hold if you want privacy until the conversation lands.
+              </p>
+              <div class="muted mono" style="font-size: 0.7rem; margin-top: 0.5rem">your call</div>
+            </div>
+          </div>
+
+          <div class="card muted-on-hover">
+            <div class="card-body">
+              <span class="card-tag warning">deferred</span>
+              <h3 class="card-title">Cross-fixture proof on attachment 2</h3>
+              <p class="card-desc">
+                The 14 Mar second attachment shows typo-fuzzy duplicates
+                (You Wahng / Waihng, Savvy / Savy Hallie). Running the agent
+                on this would prove typo-tolerance too — but it's a
+                screenshot of v0's UI, not a source tip sheet. Bonus only.
+              </p>
+              <div class="muted mono" style="font-size: 0.7rem; margin-top: 0.5rem">would need source image, not screenshot</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════ FOOTER ═══════════════════════════ -->
+    <footer class="foot">
+      <div class="container">
+        <div class="callout success" style="margin-bottom: 2rem">
+          <p style="margin: 0; font-size: 1.05rem">
+            <span class="success mono" style="font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase">ready to ship</span>
+            &nbsp;&nbsp;The demo did the work tonight. Tomorrow it just has to run.
+          </p>
+        </div>
+        <div class="foot-line">
+          <span>tta-matrix · pete pitch review · 30 apr 2026</span>
+          <span>Dom · subfracture · subfrac.com</span>
+        </div>
+      </div>
+    </footer>
+
+    <!-- ═══════════════════════════ LIGHTBOX ═══════════════════════════ -->
+    <div class="lightbox" id="lightbox" onclick="this.classList.remove('open')">
+      <img id="lightbox-img" src="" alt="" />
+      <div class="caption" id="lightbox-caption"></div>
+    </div>
+
+    <script>
+      // Click any thumbnail image to open in lightbox
+      document.querySelectorAll('.card a img, section img').forEach((img) => {
+        img.addEventListener('click', (e) => {
+          if (e.target.closest('a[target="_blank"]')) return // let the parent link handle it
+          e.preventDefault()
+          const lb = document.getElementById('lightbox')
+          const lbImg = document.getElementById('lightbox-img')
+          const lbCap = document.getElementById('lightbox-caption')
+          lbImg.src = img.src
+          lbCap.textContent = img.alt || ''
+          lb.classList.add('open')
+        })
+      })
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          document.getElementById('lightbox').classList.remove('open')
+        }
+      })
+    </script>
+  </body>
+</html>
