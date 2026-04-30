@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>The Conviction Game · in plain English</title>
+    <meta
+      name="description"
+      content="A free weekly horse-racing prediction game. You don't just pick horses — you say how sure you are. Sharp punters earn more weight in the group consensus over time. Plain English explainer."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter+Tight:wght@300..700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-deep: #0a0a0c;
+        --bg-surface: #111114;
+        --bg-card: #18181c;
+        --border: #2a2a32;
+        --text: #f0eee9;
+        --text-secondary: #8a8a96;
+        --text-muted: #5a5a66;
+        --accent: #c8a87c;
+        --accent-bright: #e0c8a0;
+        --success: #6ec87c;
+        --warning: #c8a040;
+        --error: #c86c6c;
+        --serif: 'Fraunces', 'Source Serif 4', Georgia, serif;
+        --sans: 'Inter Tight', -apple-system, BlinkMacSystemFont, sans-serif;
+        --mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--bg-deep);
+        color: var(--text);
+        font-family: var(--sans);
+        font-size: 18px;
+        line-height: 1.7;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      ::selection {
+        background: var(--accent);
+        color: var(--bg-deep);
+      }
+
+      a {
+        color: var(--accent);
+        text-decoration: none;
+        border-bottom: 1px solid rgba(200, 168, 124, 0.3);
+        transition: color 0.15s, border-color 0.15s;
+      }
+      a:hover {
+        color: var(--accent-bright);
+        border-bottom-color: var(--accent-bright);
+      }
+
+      header.topbar {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        backdrop-filter: blur(14px) saturate(1.1);
+        background: rgba(10, 10, 12, 0.78);
+        border-bottom: 1px solid var(--border);
+      }
+      .topbar-inner {
+        max-width: 880px;
+        margin: 0 auto;
+        padding: 18px 32px;
+        display: flex;
+        align-items: baseline;
+        gap: 28px;
+        flex-wrap: wrap;
+      }
+      .topbar-title {
+        font-family: var(--serif);
+        font-size: 1.1rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+      .topbar-meta {
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+      .topbar-nav {
+        margin-left: auto;
+        display: flex;
+        gap: 22px;
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+      .topbar-nav a {
+        color: var(--text-secondary);
+        border: none;
+      }
+      .topbar-nav a:hover {
+        color: var(--accent);
+      }
+
+      main {
+        max-width: 740px;
+        margin: 0 auto;
+        padding: 0 32px 96px;
+      }
+
+      .hero {
+        padding: 96px 0 56px;
+      }
+      .hero .eyebrow {
+        font-family: var(--mono);
+        font-size: 0.75rem;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 1.6rem;
+      }
+      .hero h1 {
+        font-family: var(--serif);
+        font-weight: 600;
+        font-size: clamp(2.6rem, 6vw, 4.4rem);
+        line-height: 1.02;
+        letter-spacing: -0.018em;
+        margin: 0 0 0.4em;
+        color: #faf8f4;
+      }
+      .hero .subtitle {
+        font-family: var(--serif);
+        font-style: italic;
+        font-weight: 400;
+        font-size: clamp(1.2rem, 2.4vw, 1.8rem);
+        line-height: 1.4;
+        color: var(--accent);
+        max-width: 32ch;
+        margin: 0;
+      }
+      .hero .meta {
+        margin-top: 2.4rem;
+        font-family: var(--mono);
+        font-size: 0.75rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+
+      h2 {
+        font-family: var(--serif);
+        font-weight: 600;
+        font-size: clamp(1.8rem, 3.2vw, 2.4rem);
+        line-height: 1.15;
+        letter-spacing: -0.012em;
+        color: #faf8f4;
+        margin: 4rem 0 1rem;
+      }
+
+      h3 {
+        font-family: var(--serif);
+        font-weight: 500;
+        font-size: 1.4rem;
+        line-height: 1.25;
+        color: #faf8f4;
+        font-style: italic;
+        margin: 2.2rem 0 0.6rem;
+      }
+
+      p {
+        margin: 0 0 1.4em;
+      }
+      p.lede {
+        font-size: 1.2rem;
+        line-height: 1.6;
+        color: var(--text-secondary);
+      }
+      p .accent {
+        color: var(--accent);
+      }
+
+      hr {
+        border: none;
+        height: 1px;
+        background: var(--border);
+        margin: 4rem 0 2rem;
+      }
+
+      blockquote {
+        margin: 2rem 0;
+        padding: 1.2rem 1.6rem;
+        border-left: 3px solid var(--accent);
+        background: rgba(200, 168, 124, 0.04);
+        font-family: var(--serif);
+        font-style: italic;
+        font-size: 1.25rem;
+        line-height: 1.5;
+        color: #faf8f4;
+        border-radius: 0 6px 6px 0;
+      }
+      blockquote p {
+        margin: 0;
+      }
+      blockquote cite {
+        display: block;
+        margin-top: 0.6rem;
+        font-family: var(--mono);
+        font-style: normal;
+        font-size: 0.7rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+
+      .micro {
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+      .micro.accent {
+        color: var(--accent);
+      }
+      .mono {
+        font-family: var(--mono);
+        font-size: 0.92em;
+      }
+
+      .section-eyebrow {
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 1rem;
+      }
+
+      .table {
+        width: 100%;
+        margin: 1.6rem 0 2rem;
+        border-collapse: collapse;
+        font-family: var(--mono);
+        font-size: 0.92rem;
+      }
+      .table th,
+      .table td {
+        padding: 0.8rem 1rem;
+        text-align: left;
+        border-top: 1px solid var(--border);
+      }
+      .table th {
+        font-size: 0.7rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        font-weight: 400;
+      }
+      .table td.num {
+        color: var(--accent);
+      }
+      .table td.big {
+        color: var(--accent-bright);
+        font-size: 1.05rem;
+      }
+
+      .callout {
+        margin: 2.2rem 0;
+        padding: 1.6rem 1.9rem;
+        background: linear-gradient(180deg, rgba(200, 168, 124, 0.08), rgba(200, 168, 124, 0.02));
+        border: 1px solid rgba(200, 168, 124, 0.25);
+        border-radius: 8px;
+      }
+      .callout p {
+        margin: 0;
+      }
+      .callout p + p {
+        margin-top: 0.8em;
+      }
+      .callout.success {
+        background: linear-gradient(180deg, rgba(110, 200, 124, 0.07), rgba(110, 200, 124, 0.02));
+        border-color: rgba(110, 200, 124, 0.25);
+      }
+      .callout.warn {
+        background: linear-gradient(180deg, rgba(200, 160, 64, 0.07), rgba(200, 160, 64, 0.02));
+        border-color: rgba(200, 160, 64, 0.25);
+      }
+
+      .scenario {
+        font-family: var(--serif);
+        font-style: italic;
+        font-size: 1.15rem;
+        line-height: 1.55;
+        color: #faf8f4;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1.4rem 1.7rem;
+        margin: 2rem 0;
+      }
+      .scenario .label {
+        display: block;
+        margin-bottom: 0.6rem;
+        font-family: var(--mono);
+        font-style: normal;
+        font-size: 0.7rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+
+      .compare {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin: 2rem 0;
+      }
+      .compare > div {
+        padding: 1.4rem 1.6rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+      }
+      .compare > div.error {
+        border-color: rgba(200, 108, 108, 0.3);
+      }
+      .compare > div.success {
+        border-color: rgba(110, 200, 124, 0.3);
+      }
+      .compare h4 {
+        margin: 0 0 0.6rem;
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+      .compare p {
+        margin: 0;
+        font-size: 0.95rem;
+        line-height: 1.5;
+      }
+      @media (max-width: 600px) {
+        .compare {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      footer.foot {
+        max-width: 740px;
+        margin: 0 auto;
+        padding: 4rem 32px 5rem;
+        border-top: 1px solid var(--border);
+      }
+      .foot-line {
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+
+      @media (max-width: 720px) {
+        body {
+          font-size: 17px;
+        }
+        .topbar-nav {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <span class="topbar-title">The Conviction Game</span>
+        <span class="topbar-meta">in plain english</span>
+        <nav class="topbar-nav">
+          <a href="#problem">problem</a>
+          <a href="#solution">what it is</a>
+          <a href="#how">how it works</a>
+          <a href="#feel">what it feels like</a>
+          <a href="#why-now">why now</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="eyebrow">a horse racing intelligence game · for punters · by punters</div>
+        <h1>The Conviction Game</h1>
+        <p class="subtitle">
+          You don't just pick horses. You say how sure you are. Then the truth tells you who was right.
+        </p>
+        <div class="meta">
+          ~10 min read · 30 apr 2026 · plain english
+        </div>
+      </section>
+
+      <p class="lede">
+        Every Saturday, thousands of Australians sit down with a tip sheet, a beer, and an opinion.
+        They study the form. They argue with their mates. They develop strong reads on which horses
+        are going to win. Then they bet — alone — into a system designed to take their money.
+      </p>
+      <p class="lede">
+        Their collective intelligence is enormous. It's also completely wasted. The bookmakers absorb
+        it through odds movement and keep the spread. The punters generate the signal; the bookies
+        keep the value.
+      </p>
+      <p class="lede">
+        The Conviction Game is what happens when that signal is captured, measured, and returned
+        to the people who made it.
+      </p>
+
+      <hr />
+
+      <!-- ════════════════════════════════ THE PROBLEM ════════════════════════════════ -->
+      <section id="problem">
+        <div class="section-eyebrow">01 · The problem</div>
+        <h2>Why nothing tracks who's actually good.</h2>
+
+        <p>
+          You probably know someone in your group whose tips are weirdly reliable. The mate who
+          called Black Caviar three weeks running. The uncle who picked the wet-track winner that
+          nobody else saw. You'd trust their pick over a stranger's any day.
+        </p>
+
+        <p>But here's the problem: <span class="accent">there's no way to prove it.</span></p>
+
+        <p>
+          Right now, when you tell a punting forum or a tipping app "I like Horse 5 in Race 3," the
+          system records it as a binary. You picked it or you didn't. There's no measure of how sure
+          you were. There's no track of how often you've been right before. There's no weight to
+          your opinion based on your record.
+        </p>
+
+        <p>So a few things happen, all of them bad:</p>
+
+        <div class="compare">
+          <div class="error">
+            <h4>Tipsters who write the loudest</h4>
+            <p>
+              Get the most followers. Whether or not their actual strike rate is any good. The
+              market rewards confidence, not accuracy.
+            </p>
+          </div>
+          <div class="error">
+            <h4>The crowd's wisdom evaporates</h4>
+            <p>
+              Every Saturday's collective intelligence — pub conversations, WhatsApp groups,
+              trackside reads — is generated and lost. Nobody captures it. Nobody learns from it.
+            </p>
+          </div>
+          <div class="error">
+            <h4>Bookies absorb the signal</h4>
+            <p>
+              They watch where the money goes, adjust the odds, keep the spread. Three operators —
+              Sportsbet, Ladbrokes, TAB — control most of a $32 billion market on this dynamic.
+            </p>
+          </div>
+          <div class="error">
+            <h4>Punters can't compound their edge</h4>
+            <p>
+              If you're sharp, that sharpness stays trapped in your head. You can't build a
+              reputation that travels. You can't help your mates without writing a column.
+            </p>
+          </div>
+        </div>
+
+        <p>
+          The structural problem is that punting platforms treat all picks as equal. They don't ask
+          how sure you are. They don't track who's right over time. They don't aggregate honest
+          opinions into something that pushes back on the bookmaker's spread.
+        </p>
+
+        <p>
+          The Conviction Game does all three.
+        </p>
+      </section>
+
+      <hr />
+
+      <!-- ════════════════════════════════ WHAT IT IS ════════════════════════════════ -->
+      <section id="solution">
+        <div class="section-eyebrow">02 · What it is</div>
+        <h2>A weekly game where conviction is the currency.</h2>
+
+        <p>
+          Each week, a few hundred punters log in (or open WhatsApp, or check their app). They see
+          the meetings, the races, the fields. They see the consensus picks the group has formed
+          so far. And they see something nobody else's platform shows them:
+          <span class="accent">a budget of conviction credits</span>.
+        </p>
+
+        <p>
+          You don't pick horses. You <em>allocate conviction</em> across them. You can put a lot of
+          conviction on the horse you're certain about, a little on the horse you're leaning toward,
+          and nothing on the races where you have no read.
+        </p>
+
+        <div class="scenario">
+          <span class="label">a saturday morning, in plain words</span>
+          <p>
+            "I'm dead-set on Hillier in Race 4 — that's worth 5 conviction points. Race 3 I lean
+            Cantiamo, maybe 2 points. Races 1, 6, 7 I've got nothing today, no allocation. Race 8
+            I think the favourite's overlooked, 3 points on Black Babylon."
+          </p>
+        </div>
+
+        <p>
+          That's it. That's the game. Once everyone has allocated, the system aggregates — heavier
+          conviction counts for more. The races run. The results come in. The system records who
+          was right and who was wrong, and crucially, <span class="accent">how confident they were
+          when they said it</span>.
+        </p>
+
+        <p>
+          Over weeks and months, the data accumulates. It becomes possible to say, mathematically:
+          this person has a 38% strike rate when they put 4 or more conviction points on a horse.
+          That person has a 62% strike rate but only on wet tracks. That person is consistently
+          better than the consensus on Saturdays, worse on Wednesdays.
+        </p>
+
+        <p>
+          Reputation stops being a feeling. It becomes a number. And a sharp punter's number keeps
+          getting better the longer they play.
+        </p>
+      </section>
+
+      <hr />
+
+      <!-- ════════════════════════════════ HOW IT WORKS ════════════════════════════════ -->
+      <section id="how">
+        <div class="section-eyebrow">03 · How it works</div>
+        <h2>Three small ideas that fit together.</h2>
+
+        <h3>1 · Conviction has a price, and the price grows fast.</h3>
+
+        <p>
+          You don't get unlimited conviction. You get a weekly budget — say, 100 credits. And the
+          cost of conviction grows the more you use:
+        </p>
+
+        <table class="table">
+          <thead>
+            <tr>
+              <th>conviction level</th>
+              <th>credits it costs</th>
+              <th>in plain words</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="num">1</td>
+              <td class="num">1</td>
+              <td>"I'm leaning that way."</td>
+            </tr>
+            <tr>
+              <td class="num">2</td>
+              <td class="num">4</td>
+              <td>"I think this is the one."</td>
+            </tr>
+            <tr>
+              <td class="num">3</td>
+              <td class="num">9</td>
+              <td>"I'm pretty confident."</td>
+            </tr>
+            <tr>
+              <td class="num">4</td>
+              <td class="num">16</td>
+              <td>"I'd put my reputation on this."</td>
+            </tr>
+            <tr>
+              <td class="num big">5</td>
+              <td class="num big">25</td>
+              <td>"I am dead-set certain."</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>
+          Doubling your conviction costs four times as much. Tripling it costs nine times. This
+          isn't punishment — it's <span class="accent">forced honesty</span>. You can't say
+          "everything is my best pick." Your budget literally won't allow it. You have to choose
+          where you actually have an edge.
+        </p>
+
+        <p>
+          The technical name for this is <span class="mono">quadratic voting</span> — a mechanism
+          economists have been studying for years. The result: when 100 people each spend 1 credit
+          on their honest reads, they collectively produce
+          <span class="accent">3.3 times more signal</span> than if one person dumps 100 credits
+          on a single horse. Distributed honesty beats concentrated bluffing, mathematically.
+        </p>
+
+        <hr />
+
+        <h3>2 · Truth arrives every thirty minutes.</h3>
+
+        <p>
+          Most prediction games have a problem: you can't tell who was right. Was that political
+          analyst correct? Debated for months. Did that economic forecast hold up? Argued for
+          decades.
+        </p>
+
+        <p>Horse racing doesn't have that problem.</p>
+
+        <blockquote>
+          <p>
+            Race 4 at Randwick starts at 14:30. By 14:32, we know who won. There is no committee.
+            No interpretation. No appeal. The horse crossed the line first. That's the truth.
+          </p>
+        </blockquote>
+
+        <p>
+          Australia runs roughly 200 races a week. That's 200 truth events. Every conviction
+          allocation gets graded against an objective answer within 30 minutes of the race starting.
+          You don't get to argue about whether you were right. The track tells you.
+        </p>
+
+        <p>
+          This is what makes the game work. Without ground truth, conviction allocation is just
+          opinion. With ground truth, it's measurable skill.
+        </p>
+
+        <hr />
+
+        <h3>3 · Reputation compounds.</h3>
+
+        <p>
+          Each week you play, the system records how your conviction allocations performed. Over
+          time, this builds a track record:
+        </p>
+
+        <ul style="font-size: 1.05rem; line-height: 1.7">
+          <li>How often you're right when you say "1 point" of conviction.</li>
+          <li>How often you're right when you say "5 points" — your dead-set picks.</li>
+          <li>Whether your accuracy is consistent or streaky.</li>
+          <li>Whether you're better at certain meetings, distances, track conditions.</li>
+        </ul>
+
+        <p>
+          And here's the magic: as your record gets stronger, your conviction starts carrying
+          <span class="accent">more weight in the group's aggregate</span>. The system doesn't
+          treat the brand-new player the same as someone with a six-month verified track record.
+          The aggregate reflects who's actually been right.
+        </p>
+
+        <p>
+          This means: if you're sharp, your influence grows. If you're not, you stay a small voice.
+          And critically, <span class="accent">nobody can buy their way to influence</span>. There's
+          no premium tier where you get bonus conviction. Conviction is earned, one race at a time,
+          against truth.
+        </p>
+      </section>
+
+      <hr />
+
+      <!-- ════════════════════════════════ FEEL ════════════════════════════════ -->
+      <section id="feel">
+        <div class="section-eyebrow">04 · What it feels like</div>
+        <h2>Saturday morning, but the chat group is measured.</h2>
+
+        <p>
+          Imagine a Saturday in six months. You wake up, make a coffee, open the app. The week's
+          racing is laid out — eight meetings across the country, fifty-odd races between them.
+        </p>
+
+        <p>
+          You see your conviction budget for the week: 100 credits. You see the consensus that's
+          formed already — heat-mapped horses, weighted by who allocated. You see your own track
+          record: <span class="mono">"You're 43% on conviction-3+ picks at metropolitan
+          meetings."</span> You see your friends' allocations, your group's aggregate.
+        </p>
+
+        <p>
+          You read the form. You watch a couple of trial replays. You make your calls.
+        </p>
+
+        <p>
+          One race in, one of your 5-conviction picks wins. Your phone buzzes — your group's
+          chat group lights up. Your reputation ticks up a fraction of a percent. The aggregate
+          re-weights for next week.
+        </p>
+
+        <p>
+          Three races later, your 4-conviction pick on a longshot in Race 7 doesn't run a place.
+          Reputation ticks down. You'll be more conservative on longshots next week.
+        </p>
+
+        <p>
+          By the end of the day, the leaderboard has moved a little. You're up two places. The
+          punter who's been on a hot streak in your group has dropped one — his conviction was
+          pointing the wrong way today.
+        </p>
+
+        <div class="scenario">
+          <span class="label">what you actually feel</span>
+          <p>
+            For the first time, the punters around you can <em>see</em> who's been right. Not
+            because they're loud about it. Because the math says so. You're playing for credibility,
+            not money. And credibility you've earned travels.
+          </p>
+        </div>
+
+        <p>
+          And here's the kicker: <span class="accent">it's free</span>. There's no bookie taking
+          a cut. There's no money on the horses (you can still bet privately if you want, but the
+          game doesn't require it). The game is the thing. The credibility is the prize.
+        </p>
+      </section>
+
+      <hr />
+
+      <!-- ════════════════════════════════ WHY NOW ════════════════════════════════ -->
+      <section id="why-now">
+        <div class="section-eyebrow">05 · Why now</div>
+        <h2>Three things changed at the same time.</h2>
+
+        <h3>The data flow is automatic.</h3>
+        <p>
+          Until recently, getting structured tip data out of newspapers, magazines, and TV broadcasts
+          was a manual, brittle process. AI vision models can now read a tip sheet image, identify
+          the publication, the meeting, every tipster, every selection — and explain what it did.
+          The data layer underneath the game runs itself.
+        </p>
+
+        <h3>The audience is already gathered.</h3>
+        <p>
+          Australian punters already cluster — pubs, WhatsApp groups, racing forums, paid tipping
+          services. We don't need to build a community from zero. We need to give existing
+          communities a better instrument. The first 50 players come from one existing customer
+          base. The next 500 come from the SEO long-tail of "who's actually good at picking
+          horses."
+        </p>
+
+        <h3>The infrastructure is mature.</h3>
+        <p>
+          Quadratic voting, anonymous reputation, real-time aggregation — these were research
+          problems five years ago. Today they're production patterns with mature open-source
+          tooling. The mechanism that makes this game fair is no longer the bottleneck. The
+          bottleneck is whether someone has the audience and the architectural taste to ship it.
+        </p>
+
+        <div class="callout success">
+          <p>
+            <strong style="color: var(--success); font-weight: 600">The honest summary:</strong>
+            this isn't a moonshot. It's a known mechanism applied to the right wedge — horse
+            racing — at a moment when the data layer finally works. The first version requires
+            no on-chain anything, no token, no novel cryptography. Just a clean read of what
+            punters already do, structured into a game where being right is finally measurable.
+          </p>
+        </div>
+      </section>
+
+      <hr />
+
+      <!-- ════════════════════════════════ CLOSE ════════════════════════════════ -->
+      <section>
+        <div class="section-eyebrow">06 · The close</div>
+        <h2>One sentence.</h2>
+
+        <p style="font-size: 1.3rem; line-height: 1.6; color: #faf8f4">
+          The Conviction Game is a <span class="accent">free weekly horse-racing prediction
+          game</span> where players don't just pick horses, they say <span class="accent">how sure
+          they are</span> — and over time the system learns whose conviction to trust, building the
+          first verifiable picture of who in Australia is <span class="accent">actually good</span>
+          at picking horses, owned by the punters who built it instead of the bookmakers who currently
+          extract from them.
+        </p>
+
+        <p class="lede" style="margin-top: 2.4rem">
+          That's the whole thing. Everything else — the technology, the tiers, the Matrix
+          community, the eventual API — is just the architecture beneath the sentence.
+        </p>
+
+        <p class="lede">
+          Saturday morning, you wake up, make a coffee, open the app. You make your calls. Truth
+          arrives every thirty minutes. The aggregate gets sharper. So do you.
+        </p>
+      </section>
+
+      <hr />
+
+      <!-- ════════════════════════════════ APPENDIX ════════════════════════════════ -->
+      <section>
+        <div class="section-eyebrow">appendix</div>
+        <h2>For people who want the next layer down.</h2>
+
+        <p>
+          Everything above is the player's experience. Underneath, there's a deliberate architecture
+          that makes the game fair and the data valuable. In short:
+        </p>
+
+        <table class="table">
+          <thead>
+            <tr>
+              <th>concern</th>
+              <th>how it's handled</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>How do tips get into the system?</td>
+              <td>
+                AI vision agent reads tip sheets from any source — newspapers, magazines, broadcasts.
+                Same tech that solved Pete's "xx prefix" bug.
+              </td>
+            </tr>
+            <tr>
+              <td>How are race results captured?</td>
+              <td>
+                Automated scraper hits every Australian meeting nightly, settles all conviction
+                allocations against ground truth.
+              </td>
+            </tr>
+            <tr>
+              <td>Where does the data live?</td>
+              <td>
+                Convex — a real-time database with type-safe queries. Every player's allocation
+                history, every tipster's track record, every race's settled outcome. Hosted in
+                Australia.
+              </td>
+            </tr>
+            <tr>
+              <td>Can the game be gamed?</td>
+              <td>
+                Quadratic-cost conviction makes large coordinated allocations exponentially
+                expensive. Anonymous-reputation primitives (later phases) prevent identity-based
+                bots. Honest play is the cheapest play.
+              </td>
+            </tr>
+            <tr>
+              <td>How do new players catch up?</td>
+              <td>
+                Their conviction starts at base weight. Their record is built race by race.
+                Within a month of regular play, a sharp new player's reputation reflects their
+                actual skill — not their seniority.
+              </td>
+            </tr>
+            <tr>
+              <td>What's the business model?</td>
+              <td>
+                Free WhatsApp tier as onramp. Subscription Matrix tier ($25/mo) for community
+                features and full conviction game. Premium API tier ($100+/mo) for cross-meeting
+                intelligence consumed by syndicates and media.
+              </td>
+            </tr>
+            <tr>
+              <td>Is this gambling?</td>
+              <td>
+                No. No money on horses. No payouts based on race outcomes. Conviction credits
+                are non-monetary, non-transferable, reset weekly. Players can still bet privately
+                with their bookmaker — the game is independent.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="callout warn" style="margin-top: 1rem">
+          <p style="font-size: 0.95rem">
+            <strong style="color: var(--warning); font-weight: 600">Note on the Conviction Game label:</strong>
+            longer-form versions of this concept include zero-knowledge proofs, anti-collusion
+            primitives, and on-chain reputation. Those are <em>future</em> phases (months 12+).
+            The version a punter plays in month one is the simple version above: weekly budget,
+            quadratic cost, ground truth, compounding reputation. Everything else accrues as the
+            system earns it.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <div class="foot-line">
+        the conviction game · in plain english · 30 apr 2026 · dom@subfrac.com
+      </div>
+    </footer>
+  </body>
+</html>

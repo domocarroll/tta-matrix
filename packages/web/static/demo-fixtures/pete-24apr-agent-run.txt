@@ -1,0 +1,118 @@
+[2m▸ pete-24apr-xxprefix.jpg  (582KB)[0m
+[2m▸ model=claude-sonnet-4-6  reasoning + structured extraction[0m
+[2m▸ thinking...[0m
+
+[1m[36m═══ TipBot v2 — Agentic Extraction ═══[0m[0m
+
+[2mPublication:[0m  TAB Racing (Racing 31 / TAB.com.au)
+[2mMeeting:[0m      Royal Randwick (SR)
+[2mTipsters:[0m     6 — Shayne O'Cass, Mitch Cohen, Adam Sherry, Clinton Payne, Adam Dobbin, Ian Russell
+[2mRaces:[0m        8
+[2mSelections:[0m   192
+
+[1mAGENT REASONING[0m
+  [36m1.[0m Publication identified as TAB Racing 31 / TAB.com.au tip sheet, Royal Randwick, Saturday, TAB CODE: SR.
+  [36m2.[0m Six tipster columns identified left-to-right: Shayne O'Cass, Mitch Cohen, Adam Sherry, Clinton Payne, Adam Dobbin, Ian Russell.
+  [36m3.[0m Each race block shows the tipster's top pick in bold (with horse number), followed by 3 more selections (positions 2-4).
+  [36m4.[0m Prefix 'xx' and 'xxx' appear on bold (1st pick) horse names throughout — these are publication markup highlighting the top pick, not part of the horse name. They must be stripped.
+  [36m5.[0m Race 1 Shayne O'Cass: '14 KEEN TO EXCEED' — no prefix, straightforward.
+  [36m6.[0m Race 1 Mitch Cohen: '10 xGIRL ABOUT TOWN' — single 'x' prefix stripped → Girl About Town.
+  [36m7.[0m Race 2 Shayne O'Cass: '15 xxNASEBAH' — 'xx' prefix stripped → Nasebah.
+  [36m8.[0m Race 2 Adam Sherry: '5 xDEEP PLEASURE' — 'x' prefix stripped → Deep Pleasure.
+  [36m9.[0m Race 3 Mitch Cohen: '13 xxSPICE BABY' — 'xx' prefix stripped → Spice Baby.
+  [36m10.[0m Race 3 Adam Sherry: '6 xxCANTIAMO' — 'xx' prefix stripped → Cantiamo.
+  [36m11.[0m Race 4 Mitch Cohen: '9 xxxCALL ME GORGEOUS' — 'xxx' prefix stripped → Call Me Gorgeous.
+  [36m12.[0m Race 4 Adam Dobbin: '9 xxxCALL ME GORGEOUS' — same prefix stripped → Call Me Gorgeous.
+  [36m13.[0m Race 5 Shayne O'Cass: '13 xxxCONFIDENTIALITY' — 'xxx' prefix stripped → Confidentiality.
+  [36m14.[0m Race 5 Adam Sherry: '15 xxxHAY STREET' — 'xxx' prefix stripped → Hay Street.
+  [36m15.[0m Race 5 Adam Dobbin: '2 xxLULUMON' — 'xx' prefix stripped → Lulumon.
+  [36m16.[0m Race 6 Clinton Payne: '12 xxSIR DINADAN' — 'xx' prefix stripped → Sir Dinadan.
+  [36m17.[0m Race 7 Clinton Payne: '14 xGIVE ME SPACE' — 'x' prefix stripped → Give Me Space.
+  [36m18.[0m Race 7 Adam Dobbin: '10 HELLSING' — no prefix.
+  [36m19.[0m Race 8 Shayne O'Cass: '15 xBLACK BABYLON' — 'x' prefix stripped → Black Babylon.
+  [36m20.[0m Race 8 Clinton Payne: '19 xxxNOBLER' — 'xxx' prefix stripped → Nobler.
+  [36m21.[0m Race 8 Adam Dobbin: '16 xPOISEN POINT' — 'x' prefix stripped → Poisen Point.
+  [36m22.[0m Horse numbers are taken from the bold first-pick line; subsequent picks in each block do not show numbers in the image, so horseNumber is omitted for positions 2-4.
+  [36m23.[0m Race 8 is partially cut off at the bottom of the image; only the visible selections are included. Clinton Payne's 4th pick and Ian Russell's full list for race 8 may be incomplete.
+  [36m24.[0m All 'x'/'xx'/'xxx' prefixes treated as publication_artefact and stripped consistently.
+
+[1m[33mFLAGS[0m[0m
+  [33m[publication_artefact_stripped r1][0m Mitch Cohen Race 1 top pick: '10 xGIRL ABOUT TOWN' — single 'x' prefix stripped → Girl About Town.
+  [33m[publication_artefact_stripped r2][0m Shayne O'Cass Race 2 top pick: '15 xxNASEBAH' — 'xx' prefix stripped → Nasebah.
+  [33m[publication_artefact_stripped r2][0m Adam Sherry Race 2 top pick: '5 xDEEP PLEASURE' — 'x' prefix stripped → Deep Pleasure.
+  [33m[publication_artefact_stripped r3][0m Mitch Cohen Race 3 top pick: '13 xxSPICE BABY' — 'xx' prefix stripped → Spice Baby.
+  [33m[publication_artefact_stripped r3][0m Adam Sherry Race 3 top pick: '6 xxCANTIAMO' — 'xx' prefix stripped → Cantiamo.
+  [33m[publication_artefact_stripped r4][0m Mitch Cohen Race 4 top pick: '9 xxxCALL ME GORGEOUS' — 'xxx' prefix stripped → Call Me Gorgeous.
+  [33m[publication_artefact_stripped r4][0m Adam Dobbin Race 4 top pick: '9 xxxCALL ME GORGEOUS' — 'xxx' prefix stripped → Call Me Gorgeous.
+  [33m[publication_artefact_stripped r5][0m Shayne O'Cass Race 5 top pick: '13 xxxCONFIDENTIALITY' — 'xxx' prefix stripped → Confidentiality.
+  [33m[publication_artefact_stripped r5][0m Adam Sherry Race 5 top pick: '15 xxxHAY STREET' — 'xxx' prefix stripped → Hay Street.
+  [33m[publication_artefact_stripped r5][0m Adam Dobbin Race 5 top pick: '2 xxLULUMON' — 'xx' prefix stripped → Lulumon.
+  [33m[publication_artefact_stripped r6][0m Clinton Payne Race 6 top pick: '12 xxSIR DINADAN' — 'xx' prefix stripped → Sir Dinadan.
+  [33m[publication_artefact_stripped r7][0m Clinton Payne Race 7 top pick: '14 xGIVE ME SPACE' — 'x' prefix stripped → Give Me Space.
+  [33m[publication_artefact_stripped r8][0m Shayne O'Cass Race 8 top pick: '15 xBLACK BABYLON' — 'x' prefix stripped → Black Babylon.
+  [33m[publication_artefact_stripped r8][0m Clinton Payne Race 8 top pick: '19 xxxNOBLER' — 'xxx' prefix stripped → Nobler.
+  [33m[publication_artefact_stripped r8][0m Adam Dobbin Race 8 top pick: '16 xPOISEN POINT' — 'x' prefix stripped → Poisen Point.
+  [33m[uncertain r8][0m Race 8 is partially cut off at the bottom of the image. Some tipsters' 4th selections may be incomplete or missing. Only clearly visible selections have been included.
+  [33m[anomaly r4][0m Horse numbers for Shayne O'Cass Race 4 picks 2-4 (Sergeant Major, Balkans, Comedy) appear without numbers in the image — only the bold top pick carries a number. This is consistent across all tipsters and races; positions 2-4 never show horse numbers in this publication format.
+
+[1mEXTRACTED RACES[0m
+  [1mRace 1[0m  [2m6 tipsters · 24 picks[0m
+    [2mShayne O'Cass   [0m 14.Keen To Exceed  ?.Lady Catalina  ?.Whitehall  ?.Affari
+    [2mMitch Cohen     [0m 10.Girl About Town  ?.Shalash  ?.Extremely Tempted  ?.Bangkok Hottie
+    [2mAdam Sherry     [0m 6.Whitehall  ?.Extremely Tempted  ?.Bangkok Hottie  ?.I Am Dirty
+    [2mClinton Payne   [0m 15.Jaipur Maison  ?.Bangkok Hottie  ?.Extremely Tempted  ?.Keen To Exceed
+    [2mAdam Dobbin     [0m 1.Extremely Tempted  ?.Bangkok Hottie  ?.Shalash  ?.Lady Catalina
+    [2mIan Russell     [0m 6.Whitehall  ?.Bangkok Hottie  ?.Affari  ?.Katoto
+  [1mRace 2[0m  [2m6 tipsters · 24 picks[0m
+    [2mShayne O'Cass   [0m 15.Nasebah  ?.Siragusa  ?.Mr Miller  ?.Probability Theory
+    [2mMitch Cohen     [0m 7.Night Agent  ?.Enamorada  ?.Siragusa  ?.Deep Pleasure
+    [2mAdam Sherry     [0m 5.Deep Pleasure  ?.Siragusa  ?.Night Agent  ?.Enamorada
+    [2mClinton Payne   [0m 5.Deep Pleasure  ?.Enamorada  ?.Penpel  ?.Siragusa
+    [2mAdam Dobbin     [0m 5.Deep Pleasure  ?.Enamorada  ?.Probability Theory  ?.Mr Miller
+    [2mIan Russell     [0m 8.Sister Shay  ?.Enamorada  ?.Arriving Home  ?.Night Agent
+  [1mRace 3[0m  [2m6 tipsters · 24 picks[0m
+    [2mShayne O'Cass   [0m 6.Cantiamo  ?.Wootton Lass  ?.Cavity Bay  ?.Jellicious
+    [2mMitch Cohen     [0m 13.Spice Baby  ?.Cantiamo  ?.Surfin' Bird  ?.Jellicious
+    [2mAdam Sherry     [0m 6.Cantiamo  ?.Surfin' Bird  ?.Jellicious  ?.Wootton Lass
+    [2mClinton Payne   [0m 6.Cantiamo  ?.Surfin' Bird  ?.Everyone's A Star  ?.Kujenga
+    [2mAdam Dobbin     [0m 13.Spice Baby  ?.Cantiamo  ?.Surfin' Bird  ?.Jellicious
+    [2mIan Russell     [0m 1.Surfin' Bird  ?.Spice Baby  ?.Jellicious  ?.Nesrine
+  [1mRace 4[0m  [2m6 tipsters · 24 picks[0m
+    [2mShayne O'Cass   [0m 5.Hillier  ?.Sergeant Major  ?.Balkans  ?.Comedy
+    [2mMitch Cohen     [0m 9.Call Me Gorgeous  ?.Hay Street  ?.Sergeant Major  ?.Hillier
+    [2mAdam Sherry     [0m 13.Hay Street  ?.Call Me Gorgeous  ?.Midnight Dynamite  ?.Comedy
+    [2mClinton Payne   [0m 5.Hillier  ?.Call Me Gorgeous  ?.Emirate  ?.Hay Street
+    [2mAdam Dobbin     [0m 9.Call Me Gorgeous  ?.Hay Street  ?.Midnight Dynamite  ?.Green Shadows
+    [2mIan Russell     [0m 9.Call Me Gorgeous  ?.Hay Street  ?.Midnight Dynamite  ?.Sergeant Major
+  [1mRace 5[0m  [2m6 tipsters · 24 picks[0m
+    [2mShayne O'Cass   [0m 13.Confidentiality  ?.Casserousse  ?.Lull  ?.Compensation
+    [2mMitch Cohen     [0m 13.Confidentiality  ?.Compensation  ?.Hay Street  ?.Lull
+    [2mAdam Sherry     [0m 15.Hay Street  ?.Compensation  ?.Confidentiality  ?.Casserousse
+    [2mClinton Payne   [0m 12.Compensation  ?.Confidentiality  ?.Hay Street  ?.Massira
+    [2mAdam Dobbin     [0m 2.Lulumon  ?.Compensation  ?.Shining Smile  ?.Massira
+    [2mIan Russell     [0m 15.Hay Street  ?.Casserousse  ?.Lulumon  ?.Durova
+  [1mRace 6[0m  [2m6 tipsters · 24 picks[0m
+    [2mShayne O'Cass   [0m 12.Sir Dinadan  ?.Polymnia  ?.Zaphod  ?.Flying Bandit
+    [2mMitch Cohen     [0m 11.Thrice  ?.Polymnia  ?.Rotagilla  ?.Zaphod
+    [2mAdam Sherry     [0m 7.Polymnia  ?.Zaphod  ?.Kind Words  ?.Thrice
+    [2mClinton Payne   [0m 12.Sir Dinadan  ?.Polymnia  ?.Zaphod  ?.Glad You Think So
+    [2mAdam Dobbin     [0m 7.Polymnia  ?.Zaphod  ?.Kind Words  ?.Glad You Think So
+    [2mIan Russell     [0m 2.Zaphod  ?.Polymnia  ?.Glad You Think So  ?.Thrice
+  [1mRace 7[0m  [2m6 tipsters · 24 picks[0m
+    [2mShayne O'Cass   [0m 9.Shadizi  ?.Lord Of Biscay  ?.Hellsing  ?.El Castello
+    [2mMitch Cohen     [0m 1.Cristal Clear  ?.Lord Of Biscay  ?.Kintyre  ?.Formal Display
+    [2mAdam Sherry     [0m 7.Lord Of Biscay  ?.Cristal Clear  ?.Hellsing  ?.Formal Display
+    [2mClinton Payne   [0m 14.Give Me Space  ?.El Castello  ?.Formal Display  ?.Lord Of Biscay
+    [2mAdam Dobbin     [0m 10.Hellsing  ?.El Castello  ?.Depth Of Character  ?.Cristal Clear
+    [2mIan Russell     [0m 15.Formal Display  ?.Lord Of Biscay  ?.Caboche  ?.El Castello
+  [1mRace 8[0m  [2m6 tipsters · 24 picks[0m
+    [2mShayne O'Cass   [0m 15.Black Babylon  ?.Brigidine Gal  ?.Fiddlers Green  ?.King Pedro
+    [2mMitch Cohen     [0m 4.Bella Montagna  ?.Fiddlers Green  ?.Nobler  ?.Thebudgiesmugla
+    [2mAdam Sherry     [0m 5.Fiddlers Green  ?.Nobler  ?.Mornington Pier  ?.Poisen Point
+    [2mClinton Payne   [0m 19.Nobler  ?.Crossbow  ?.King Pedro  ?.Uzziah
+    [2mAdam Dobbin     [0m 16.Poisen Point  ?.Brigidine Gal  ?.Fiddlers Green  ?.Uzziah
+    [2mIan Russell     [0m 13.Crossbow  ?.Fiddlers Green  ?.Pinhole  ?.Uzziah
+
+[2mmodel=claude-sonnet-4-6  tokens=2357in/7588out  time=91249ms[0m
+
+[2msaved → /home/dom/tta-matrix/demo-fixtures/pete-24apr-xxprefix.extraction.json[0m

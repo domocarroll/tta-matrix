@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The TipAnalyser · v2 · Pete</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter+Tight:wght@300..700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-deep: #0a0a0c;
+        --bg-surface: #111114;
+        --bg-card: #18181c;
+        --border: #2a2a32;
+        --text: #e8e6e3;
+        --text-secondary: #8a8a96;
+        --text-muted: #5a5a66;
+        --accent: #c8a87c;
+        --accent-bright: #e0c8a0;
+        --accent-dim: #a08860;
+        --success: #6ec87c;
+        --warning: #c8a040;
+        --error: #c86c6c;
+        --serif: 'Fraunces', 'Source Serif 4', 'Source Serif Pro', Georgia, serif;
+        --sans: 'Inter Tight', -apple-system, BlinkMacSystemFont, sans-serif;
+        --mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+      }
+
+      html,
+      body {
+        background: var(--bg-deep);
+      }
+
+      .reveal-viewport,
+      .reveal {
+        background: var(--bg-deep);
+      }
+      .reveal .backgrounds {
+        background: var(--bg-deep);
+      }
+      .reveal {
+        font-family: var(--sans);
+        color: var(--text);
+        font-weight: 400;
+      }
+
+      .reveal .slides {
+        text-align: left;
+      }
+
+      .reveal .slides section {
+        padding: 64px 96px;
+        box-sizing: border-box;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .reveal .progress {
+        color: var(--accent);
+        height: 2px;
+      }
+      .reveal .controls {
+        color: var(--text-muted);
+      }
+      .reveal .slide-number {
+        color: var(--text-muted);
+        font-family: var(--mono);
+        font-size: 0.65rem;
+        letter-spacing: 0.18em;
+      }
+
+      h1,
+      h2,
+      h3 {
+        font-family: var(--serif);
+        font-weight: 600;
+        letter-spacing: -0.015em;
+        text-wrap: balance;
+        margin: 0 0 0.4em;
+        color: #faf8f4;
+      }
+      .reveal h1 {
+        font-size: 5rem;
+        line-height: 1.05;
+        color: #faf8f4;
+        font-weight: 600;
+      }
+      .reveal h2 {
+        font-size: 3.6rem;
+        line-height: 1.1;
+        color: #faf8f4;
+        font-weight: 600;
+      }
+      .reveal h3 {
+        font-size: 2rem;
+        line-height: 1.2;
+        color: #faf8f4;
+        font-weight: 500;
+        font-style: italic;
+      }
+      .reveal p,
+      .reveal li {
+        font-size: 1.4rem;
+        line-height: 1.55;
+        color: var(--text);
+        margin: 0 0 0.6em;
+      }
+      .reveal blockquote {
+        font-family: var(--serif);
+        font-style: italic;
+        font-weight: 400;
+        font-size: 1.9rem;
+        line-height: 1.45;
+        color: #f6f4f1;
+        border: none;
+        padding: 0 0 0 1em;
+        border-left: 2px solid var(--accent);
+        margin: 0.6em 0;
+      }
+      .reveal pre,
+      .reveal code,
+      .mono {
+        font-family: var(--mono) !important;
+      }
+
+      .micro {
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+      .micro.accent {
+        color: var(--accent);
+      }
+      .dim {
+        color: var(--text-secondary) !important;
+      }
+      .muted {
+        color: var(--text-muted) !important;
+      }
+      .accent {
+        color: var(--accent) !important;
+      }
+      .success {
+        color: var(--success) !important;
+      }
+      .error {
+        color: var(--error) !important;
+      }
+      .warning {
+        color: var(--warning) !important;
+      }
+      .serif {
+        font-family: var(--serif) !important;
+      }
+
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 1.6rem;
+      }
+      .row {
+        display: flex;
+        align-items: baseline;
+        gap: 1.2rem;
+      }
+      .row > .grow {
+        flex: 1;
+        min-width: 0;
+      }
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2.4rem;
+      }
+      .grid-3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 2rem;
+      }
+      .rule {
+        height: 1px;
+        background: var(--border);
+        flex: 1;
+      }
+
+      .card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1.6rem 1.8rem;
+      }
+      .card.accent-border {
+        border-color: rgba(200, 168, 124, 0.3);
+      }
+      .card.error-border {
+        border-color: rgba(200, 108, 108, 0.4);
+      }
+      .card.success-border {
+        border-color: rgba(110, 200, 124, 0.4);
+      }
+
+      .pill {
+        display: inline-block;
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        padding: 0.25rem 0.6rem;
+        border-radius: 4px;
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+      }
+      .pill.accent {
+        border-color: rgba(200, 168, 124, 0.4);
+        color: var(--accent);
+      }
+      .pill.error {
+        border-color: rgba(200, 108, 108, 0.4);
+        color: var(--error);
+      }
+      .pill.success {
+        border-color: rgba(110, 200, 124, 0.4);
+        color: var(--success);
+      }
+      .pill.warning {
+        border-color: rgba(200, 160, 64, 0.4);
+        color: var(--warning);
+      }
+
+      .section-slide {
+        justify-content: center !important;
+        align-items: flex-start !important;
+      }
+      .section-slide .label {
+        font-family: var(--mono);
+        font-size: 0.85rem;
+        letter-spacing: 0.3em;
+        color: var(--accent);
+        text-transform: uppercase;
+        margin-bottom: 1.5rem;
+      }
+      .section-slide h1 {
+        font-size: 6rem;
+        line-height: 1;
+        font-weight: 600;
+      }
+      .section-slide h1 em {
+        font-style: italic;
+        color: var(--accent);
+        font-weight: 600;
+      }
+
+      .timeline {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        font-family: var(--mono);
+        font-size: 1rem;
+      }
+      .timeline-row {
+        display: grid;
+        grid-template-columns: 110px 1fr;
+        align-items: baseline;
+        gap: 1.4rem;
+        padding: 0.7rem 0;
+        border-top: 1px solid var(--border);
+      }
+      .timeline-row .date {
+        color: var(--accent);
+      }
+      .timeline-row .body {
+        font-family: var(--sans);
+        color: var(--text);
+        font-size: 1.15rem;
+      }
+
+      .arch-diagram {
+        font-family: var(--mono);
+        font-size: 0.95rem;
+        line-height: 1.7;
+        color: var(--text-secondary);
+        white-space: pre;
+      }
+      .arch-diagram .step {
+        color: var(--text);
+      }
+      .arch-diagram .err {
+        color: var(--error);
+      }
+      .arch-diagram .ok {
+        color: var(--success);
+      }
+      .arch-diagram .accent {
+        color: var(--accent) !important;
+      }
+
+      .figure {
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 4px;
+        overflow: hidden;
+      }
+      .figure img {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 660px;
+        object-fit: contain;
+        border-radius: 4px;
+      }
+      .figure.tall img {
+        max-height: 540px;
+      }
+      .figure.wide img {
+        max-height: 720px;
+      }
+      .figure-caption {
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-top: 0.6rem;
+      }
+
+      .demo-cue {
+        font-family: var(--mono);
+        font-size: 0.95rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--accent);
+        padding: 1rem 1.4rem;
+        border-left: 2px solid var(--accent);
+        background: rgba(200, 168, 124, 0.05);
+      }
+
+      .footer-line {
+        position: absolute;
+        bottom: 28px;
+        left: 96px;
+        right: 96px;
+        display: flex;
+        justify-content: space-between;
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+
+      /* Title slide */
+      .title-slide {
+        justify-content: center !important;
+      }
+      .title-slide .eyebrow {
+        font-family: var(--mono);
+        font-size: 0.85rem;
+        letter-spacing: 0.3em;
+        color: var(--accent);
+        text-transform: uppercase;
+        margin-bottom: 2.2rem;
+      }
+      .title-slide h1 {
+        font-size: 7rem;
+        line-height: 0.95;
+        margin-bottom: 0.4em;
+        font-weight: 600;
+        color: #faf8f4;
+      }
+      .title-slide .subtitle {
+        font-family: var(--serif);
+        font-size: 2.4rem;
+        font-style: italic;
+        font-weight: 400;
+        color: var(--accent);
+        margin-bottom: 0;
+      }
+
+      .stat-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2rem;
+        font-family: var(--mono);
+        margin-top: 1.5rem;
+      }
+      .stat-row .stat {
+        border-top: 1px solid var(--border);
+        padding-top: 0.8rem;
+      }
+      .stat-row .num {
+        font-family: var(--serif);
+        font-size: 3rem;
+        line-height: 1;
+        color: var(--accent);
+      }
+      .stat-row .label {
+        font-size: 0.7rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-top: 0.4rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <!-- ════════════════════════ 01 · TITLE ════════════════════════ -->
+        <section class="title-slide">
+          <div class="eyebrow">v2 · agentic · for Pete · 1 May 2026</div>
+          <h1>The TipAnalyser</h1>
+          <p class="subtitle">built to reason, not to parse.</p>
+          <div class="footer-line">
+            <span>Dominic O'Carroll</span>
+            <span>Subfracture · subfrac.com</span>
+          </div>
+          <aside class="notes">
+            Open quietly. "Pete, I want to walk you through where I've taken the
+            TipAnalyser since we last spoke. About 30 minutes. We'll start with
+            the bugs you've been hitting, I'll show you what I built, and then we
+            can talk about where this goes." Don't promise the world up front.
+            Earn it.
+          </aside>
+        </section>
+
+        <!-- ════════════════════════ 02 · WHERE WE ARE ════════════════════════ -->
+        <section class="section-slide">
+          <div class="label">act 1 / four</div>
+          <h1>The same bug, <em>four months</em>.</h1>
+          <p class="dim" style="font-size: 1.5rem; max-width: 60ch; margin-top: 1.5rem">
+            Every fix we've shipped has been a patch on the same architecture.
+            Every new publication breaks it differently.
+          </p>
+          <aside class="notes">
+            Frame the diagnosis. Pete needs to feel that the problem is named
+            properly before he believes the cure. Don't blame anyone — frame it
+            as the SYSTEM having a problem, not Pete having a complaint.
+          </aside>
+        </section>
+
+        <!-- ════════════════════════ 03 · TIMELINE ════════════════════════ -->
+        <section>
+          <div class="row">
+            <span class="micro accent">your bug history</span>
+            <span class="rule"></span>
+            <span class="micro">jan 2026 · apr 2026</span>
+          </div>
+          <h2 style="margin-top: 1rem">A pattern, not isolated incidents.</h2>
+
+          <div class="timeline" style="margin-top: 1.5rem">
+            <div class="timeline-row">
+              <span class="date">23 Jan</span>
+              <span class="body">
+                Activate Studios hand TipAnalyser support over to me. Standing
+                Friday call begins.
+              </span>
+            </div>
+            <div class="timeline-row">
+              <span class="date">06 Mar</span>
+              <span class="body">
+                <span class="error">Phantom horses.</span> "Race 1 has a
+                thousand horses in it" — pipeline ingesting non-tip rows.
+              </span>
+            </div>
+            <div class="timeline-row">
+              <span class="date">14 Mar</span>
+              <span class="body">
+                <span class="error">Cross-race contamination.</span> "Double-ups
+                again — horses added into races that aren't there."
+              </span>
+            </div>
+            <div class="timeline-row">
+              <span class="date">16 Mar</span>
+              <span class="body">
+                Patch shipped. Root cause: <span class="muted">Gemini was returning race
+                numbers as the strings "0" and "11".</span>
+              </span>
+            </div>
+            <div class="timeline-row">
+              <span class="date">21 Mar</span>
+              <span class="body">
+                I ask for your inputs/outputs to validate. You send them.
+              </span>
+            </div>
+            <div class="timeline-row">
+              <span class="date">24 Apr</span>
+              <span class="body">
+                You return from the States. Test again. <span class="error">Same class of
+                bug.</span> "xxx prefix" duplicates "Call Me Geregeous".
+              </span>
+            </div>
+          </div>
+
+          <p class="muted" style="margin-top: 1.4rem; font-size: 1.05rem">
+            Four bug classes — phantom horses, cross-race contamination, race
+            numbers as strings, prefix-bleed duplicates — all from the same root
+            cause.
+          </p>
+          <aside class="notes">
+            Walk this gently. Ask Pete if he remembers the 16 Mar fix — that
+            was the first signal that we were patching symptoms, not the
+            disease. The 24 Apr regression is what convinced me to stop
+            patching and rebuild.
+          </aside>
+        </section>
+
+        <!-- ════════════════════════ 04 · PETE'S WORDS ════════════════════════ -->
+        <section>
+          <div class="row">
+            <span class="micro accent">your words</span>
+            <span class="rule"></span>
+            <span class="micro">24 apr 2026 · 12:53 pm</span>
+          </div>
+          <blockquote style="margin-top: 2rem; font-size: 2.1rem">
+            "Just tested a race with the tip data that adds the xxx in front of
+            the horses name. It doesn't show in the preview to advise the AI.<br /><br />
+            If you look at race 4 it is a prime example. The horse name is
+            <span class="accent">Call Me Geregeous</span> also shows as
+            <span class="error">xxxxCall Me Gergegeous</span>."
+          </blockquote>
+          <p class="dim" style="margin-top: 1.6rem; font-size: 1.1rem">
+            One image. Two horses where there should be one. The pipeline can't
+            tell publication markup from a horse name.
+          </p>
+          <aside class="notes">
+            Read it slowly. This is the inciting incident. Pete reported a
+            specific failure with a specific image — the one we're about to
+            run through v2 in the demo. Setting up the punchline.
+          </aside>
+        </section>
+
+        <!-- ════════════════════════ 05 · THE IMAGE ════════════════════════ -->
+        <section>
+          <div class="row">
+            <span class="micro accent">the image you sent me</span>
+            <span class="rule"></span>
+            <span class="micro">tab racing 31 · royal randwick · sr</span>
+          </div>
+          <div class="grid-2" style="margin-top: 1.5rem; align-items: center">
+            <div class="figure tall">
+              <img
+                src="/demo-fixtures/pete-24apr-xxprefix.jpg"
+                alt="Pete's 24 Apr image"
+              />
+              <div class="figure-caption">pete‑24apr‑xxprefix.jpg · 596 KB</div>
+            </div>
+            <div class="stack">
+              <div class="card">
+                <span class="micro accent">what you saw</span>
+                <p style="margin-top: 0.6rem; font-size: 1.2rem">
+                  Race 4 returned <span class="error">two</span> "Call Me
+                  Gorgeous" entries — one correct, one prefixed with "xxxx".
+                </p>
+              </div>
+              <div class="card">
+                <span class="micro accent">where the bug actually lives</span>
+                <p style="margin-top: 0.6rem; font-size: 1.2rem">
+                  The publication uses an <span class="accent">"xx"/"xxx"
+                  prefix</span> as bold/highlight markup for top picks.<br />
+                  Gemini's deterministic OCR can't tell that markup is markup.
+                  It treats every glyph as part of the horse name.
+                </p>
+              </div>
+            </div>
+          </div>
+          <aside class="notes">
+            Show the image. Let Pete recognise it. The prefix is not in his data
+            preview because his preview pipeline strips it before showing him —
+            but Gemini sees it. That's the gap. Architectural mismatch between
+            what HE sees and what the AI sees.
+          </aside>
+        </section>
+
+        <!-- ════════════════════════ 06 · THE PATTERN ════════════════════════ -->
+        <section>
+          <div class="row">
+            <span class="micro accent">the pattern beneath</span>
+            <span class="rule"></span>
+            <span class="micro">four bugs · one root cause</span>
+          </div>
+          <h2 style="margin-top: 1rem">It isn't a bug. It's the architecture.</h2>
+
+          <div class="grid-2" style="margin-top: 1.4rem">
+            <div class="card error-border">
+              <span class="pill error">v0 · deterministic pipeline</span>
+              <ul style="margin-top: 1rem; padding-left: 1rem; font-size: 1.15rem">
+                <li>Image → fixed prompt → Gemini → JSON → parse or fail.</li>
+                <li>No reasoning about what's in the image.</li>
+                <li>No memory of past tipsters or horses.</li>
+                <li>No mechanism to flag uncertainty.</li>
+                <li>
+                  When ambiguity arrives,
+                  <span class="error">silently corrupts</span>.
+                </li>
+              </ul>
+              <p class="muted" style="margin-top: 1rem; font-size: 1.05rem">
+                Every fix patches one symptom. The next publication's quirk
+                breaks it again.
+              </p>
+            </div>
+            <div class="card accent-border">
+              <span class="pill accent">v2 · agentic loop</span>
+              <ul style="margin-top: 1rem; padding-left: 1rem; font-size: 1.15rem">
+                <li>Image → reason → identify → extract → flag → persist.</li>
+                <li>Recognises publication conventions itself.</li>
+                <li>Convex memory across runs (tipsters, horses, results).</li>
+                <li>
+                  Refuses to silently corrupt — flags ambiguity instead of
+                  guessing.
+                </li>
+              </ul>
+              <p class="accent" style="margin-top: 1rem; font-size: 1.05rem">
+                The bug class is not patched. It is structurally absent.
+              </p>
+            </div>
+          </div>
+          <aside class="notes">
+            The pivot. This is the slide where the conversation changes. Pete
+            stops thinking about specific bugs and starts thinking about the
+            architecture that produces them. Don't move past this until he's
+            nodded.
+          </aside>
+        </section>
+
+        <!-- ════════════════════════ 07 · LIVE DEMO LEAD-IN ════════════════════════ -->
+        <section class="section-slide">
+          <div class="label">act 2 / four</div>
+          <h1>Watch it <em>think</em>.</h1>
+          <p class="dim" style="font-size: 1.5rem; margin-top: 1.5rem">
+            We'll run your 24 Apr image through v2. Live. Same input you sent
+            me a week ago.
+          </p>
+          <div class="demo-cue" style="margin-top: 2rem">
+            ▸ switch to browser · localhost:5180 · click "Pete 24 Apr · xx
+            prefix"
+          </div>
+          <aside class="notes">
+            DEMO TIME. Switch to the browser. Click the fixture button. Narrate
+            the streaming reasoning out loud. Don't just stare at the screen —
+            commentate. Key beats:
+            (1) "first thing it does — identifies the publication. TAB Racing 31."
+            (2) "now it identifies the tipster columns. Six of them."
+            (3) "watch this — it noticed the xx prefix pattern by itself."
+            (4) "every prefix it strips, it logs as a flag. Honest about what
+            it cleaned up."
+            (5) "Race 4 — Call Me Gorgeous shows up three times across the
+            tipsters. Zero phantom xxxx entries."
+            Total run is ~110s. Don't rush.
+          </aside>
+        </section>
+
+        <!-- ════════════════════════ 08 · WEB UI HOME ════════════════════════ -->
+        <section>
+          <div class="row">
+            <span class="micro accent">the surface · localhost:5180</span>
+            <span class="rule"></span>
+            <span class="micro">v2 prototype · sveltekit · streaming</span>
+          </div>
+          <div class="figure" style="margin-top: 1.5rem">
+            <img
+              src="/demo-fixtures/web-shots/01-home.png"
+              alt="Web UI home"
+            />
+            <div class="figure-caption">
+              drop a tip sheet · or run a known fixture
+            </div>
+          </div>
+          <aside class="notes">
+            Backup slide if the live demo fails. Use this to talk through the
+            UI even if Wifi flakes.
+          </aside>
+        </section>
+
+        <!-- ════════════════════════ 09 · STREAMING REASONING ════════════════════════ -->
+        <section>
+          <div class="row">
+            <span class="micro accent">01 · reasoning</span>
+            <span class="rule"></span>
+            <span class="micro">streamed live · gold = the agent's voice</span>
+          </div>
+          <div class="figure" style="margin-top: 1.5rem">
+            <img
+              src="/demo-fixtures/web-shots/05-reasoning.png"
+              alt="Streaming reasoning"
+            />
+            <div class="figure-caption">
+              the agent narrates what it sees, in the order it sees it
+            </div>
+          </div>
+          <aside class="notes">
+            "This is what 'agentic' actually means in practice. The agent
+            doesn't just spit out JSON. It tells you what it found, in the
+            order it found it. If something looks wrong, you can trace which
+            decision produced it."
+          </aside>
+        </section>
+
+        <!-- ════════════════════════ 10 · THE FLAG PANEL ════════════════════════ -->
+        <section>
+          <div class="row">
+            <span class="micro accent">02 · honest failure mode</span>
+            <span class="rule"></span>
+            <span class="micro">your bug · named & fixed in the ui</span>
+          </div>
+          <div class="figure wide" style="margin-top: 1.2rem">
+            <img
+              src="/demo-fixtures/web-shots/03-flags.png"
+              alt="Flag panel"
+            />
+            <div class="figure-caption">
+              15 publication artefacts stripped · 2 anomalies · 0 silent corruption
+            </div>
+          </div>
+          <p style="margin-top: 1.2rem; font-size: 1.2rem">
+            Row five from the top:
+            <span class="mono accent"
+              >Mitch Cohen R4 · 9 xxxCALL ME GORGEOUS — xxx prefix stripped → Call
+              Me Gorgeous.</span
+            >
+          </p>
+          <p class="dim" style="font-size: 1.1rem">
+            Your reported bug, named in the agent's own words, in the same UI
+            that showed it. Not patched. Stripped at the architectural level —
+            and the strip is logged so you can audit it.
+          </p>
+          <aside class="notes">
+            THE KILLER SLIDE. Stop here. Let him read it. The verbatim "Call Me
+            Gorgeous" line he reported on 24 Apr is now a flag entry the agent
+            produced unprompted. The agent saw the prefix, recognized it as
+            markup, and told us so. That's the entire pitch in one screenshot.
+          </aside>
+        </section>
+
+        <!-- ════════════════════════ 11 · STATS ════════════════════════ -->
+        <section>
+          <div class="row">
+            <span class="micro accent">end-to-end · same image</span>
+            <span class="rule"></span>
+            <span class="micro">claude sonnet 4.6 · agentic loop</span>
+          </div>
+          <h2 style="margin-top: 1rem">What it actually delivers.</h2>
+
+          <div class="stat-row">
+            <div class="stat">
+              <div class="num">8</div>
+              <div class="label">races extracted</div>
+            </div>
+            <div class="stat">
+              <div class="num">6</div>
+              <div class="label">tipsters detected</div>
+            </div>
+            <div class="stat">
+              <div class="num">192</div>
+              <div class="label">selections</div>
+            </div>
+            <div class="stat">
+              <div class="num">15</div>
+              <div class="label">artefacts stripped</div>
+            </div>
+          </div>
+
+          <div class="stat-row" style="margin-top: 1.6rem">
+            <div class="stat">
+              <div class="num">110<span class="muted" style="font-size: 1.2rem">s</span></div>
+              <div class="label">end-to-end</div>
+            </div>
+            <div class="stat">
+              <div class="num">$0.15</div>
+              <div class="label">per extraction</div>
+            </div>
+            <div class="stat">
+              <div class="num">0</div>
+              <div class="label">phantom horses</div>
+            </div>
+            <div class="stat">
+              <div class="num success">✓</div>
+              <div class="label">flagged race 8 cutoff</div>
+            </div>
+          </div>
+
+          <p class="dim" style="margin-top: 2rem; font-size: 1.1rem">
+            The agent also caught what you didn't ask it to: race 8 was
+            partially cut off in the source image, and rather than guess the
+            missing 4th picks, it flagged uncertainty. <span class="accent">That's the
+            "honest failure" mode</span> — when v0 would silently corrupt, v2 says "I
+            don't know about this part."
+          </p>
+          <aside class="notes">
+            Land the stats. The "0 phantom horses" line is the punchline. The
+            "flagged race 8 cutoff" line is the bonus — proves the agent does
+            more than fix the reported bug, it proactively flags issues you
+            haven't even seen yet.
+          </aside>
+        </section>
+
+        <!-- ════════════════════════ 12 · ARCHITECTURE ════════════════════════ -->
+        <section class="section-slide">
+          <div class="label">act 3 / four</div>
+          <h1>The architecture beneath.</h1>
+          <p class="dim" style="font-size: 1.5rem; margin-top: 1.5rem">
+            Same upload UX you have today. Different mind underneath.
+          </p>
+          <aside class="notes">
+            Transition. Pete doesn't need a deep tech tour, but he needs to see
+            that the new system is something he could absorb, not throw away
+            his existing product to use.
+          </aside>
+        </section>
+
+        <!-- ════════════════════════ 13 · ARCHITECTURE DIFF ════════════════════════ -->
+        <section>
+          <div class="row">
+            <span class="micro accent">v0 · today</span>
+            <span class="rule"></span>
+            <span class="micro accent">v2 · proposed</span>
+          </div>
+          <div class="grid-2" style="margin-top: 1.4rem">
+            <div class="card error-border">
+<pre class="arch-diagram">  ┌──────────────┐
+  │  Vercel UI   │
+  └──────┬───────┘
+         │
+         ▼
+  ┌──────────────┐
+  │   Gemini     │  <span class="err">brittle</span>
+  │  fixed prompt│
+  └──────┬───────┘
+         │
+         ▼
+  ┌──────────────┐
+  │  JSON parse  │  <span class="err">repair</span>
+  │  jsonrepair  │
+  └──────┬───────┘
+         │
+         ▼
+  ┌──────────────┐
+  │  display     │  <span class="err">no memory</span>
+  │  (stateless) │
+  └──────────────┘</pre>
+              <p class="muted" style="margin-top: 0.6rem; font-size: 1rem">
+                Stateless. Provider-locked. No reasoning trace.
+              </p>
+            </div>
+
+            <div class="card accent-border">
+<pre class="arch-diagram">  ┌──────────────┐
+  │ SvelteKit UI │  <span class="accent">streaming</span>
+  └──────┬───────┘
+         │
+         ▼
+  ┌──────────────┐
+  │   <span class="accent">Claude</span>     │  <span class="ok">agentic</span>
+  │  reason→tool │
+  └──┬────────┬──┘
+     │        │
+     ▼        ▼
+  ┌────┐  ┌────────┐
+  │UI  │  │ <span class="accent">Convex</span>  │ <span class="ok">memory</span>
+  │SSE │  │tipsters│
+  └────┘  │horses  │
+          │results │
+          └────────┘</pre>
+              <p class="accent" style="margin-top: 0.6rem; font-size: 1rem">
+                Stateful. Provider-agnostic. Reasoning is a first-class output.
+              </p>
+            </div>
+          </div>
+          <p class="dim" style="margin-top: 1rem; font-size: 1.1rem">
+            Provider-agnostic matters: when Gemini changes, you patch. When
+            Claude changes, swap models in <span class="mono accent">5 lines</span>. Or run both in parallel and
+            keep whichever wins.
+          </p>
+          <aside class="notes">
+            The provider-swap point matters because Pete has been at the mercy
+            of Gemini's behavior changes for 4 months. v2 makes the model a
+            commodity. He's no longer locked in.
+          </aside>
+        </section>
+
+        <!-- ════════════════════════ 14 · MIGRATION CONTINUITY ════════════════════════ -->
+        <section>
+          <div class="row">
+            <span class="micro accent">migration · not rewrite</span>
+            <span class="rule"></span>
+            <span class="micro">your customers don't notice the swap</span>
+          </div>
+          <h2 style="margin-top: 1rem">Same UX. New brain.</h2>
+          <div class="grid-2" style="margin-top: 1.4rem">
+            <div class="card">
+              <span class="micro accent">what stays</span>
+              <ul style="margin-top: 0.6rem; padding-left: 1rem; font-size: 1.15rem">
+                <li>Your domain. Your brand.</li>
+                <li>The upload UX your users know.</li>
+                <li>Every feature they've come to rely on.</li>
+                <li>Your existing customer relationships.</li>
+              </ul>
+            </div>
+            <div class="card accent-border">
+              <span class="micro accent">what changes</span>
+              <ul style="margin-top: 0.6rem; padding-left: 1rem; font-size: 1.15rem">
+                <li>The OCR pipeline becomes an agent.</li>
+                <li>Stateless becomes <span class="accent">persistent</span> (Convex).</li>
+                <li>Provider-locked becomes <span class="accent">provider-agnostic</span>.</li>
+                <li>Silent corruption becomes <span class="accent">honest failure</span>.</li>
+                <li>Each extraction <span class="accent">compounds</span> into intelligence.</li>
+              </ul>
+            </div>
+          </div>
+          <p class="dim" style="margin-top: 1rem; font-size: 1.1rem">
+            We don't ask your users to migrate. We migrate the engine
+            underneath them.
+          </p>
+          <aside class="notes">
+            Reassurance. Pete has built customer trust over years; he's not
+            going to risk that for a tech upgrade. Frame v2 as engine swap, not
+            rebrand.
+          </aside>
+        </section>
+
+        <!-- ════════════════════════ 15 · UNLOCKS LEAD-IN ════════════════════════ -->
+        <section class="section-slide">
+          <div class="label">act 4 / four</div>
+          <h1>What this <em>unlocks</em>.</h1>
+          <p class="dim" style="font-size: 1.5rem; margin-top: 1.5rem">
+            Once each extraction stops evaporating and starts
+            <span class="accent">compounding</span>, you stop being a tip
+            extractor. You become an intelligence platform.
+          </p>
+          <aside class="notes">
+            Now we expand the aperture. Pete agreed v2 fixes the bugs. Now
+            we show what he never knew was possible.
+          </aside>
+        </section>
+
+        <!-- ════════════════════════ 16 · COMPOUNDING ASSET ════════════════════════ -->
+        <section>
+          <div class="row">
+            <span class="micro accent">the asset you've been throwing away</span>
+            <span class="rule"></span>
+            <span class="micro">stateless → stateful</span>
+          </div>
+          <h2 style="margin-top: 1rem">Memory is the moat.</h2>
+
+          <div class="grid-3" style="margin-top: 1.6rem">
+            <div class="card">
+              <span class="pill">today</span>
+              <p style="margin-top: 0.6rem; font-size: 1.2rem">
+                Every extraction starts blind. Past Tony Brassel doesn't help
+                future Tony Brassel.
+              </p>
+            </div>
+            <div class="card accent-border">
+              <span class="pill accent">v2</span>
+              <p style="margin-top: 0.6rem; font-size: 1.2rem">
+                Tipster reliability accumulates. Horse aliases resolve. Race
+                results auto-settle every prediction.
+              </p>
+            </div>
+            <div class="card success-border">
+              <span class="pill success">+12 months</span>
+              <p style="margin-top: 0.6rem; font-size: 1.2rem">
+                You own a <span class="success">verified-accuracy
+                dataset</span> nobody else has. Every Saturday makes it
+                stronger.
+              </p>
+            </div>
+          </div>
+
+          <p class="dim" style="margin-top: 1.6rem; font-size: 1.1rem">
+            <span class="accent">$32B Australian wagering market.</span> Three
+            bookies extract the punters' intelligence and keep the spread. The
+            asset you accumulate by aggregating tipster picks against ground
+            truth — that's the wedge. Nobody else has six months of clean
+            data.
+          </p>
+          <aside class="notes">
+            Pete needs to see that v2 isn't just a fix — it generates an asset
+            that v0 couldn't. The clean dataset accumulates with every
+            extraction. That's the durable advantage.
+          </aside>
+        </section>
+
+        <!-- ════════════════════════ 17 · PROGRESSION ════════════════════════ -->
+        <section>
+          <div class="row">
+            <span class="micro accent">the build order</span>
+            <span class="rule"></span>
+            <span class="micro">six steps · each unlocks the next</span>
+          </div>
+          <h2 style="margin-top: 1rem">From extractor to platform.</h2>
+
+          <div style="margin-top: 1.4rem; font-family: var(--mono); font-size: 1.05rem; line-height: 1.7">
+            <div class="row" style="border-top: 1px solid var(--border); padding: 0.7rem 0">
+              <span class="accent" style="width: 3rem">01</span>
+              <span class="grow"
+                ><span class="serif" style="font-style: italic; font-size: 1.4rem"
+                  >Agentic extraction</span
+                ><span class="muted">  ·  ship today (we have it)</span></span
+              >
+              <span class="pill success">DONE</span>
+            </div>
+            <div class="row" style="border-top: 1px solid var(--border); padding: 0.7rem 0">
+              <span class="accent" style="width: 3rem">02</span>
+              <span class="grow"
+                ><span class="serif" style="font-style: italic; font-size: 1.4rem"
+                  >Persistent memory</span
+                ><span class="muted">  ·  Convex deployed · schemas live</span></span
+              >
+              <span class="pill success">DONE</span>
+            </div>
+            <div class="row" style="border-top: 1px solid var(--border); padding: 0.7rem 0">
+              <span class="accent" style="width: 3rem">03</span>
+              <span class="grow"
+                ><span class="serif" style="font-style: italic; font-size: 1.4rem"
+                  >Race-results auto-settlement</span
+                ><span class="muted">  ·  scraper → ground truth → tipster reliability scores</span></span
+              >
+              <span class="pill warning">2 weeks</span>
+            </div>
+            <div class="row" style="border-top: 1px solid var(--border); padding: 0.7rem 0">
+              <span class="accent" style="width: 3rem">04</span>
+              <span class="grow"
+                ><span class="serif" style="font-style: italic; font-size: 1.4rem"
+                  >Public leaderboard</span
+                ><span class="muted">  ·  who's actually good · the moat begins to compound</span></span
+              >
+              <span class="pill warning">3 weeks</span>
+            </div>
+            <div class="row" style="border-top: 1px solid var(--border); padding: 0.7rem 0">
+              <span class="accent" style="width: 3rem">05</span>
+              <span class="grow"
+                ><span class="serif" style="font-style: italic; font-size: 1.4rem"
+                  >Community surface</span
+                ><span class="muted">  ·  whitelabel Matrix client · TTA Cloud</span></span
+              >
+              <span class="pill">6 weeks</span>
+            </div>
+            <div class="row" style="border-top: 1px solid var(--border); padding: 0.7rem 0">
+              <span class="accent" style="width: 3rem">06</span>
+              <span class="grow"
+                ><span class="serif" style="font-style: italic; font-size: 1.4rem"
+                  >The Conviction Game</span
+                ><span class="muted">  ·  quadratic-cost conviction allocation · ground-truth-tested intelligence</span></span
+              >
+              <span class="pill">12 weeks</span>
+            </div>
+          </div>
+          <p class="dim" style="margin-top: 1.4rem; font-size: 1.05rem">
+            Each step ships independently. Each step has its own monetisable
+            value. We don't bet the farm on step six.
+          </p>
+          <aside class="notes">
+            Important: tell Pete each step is independently valuable. He can
+            decide to stop after step 3 (better extractor + leaderboard) and
+            still have a 10x better product. The Conviction Game is the
+            far-future option, not the near-term ask.
+          </aside>
+        </section>
+
+        <!-- ════════════════════════ 18 · TIER JOURNEY ════════════════════════ -->
+        <section>
+          <div class="row">
+            <span class="micro accent">your customers · re-housed</span>
+            <span class="rule"></span>
+            <span class="micro">three tiers · same audience</span>
+          </div>
+          <h2 style="margin-top: 1rem">The same punters, three depths.</h2>
+
+          <div class="grid-3" style="margin-top: 1.4rem">
+            <div class="card">
+              <span class="pill">tier 1 · whatsapp</span>
+              <h3 style="margin-top: 0.6rem; font-size: 1.5rem">Free / freemium</h3>
+              <p style="font-size: 1.05rem">
+                Bot DM. Drop tip sheet → consensus picks back. Race results
+                auto-posted. Your existing punters land here.
+              </p>
+            </div>
+            <div class="card accent-border">
+              <span class="pill accent">tier 2 · matrix</span>
+              <h3 style="margin-top: 0.6rem; font-size: 1.5rem">Subscription</h3>
+              <p style="font-size: 1.05rem">
+                "The TipAnalyser" whitelabel app. Group intelligence,
+                leaderboard, prediction market. The community lives here.
+              </p>
+            </div>
+            <div class="card success-border">
+              <span class="pill success">tier 3 · premium</span>
+              <h3 style="margin-top: 0.6rem; font-size: 1.5rem">Protocol</h3>
+              <p style="font-size: 1.05rem">
+                Anonymous reputation. Conviction-weighted aggregation.
+                Cross-meeting intelligence API. The defensible moat.
+              </p>
+            </div>
+          </div>
+
+          <p class="dim" style="margin-top: 1.6rem; font-size: 1.1rem">
+            Your existing customer base seeds tier 1 within a day. Tier 2
+            converts the most engaged 10–20%. Tier 3 funds the platform.
+          </p>
+          <aside class="notes">
+            Practical: WhatsApp tier means Pete's customers don't have to
+            change a thing — they get value via the channel they already use.
+            Matrix is opt-in upgrade. Tier 3 is the long game.
+          </aside>
+        </section>
+
+        <!-- ════════════════════════ 19 · WHAT WE BUILT ALREADY ════════════════════════ -->
+        <section>
+          <div class="row">
+            <span class="micro accent">what's already built</span>
+            <span class="rule"></span>
+            <span class="micro">3 commits · 1 day · ready to demo</span>
+          </div>
+          <h2 style="margin-top: 1rem">This isn't a deck. It's a working stack.</h2>
+
+          <div class="grid-2" style="margin-top: 1.4rem">
+            <div class="card">
+              <span class="micro accent">code, today</span>
+              <ul style="margin-top: 0.6rem; padding-left: 1rem; font-size: 1.1rem">
+                <li><span class="mono">packages/agent</span> — agentic extraction loop, 9 tools</li>
+                <li><span class="mono">packages/convex</span> — schema deployed, mutations live</li>
+                <li><span class="mono">packages/web</span> — streaming UI you just saw</li>
+                <li><span class="mono">packages/matrix-bot</span> — bot wiring, ready when needed</li>
+                <li><span class="mono">packages/shared</span> — domain logic + tests</li>
+              </ul>
+            </div>
+            <div class="card">
+              <span class="micro accent">infrastructure, today</span>
+              <ul style="margin-top: 0.6rem; padding-left: 1rem; font-size: 1.1rem">
+                <li>Convex Cloud · production schema deployed</li>
+                <li>Anthropic Sonnet 4.6 · prompt caching on</li>
+                <li>Matrix homeserver · subfrac.cloud · running</li>
+                <li>Cloudflare Pages · ready for production deploy</li>
+                <li>Repo · monorepo · TypeScript end to end</li>
+              </ul>
+            </div>
+          </div>
+          <p class="dim" style="margin-top: 1.4rem; font-size: 1.1rem">
+            Steps 1 & 2 of the build order — done. Steps 3 & 4 — clear path,
+            scaffolded already. Steps 5 & 6 — the Conviction Game vision lives in a separate deck I'll send you if you want to go deeper.
+          </p>
+          <aside class="notes">
+            Not just talk. He needs to know I've already invested. This isn't a
+            sales pitch from someone hoping to get paid to build — it's a demo
+            of work already done.
+          </aside>
+        </section>
+
+        <!-- ════════════════════════ 20 · THE ASK ════════════════════════ -->
+        <section class="section-slide">
+          <div class="label">conversation</div>
+          <h1>Where to from here?</h1>
+
+          <div class="stack" style="margin-top: 2rem; max-width: 50ch">
+            <div class="card">
+              <span class="micro accent">option a · cut over</span>
+              <p style="margin-top: 0.6rem; font-size: 1.15rem">
+                v2 replaces v0 inside thetipanalyser.com. I take ownership of
+                the engine. You stay the brand and audience. We ship steps 3-4
+                in a month.
+              </p>
+            </div>
+            <div class="card">
+              <span class="micro accent">option b · partner</span>
+              <p style="margin-top: 0.6rem; font-size: 1.15rem">
+                We co-build TTA Cloud (Matrix surface) on top of the v2 engine.
+                Equity / revenue split TBD. Long horizon.
+              </p>
+            </div>
+            <div class="card">
+              <span class="micro accent">option c · keep talking</span>
+              <p style="margin-top: 0.6rem; font-size: 1.15rem">
+                You take this in, think on it, send me your bug list and your
+                customer numbers. I send you a scope-and-cost. We meet again in
+                two weeks.
+              </p>
+            </div>
+          </div>
+          <p class="dim" style="margin-top: 1.8rem; font-size: 1.15rem; max-width: 60ch">
+            I'd rather build the right thing with you than the wrong thing for
+            you. Tell me what shape this needs to take.
+          </p>
+          <aside class="notes">
+            Don't push for a same-day decision. The proof was the demo. The
+            ask is to keep the conversation going on terms Pete chooses. Give
+            him optionality — he'll feel respected, and the option he picks
+            will tell you a lot about how big he wants this to get.
+          </aside>
+        </section>
+
+        <!-- ════════════════════════ 21 · CLOSING ════════════════════════ -->
+        <section class="title-slide">
+          <div class="eyebrow">close</div>
+          <h1 class="serif" style="font-size: 5.5rem">
+            built to <em class="accent" style="font-style: italic">reason</em>,
+          </h1>
+          <h1 class="serif" style="font-size: 5.5rem; margin-top: 0">
+            not to <em style="font-style: italic">parse</em>.
+          </h1>
+          <p class="dim" style="font-size: 1.4rem; margin-top: 2.5rem; font-style: italic; font-family: var(--serif)">
+            Thanks, Pete.
+          </p>
+          <div class="footer-line">
+            <span>dom@subfrac.com · 0431 224 808</span>
+            <span>1 May 2026 · Royal Randwick races Saturday</span>
+          </div>
+          <aside class="notes">
+            One last beat. Don't say anything. Let him close the meeting.
+          </aside>
+        </section>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+    <script>
+      Reveal.initialize({
+        hash: true,
+        slideNumber: 'c/t',
+        controlsTutorial: false,
+        transition: 'fade',
+        transitionSpeed: 'fast',
+        backgroundTransition: 'fade',
+        plugins: [RevealNotes],
+        width: 1440,
+        height: 900,
+        margin: 0.04
+      })
+    </script>
+  </body>
+</html>
