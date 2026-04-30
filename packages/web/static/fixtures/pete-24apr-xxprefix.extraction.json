@@ -1,0 +1,1224 @@
+{
+  "publication": "TAB Racing (Racing 31 / TAB.com.au)",
+  "meeting": "Royal Randwick",
+  "category": "SR",
+  "tipstersDetected": [
+    "Shayne O'Cass",
+    "Mitch Cohen",
+    "Adam Sherry",
+    "Clinton Payne",
+    "Adam Dobbin",
+    "Ian Russell"
+  ],
+  "reasoning": [
+    "Publication identified as TAB Racing 31 / TAB.com.au tip sheet, Royal Randwick, Saturday, TAB CODE: SR.",
+    "Six tipster columns identified left-to-right: Shayne O'Cass, Mitch Cohen, Adam Sherry, Clinton Payne, Adam Dobbin, Ian Russell.",
+    "Each race block shows the tipster's top pick in bold (with horse number), followed by 3 more selections (positions 2-4).",
+    "Prefix 'xx' and 'xxx' appear on bold (1st pick) horse names throughout — these are publication markup highlighting the top pick, not part of the horse name. They must be stripped.",
+    "Race 1 Shayne O'Cass: '14 KEEN TO EXCEED' — no prefix, straightforward.",
+    "Race 1 Mitch Cohen: '10 xGIRL ABOUT TOWN' — single 'x' prefix stripped → Girl About Town.",
+    "Race 2 Shayne O'Cass: '15 xxNASEBAH' — 'xx' prefix stripped → Nasebah.",
+    "Race 2 Adam Sherry: '5 xDEEP PLEASURE' — 'x' prefix stripped → Deep Pleasure.",
+    "Race 3 Mitch Cohen: '13 xxSPICE BABY' — 'xx' prefix stripped → Spice Baby.",
+    "Race 3 Adam Sherry: '6 xxCANTIAMO' — 'xx' prefix stripped → Cantiamo.",
+    "Race 4 Mitch Cohen: '9 xxxCALL ME GORGEOUS' — 'xxx' prefix stripped → Call Me Gorgeous.",
+    "Race 4 Adam Dobbin: '9 xxxCALL ME GORGEOUS' — same prefix stripped → Call Me Gorgeous.",
+    "Race 5 Shayne O'Cass: '13 xxxCONFIDENTIALITY' — 'xxx' prefix stripped → Confidentiality.",
+    "Race 5 Adam Sherry: '15 xxxHAY STREET' — 'xxx' prefix stripped → Hay Street.",
+    "Race 5 Adam Dobbin: '2 xxLULUMON' — 'xx' prefix stripped → Lulumon.",
+    "Race 6 Clinton Payne: '12 xxSIR DINADAN' — 'xx' prefix stripped → Sir Dinadan.",
+    "Race 7 Clinton Payne: '14 xGIVE ME SPACE' — 'x' prefix stripped → Give Me Space.",
+    "Race 7 Adam Dobbin: '10 HELLSING' — no prefix.",
+    "Race 8 Shayne O'Cass: '15 xBLACK BABYLON' — 'x' prefix stripped → Black Babylon.",
+    "Race 8 Clinton Payne: '19 xxxNOBLER' — 'xxx' prefix stripped → Nobler.",
+    "Race 8 Adam Dobbin: '16 xPOISEN POINT' — 'x' prefix stripped → Poisen Point.",
+    "Horse numbers are taken from the bold first-pick line; subsequent picks in each block do not show numbers in the image, so horseNumber is omitted for positions 2-4.",
+    "Race 8 is partially cut off at the bottom of the image; only the visible selections are included. Clinton Payne's 4th pick and Ian Russell's full list for race 8 may be incomplete.",
+    "All 'x'/'xx'/'xxx' prefixes treated as publication_artefact and stripped consistently."
+  ],
+  "races": [
+    {
+      "raceNumber": 1,
+      "tips": [
+        {
+          "tipsterName": "Shayne O'Cass",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Keen To Exceed",
+              "horseNumber": 14
+            },
+            {
+              "position": 2,
+              "horseName": "Lady Catalina"
+            },
+            {
+              "position": 3,
+              "horseName": "Whitehall"
+            },
+            {
+              "position": 4,
+              "horseName": "Affari"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Mitch Cohen",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Girl About Town",
+              "horseNumber": 10
+            },
+            {
+              "position": 2,
+              "horseName": "Shalash"
+            },
+            {
+              "position": 3,
+              "horseName": "Extremely Tempted"
+            },
+            {
+              "position": 4,
+              "horseName": "Bangkok Hottie"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Adam Sherry",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Whitehall",
+              "horseNumber": 6
+            },
+            {
+              "position": 2,
+              "horseName": "Extremely Tempted"
+            },
+            {
+              "position": 3,
+              "horseName": "Bangkok Hottie"
+            },
+            {
+              "position": 4,
+              "horseName": "I Am Dirty"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Clinton Payne",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Jaipur Maison",
+              "horseNumber": 15
+            },
+            {
+              "position": 2,
+              "horseName": "Bangkok Hottie"
+            },
+            {
+              "position": 3,
+              "horseName": "Extremely Tempted"
+            },
+            {
+              "position": 4,
+              "horseName": "Keen To Exceed"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Adam Dobbin",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Extremely Tempted",
+              "horseNumber": 1
+            },
+            {
+              "position": 2,
+              "horseName": "Bangkok Hottie"
+            },
+            {
+              "position": 3,
+              "horseName": "Shalash"
+            },
+            {
+              "position": 4,
+              "horseName": "Lady Catalina"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Ian Russell",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Whitehall",
+              "horseNumber": 6
+            },
+            {
+              "position": 2,
+              "horseName": "Bangkok Hottie"
+            },
+            {
+              "position": 3,
+              "horseName": "Affari"
+            },
+            {
+              "position": 4,
+              "horseName": "Katoto"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raceNumber": 2,
+      "tips": [
+        {
+          "tipsterName": "Shayne O'Cass",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Nasebah",
+              "horseNumber": 15
+            },
+            {
+              "position": 2,
+              "horseName": "Siragusa"
+            },
+            {
+              "position": 3,
+              "horseName": "Mr Miller"
+            },
+            {
+              "position": 4,
+              "horseName": "Probability Theory"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Mitch Cohen",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Night Agent",
+              "horseNumber": 7
+            },
+            {
+              "position": 2,
+              "horseName": "Enamorada"
+            },
+            {
+              "position": 3,
+              "horseName": "Siragusa"
+            },
+            {
+              "position": 4,
+              "horseName": "Deep Pleasure"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Adam Sherry",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Deep Pleasure",
+              "horseNumber": 5
+            },
+            {
+              "position": 2,
+              "horseName": "Siragusa"
+            },
+            {
+              "position": 3,
+              "horseName": "Night Agent"
+            },
+            {
+              "position": 4,
+              "horseName": "Enamorada"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Clinton Payne",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Deep Pleasure",
+              "horseNumber": 5
+            },
+            {
+              "position": 2,
+              "horseName": "Enamorada"
+            },
+            {
+              "position": 3,
+              "horseName": "Penpel"
+            },
+            {
+              "position": 4,
+              "horseName": "Siragusa"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Adam Dobbin",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Deep Pleasure",
+              "horseNumber": 5
+            },
+            {
+              "position": 2,
+              "horseName": "Enamorada"
+            },
+            {
+              "position": 3,
+              "horseName": "Probability Theory"
+            },
+            {
+              "position": 4,
+              "horseName": "Mr Miller"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Ian Russell",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Sister Shay",
+              "horseNumber": 8
+            },
+            {
+              "position": 2,
+              "horseName": "Enamorada"
+            },
+            {
+              "position": 3,
+              "horseName": "Arriving Home"
+            },
+            {
+              "position": 4,
+              "horseName": "Night Agent"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raceNumber": 3,
+      "tips": [
+        {
+          "tipsterName": "Shayne O'Cass",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Cantiamo",
+              "horseNumber": 6
+            },
+            {
+              "position": 2,
+              "horseName": "Wootton Lass"
+            },
+            {
+              "position": 3,
+              "horseName": "Cavity Bay"
+            },
+            {
+              "position": 4,
+              "horseName": "Jellicious"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Mitch Cohen",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Spice Baby",
+              "horseNumber": 13
+            },
+            {
+              "position": 2,
+              "horseName": "Cantiamo"
+            },
+            {
+              "position": 3,
+              "horseName": "Surfin' Bird"
+            },
+            {
+              "position": 4,
+              "horseName": "Jellicious"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Adam Sherry",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Cantiamo",
+              "horseNumber": 6
+            },
+            {
+              "position": 2,
+              "horseName": "Surfin' Bird"
+            },
+            {
+              "position": 3,
+              "horseName": "Jellicious"
+            },
+            {
+              "position": 4,
+              "horseName": "Wootton Lass"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Clinton Payne",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Cantiamo",
+              "horseNumber": 6
+            },
+            {
+              "position": 2,
+              "horseName": "Surfin' Bird"
+            },
+            {
+              "position": 3,
+              "horseName": "Everyone's A Star"
+            },
+            {
+              "position": 4,
+              "horseName": "Kujenga"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Adam Dobbin",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Spice Baby",
+              "horseNumber": 13
+            },
+            {
+              "position": 2,
+              "horseName": "Cantiamo"
+            },
+            {
+              "position": 3,
+              "horseName": "Surfin' Bird"
+            },
+            {
+              "position": 4,
+              "horseName": "Jellicious"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Ian Russell",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Surfin' Bird",
+              "horseNumber": 1
+            },
+            {
+              "position": 2,
+              "horseName": "Spice Baby"
+            },
+            {
+              "position": 3,
+              "horseName": "Jellicious"
+            },
+            {
+              "position": 4,
+              "horseName": "Nesrine"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raceNumber": 4,
+      "tips": [
+        {
+          "tipsterName": "Shayne O'Cass",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Hillier",
+              "horseNumber": 5
+            },
+            {
+              "position": 2,
+              "horseName": "Sergeant Major"
+            },
+            {
+              "position": 3,
+              "horseName": "Balkans"
+            },
+            {
+              "position": 4,
+              "horseName": "Comedy"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Mitch Cohen",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Call Me Gorgeous",
+              "horseNumber": 9
+            },
+            {
+              "position": 2,
+              "horseName": "Hay Street"
+            },
+            {
+              "position": 3,
+              "horseName": "Sergeant Major"
+            },
+            {
+              "position": 4,
+              "horseName": "Hillier"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Adam Sherry",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Hay Street",
+              "horseNumber": 13
+            },
+            {
+              "position": 2,
+              "horseName": "Call Me Gorgeous"
+            },
+            {
+              "position": 3,
+              "horseName": "Midnight Dynamite"
+            },
+            {
+              "position": 4,
+              "horseName": "Comedy"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Clinton Payne",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Hillier",
+              "horseNumber": 5
+            },
+            {
+              "position": 2,
+              "horseName": "Call Me Gorgeous"
+            },
+            {
+              "position": 3,
+              "horseName": "Emirate"
+            },
+            {
+              "position": 4,
+              "horseName": "Hay Street"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Adam Dobbin",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Call Me Gorgeous",
+              "horseNumber": 9
+            },
+            {
+              "position": 2,
+              "horseName": "Hay Street"
+            },
+            {
+              "position": 3,
+              "horseName": "Midnight Dynamite"
+            },
+            {
+              "position": 4,
+              "horseName": "Green Shadows"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Ian Russell",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Call Me Gorgeous",
+              "horseNumber": 9
+            },
+            {
+              "position": 2,
+              "horseName": "Hay Street"
+            },
+            {
+              "position": 3,
+              "horseName": "Midnight Dynamite"
+            },
+            {
+              "position": 4,
+              "horseName": "Sergeant Major"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raceNumber": 5,
+      "tips": [
+        {
+          "tipsterName": "Shayne O'Cass",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Confidentiality",
+              "horseNumber": 13
+            },
+            {
+              "position": 2,
+              "horseName": "Casserousse"
+            },
+            {
+              "position": 3,
+              "horseName": "Lull"
+            },
+            {
+              "position": 4,
+              "horseName": "Compensation"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Mitch Cohen",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Confidentiality",
+              "horseNumber": 13
+            },
+            {
+              "position": 2,
+              "horseName": "Compensation"
+            },
+            {
+              "position": 3,
+              "horseName": "Hay Street"
+            },
+            {
+              "position": 4,
+              "horseName": "Lull"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Adam Sherry",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Hay Street",
+              "horseNumber": 15
+            },
+            {
+              "position": 2,
+              "horseName": "Compensation"
+            },
+            {
+              "position": 3,
+              "horseName": "Confidentiality"
+            },
+            {
+              "position": 4,
+              "horseName": "Casserousse"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Clinton Payne",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Compensation",
+              "horseNumber": 12
+            },
+            {
+              "position": 2,
+              "horseName": "Confidentiality"
+            },
+            {
+              "position": 3,
+              "horseName": "Hay Street"
+            },
+            {
+              "position": 4,
+              "horseName": "Massira"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Adam Dobbin",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Lulumon",
+              "horseNumber": 2
+            },
+            {
+              "position": 2,
+              "horseName": "Compensation"
+            },
+            {
+              "position": 3,
+              "horseName": "Shining Smile"
+            },
+            {
+              "position": 4,
+              "horseName": "Massira"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Ian Russell",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Hay Street",
+              "horseNumber": 15
+            },
+            {
+              "position": 2,
+              "horseName": "Casserousse"
+            },
+            {
+              "position": 3,
+              "horseName": "Lulumon"
+            },
+            {
+              "position": 4,
+              "horseName": "Durova"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raceNumber": 6,
+      "tips": [
+        {
+          "tipsterName": "Shayne O'Cass",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Sir Dinadan",
+              "horseNumber": 12
+            },
+            {
+              "position": 2,
+              "horseName": "Polymnia"
+            },
+            {
+              "position": 3,
+              "horseName": "Zaphod"
+            },
+            {
+              "position": 4,
+              "horseName": "Flying Bandit"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Mitch Cohen",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Thrice",
+              "horseNumber": 11
+            },
+            {
+              "position": 2,
+              "horseName": "Polymnia"
+            },
+            {
+              "position": 3,
+              "horseName": "Rotagilla"
+            },
+            {
+              "position": 4,
+              "horseName": "Zaphod"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Adam Sherry",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Polymnia",
+              "horseNumber": 7
+            },
+            {
+              "position": 2,
+              "horseName": "Zaphod"
+            },
+            {
+              "position": 3,
+              "horseName": "Kind Words"
+            },
+            {
+              "position": 4,
+              "horseName": "Thrice"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Clinton Payne",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Sir Dinadan",
+              "horseNumber": 12
+            },
+            {
+              "position": 2,
+              "horseName": "Polymnia"
+            },
+            {
+              "position": 3,
+              "horseName": "Zaphod"
+            },
+            {
+              "position": 4,
+              "horseName": "Glad You Think So"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Adam Dobbin",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Polymnia",
+              "horseNumber": 7
+            },
+            {
+              "position": 2,
+              "horseName": "Zaphod"
+            },
+            {
+              "position": 3,
+              "horseName": "Kind Words"
+            },
+            {
+              "position": 4,
+              "horseName": "Glad You Think So"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Ian Russell",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Zaphod",
+              "horseNumber": 2
+            },
+            {
+              "position": 2,
+              "horseName": "Polymnia"
+            },
+            {
+              "position": 3,
+              "horseName": "Glad You Think So"
+            },
+            {
+              "position": 4,
+              "horseName": "Thrice"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raceNumber": 7,
+      "tips": [
+        {
+          "tipsterName": "Shayne O'Cass",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Shadizi",
+              "horseNumber": 9
+            },
+            {
+              "position": 2,
+              "horseName": "Lord Of Biscay"
+            },
+            {
+              "position": 3,
+              "horseName": "Hellsing"
+            },
+            {
+              "position": 4,
+              "horseName": "El Castello"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Mitch Cohen",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Cristal Clear",
+              "horseNumber": 1
+            },
+            {
+              "position": 2,
+              "horseName": "Lord Of Biscay"
+            },
+            {
+              "position": 3,
+              "horseName": "Kintyre"
+            },
+            {
+              "position": 4,
+              "horseName": "Formal Display"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Adam Sherry",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Lord Of Biscay",
+              "horseNumber": 7
+            },
+            {
+              "position": 2,
+              "horseName": "Cristal Clear"
+            },
+            {
+              "position": 3,
+              "horseName": "Hellsing"
+            },
+            {
+              "position": 4,
+              "horseName": "Formal Display"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Clinton Payne",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Give Me Space",
+              "horseNumber": 14
+            },
+            {
+              "position": 2,
+              "horseName": "El Castello"
+            },
+            {
+              "position": 3,
+              "horseName": "Formal Display"
+            },
+            {
+              "position": 4,
+              "horseName": "Lord Of Biscay"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Adam Dobbin",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Hellsing",
+              "horseNumber": 10
+            },
+            {
+              "position": 2,
+              "horseName": "El Castello"
+            },
+            {
+              "position": 3,
+              "horseName": "Depth Of Character"
+            },
+            {
+              "position": 4,
+              "horseName": "Cristal Clear"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Ian Russell",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Formal Display",
+              "horseNumber": 15
+            },
+            {
+              "position": 2,
+              "horseName": "Lord Of Biscay"
+            },
+            {
+              "position": 3,
+              "horseName": "Caboche"
+            },
+            {
+              "position": 4,
+              "horseName": "El Castello"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "raceNumber": 8,
+      "tips": [
+        {
+          "tipsterName": "Shayne O'Cass",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Black Babylon",
+              "horseNumber": 15
+            },
+            {
+              "position": 2,
+              "horseName": "Brigidine Gal"
+            },
+            {
+              "position": 3,
+              "horseName": "Fiddlers Green"
+            },
+            {
+              "position": 4,
+              "horseName": "King Pedro"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Mitch Cohen",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Bella Montagna",
+              "horseNumber": 4
+            },
+            {
+              "position": 2,
+              "horseName": "Fiddlers Green"
+            },
+            {
+              "position": 3,
+              "horseName": "Nobler"
+            },
+            {
+              "position": 4,
+              "horseName": "Thebudgiesmugla"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Adam Sherry",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Fiddlers Green",
+              "horseNumber": 5
+            },
+            {
+              "position": 2,
+              "horseName": "Nobler"
+            },
+            {
+              "position": 3,
+              "horseName": "Mornington Pier"
+            },
+            {
+              "position": 4,
+              "horseName": "Poisen Point"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Clinton Payne",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Nobler",
+              "horseNumber": 19
+            },
+            {
+              "position": 2,
+              "horseName": "Crossbow"
+            },
+            {
+              "position": 3,
+              "horseName": "King Pedro"
+            },
+            {
+              "position": 4,
+              "horseName": "Uzziah"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Adam Dobbin",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Poisen Point",
+              "horseNumber": 16
+            },
+            {
+              "position": 2,
+              "horseName": "Brigidine Gal"
+            },
+            {
+              "position": 3,
+              "horseName": "Fiddlers Green"
+            },
+            {
+              "position": 4,
+              "horseName": "Uzziah"
+            }
+          ]
+        },
+        {
+          "tipsterName": "Ian Russell",
+          "selections": [
+            {
+              "position": 1,
+              "horseName": "Crossbow",
+              "horseNumber": 13
+            },
+            {
+              "position": 2,
+              "horseName": "Fiddlers Green"
+            },
+            {
+              "position": 3,
+              "horseName": "Pinhole"
+            },
+            {
+              "position": 4,
+              "horseName": "Uzziah"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "flags": [
+    {
+      "type": "publication_artefact_stripped",
+      "race": 1,
+      "description": "Mitch Cohen Race 1 top pick: '10 xGIRL ABOUT TOWN' — single 'x' prefix stripped → Girl About Town."
+    },
+    {
+      "type": "publication_artefact_stripped",
+      "race": 2,
+      "description": "Shayne O'Cass Race 2 top pick: '15 xxNASEBAH' — 'xx' prefix stripped → Nasebah."
+    },
+    {
+      "type": "publication_artefact_stripped",
+      "race": 2,
+      "description": "Adam Sherry Race 2 top pick: '5 xDEEP PLEASURE' — 'x' prefix stripped → Deep Pleasure."
+    },
+    {
+      "type": "publication_artefact_stripped",
+      "race": 3,
+      "description": "Mitch Cohen Race 3 top pick: '13 xxSPICE BABY' — 'xx' prefix stripped → Spice Baby."
+    },
+    {
+      "type": "publication_artefact_stripped",
+      "race": 3,
+      "description": "Adam Sherry Race 3 top pick: '6 xxCANTIAMO' — 'xx' prefix stripped → Cantiamo."
+    },
+    {
+      "type": "publication_artefact_stripped",
+      "race": 4,
+      "description": "Mitch Cohen Race 4 top pick: '9 xxxCALL ME GORGEOUS' — 'xxx' prefix stripped → Call Me Gorgeous."
+    },
+    {
+      "type": "publication_artefact_stripped",
+      "race": 4,
+      "description": "Adam Dobbin Race 4 top pick: '9 xxxCALL ME GORGEOUS' — 'xxx' prefix stripped → Call Me Gorgeous."
+    },
+    {
+      "type": "publication_artefact_stripped",
+      "race": 5,
+      "description": "Shayne O'Cass Race 5 top pick: '13 xxxCONFIDENTIALITY' — 'xxx' prefix stripped → Confidentiality."
+    },
+    {
+      "type": "publication_artefact_stripped",
+      "race": 5,
+      "description": "Adam Sherry Race 5 top pick: '15 xxxHAY STREET' — 'xxx' prefix stripped → Hay Street."
+    },
+    {
+      "type": "publication_artefact_stripped",
+      "race": 5,
+      "description": "Adam Dobbin Race 5 top pick: '2 xxLULUMON' — 'xx' prefix stripped → Lulumon."
+    },
+    {
+      "type": "publication_artefact_stripped",
+      "race": 6,
+      "description": "Clinton Payne Race 6 top pick: '12 xxSIR DINADAN' — 'xx' prefix stripped → Sir Dinadan."
+    },
+    {
+      "type": "publication_artefact_stripped",
+      "race": 7,
+      "description": "Clinton Payne Race 7 top pick: '14 xGIVE ME SPACE' — 'x' prefix stripped → Give Me Space."
+    },
+    {
+      "type": "publication_artefact_stripped",
+      "race": 8,
+      "description": "Shayne O'Cass Race 8 top pick: '15 xBLACK BABYLON' — 'x' prefix stripped → Black Babylon."
+    },
+    {
+      "type": "publication_artefact_stripped",
+      "race": 8,
+      "description": "Clinton Payne Race 8 top pick: '19 xxxNOBLER' — 'xxx' prefix stripped → Nobler."
+    },
+    {
+      "type": "publication_artefact_stripped",
+      "race": 8,
+      "description": "Adam Dobbin Race 8 top pick: '16 xPOISEN POINT' — 'x' prefix stripped → Poisen Point."
+    },
+    {
+      "type": "uncertain",
+      "race": 8,
+      "description": "Race 8 is partially cut off at the bottom of the image. Some tipsters' 4th selections may be incomplete or missing. Only clearly visible selections have been included."
+    },
+    {
+      "type": "anomaly",
+      "race": 4,
+      "description": "Horse numbers for Shayne O'Cass Race 4 picks 2-4 (Sergeant Major, Balkans, Comedy) appear without numbers in the image — only the bold top pick carries a number. This is consistent across all tipsters and races; positions 2-4 never show horse numbers in this publication format."
+    }
+  ]
+}

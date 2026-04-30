@@ -143,10 +143,21 @@ One last beat. **Don't say anything.** Let him close the meeting.
 | Failure | Fallback |
 |---------|----------|
 | Web UI dev server doesn't start | Slides 8–11 are screenshot evidence — talk through them |
-| Web UI starts but extraction times out | "Demo run took 110s last night — let me show you the recorded output" → open `demo-fixtures/pete-24apr-agent-run.txt` in terminal |
-| WiFi flakes mid-stream | Same as above — paste the saved JSON output |
+| Anthropic API down / WiFi flakes mid-stream | Open `http://127.0.0.1:5180/?cached=pete-24apr` — replays the SAME run from cached JSON, identical UX, zero network. Use this if the live run stalls past 30s |
+| Web UI completely dead | Open `demo-fixtures/pete-24apr-agent-run.txt` in terminal — full saved output of last night's run |
 | Pete asks technical questions | The codebase is ready: `packages/agent/src/demo.ts` for the agent, `packages/web/src/routes/api/extract/+server.ts` for the streaming endpoint |
 | Pete says "yes, when can we start?" | Don't commit dates. "Let me put together a 1-page scope for the engine swap. I'll have it to you Monday." |
+
+### Cached replay URL (your safety net)
+
+```
+http://127.0.0.1:5180/?cached=pete-24apr
+```
+
+Open in a second tab BEFORE the call. Same UI, same reasoning trace, same flag panel
+showing Pete's exact bug fixed — but loaded from saved JSON. No live API call. If the
+live demo is slow or fails, swap tabs. Pete won't know the difference; you'll know
+the demo always works.
 
 ---
 

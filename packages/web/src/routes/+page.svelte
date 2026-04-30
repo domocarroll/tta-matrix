@@ -17,7 +17,7 @@
   let errorMessage = $state<string>('')
   let stats = $state<{ ms: number; tokensIn?: number; tokensOut?: number }>({ ms: 0 })
 
-  async function runExtraction(file: File) {
+  async function runExtraction(file: File, options: { cachedKey?: string } = {}) {
     status = 'streaming'
     rawStream = ''
     reasoning = []
@@ -33,6 +33,19 @@
     reader.readAsDataURL(file)
 
     const t0 = performance.now()
+
+    if (options.cachedKey) {
+      try {
+        await playCachedRun(options.cachedKey)
+        stats.ms = Math.round(performance.now() - t0)
+        return
+      } catch (err) {
+        status = 'error'
+        errorMessage = err instanceof Error ? err.message : 'cached run failed'
+        return
+      }
+    }
+
     const fd = new FormData()
     fd.append('image', file)
 
@@ -125,6 +138,62 @@
     result = null
     errorMessage = ''
   }
+
+  /**
+   * Cached / offline replay mode. Loads a saved ExtractionResult and
+   * streams its reasoning array progressively to mimic the live UX.
+   * Triggered by ?cached=pete-24apr query param. Pitch fallback when
+   * live demo fails.
+   */
+  async function playCachedRun(key: string): Promise<void> {
+    const map: Record<string, { json: string; image: string }> = {
+      'pete-24apr': {
+        json: '/fixtures/pete-24apr-xxprefix.extraction.json',
+        image: '/fixtures/pete-24apr-xxprefix.jpg'
+      }
+    }
+    const entry = map[key]
+    if (!entry) throw new Error(`unknown cached key: ${key}`)
+
+    const res = await fetch(entry.json)
+    if (!res.ok) throw new Error('cached extraction not found')
+    const cached = (await res.json()) as ExtractionResult
+
+    // Trickle reasoning steps in to mimic live stream
+    for (const step of cached.reasoning) {
+      reasoning = [...reasoning, step]
+      await new Promise((r) => setTimeout(r, 220))
+    }
+
+    result = cached
+    status = 'parsed'
+    stats = { ...stats, tokensIn: 2357, tokensOut: 7588 }
+  }
+
+  // Auto-replay if ?cached= param is present (pitch fallback path)
+  $effect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    const key = params.get('cached')
+    if (key && status === 'idle') {
+      const map: Record<string, string> = {
+        'pete-24apr': '/fixtures/pete-24apr-xxprefix.jpg'
+      }
+      const imgPath = map[key]
+      if (imgPath) {
+        fetch(imgPath)
+          .then((r) => r.blob())
+          .then((blob) => {
+            const file = new File(
+              [blob],
+              imgPath.split('/').pop() ?? 'cached.jpg',
+              { type: blob.type }
+            )
+            runExtraction(file, { cachedKey: key })
+          })
+      }
+    }
+  })
 </script>
 
 <svelte:head>
