@@ -1,0 +1,173 @@
+// ──────────────────────────────────────────────────────
+// Stage 1 — extractions API for customer history surface
+// ──────────────────────────────────────────────────────
+//
+// The web app calls these from its SvelteKit server endpoints. Today
+// `clientId` comes from a localStorage UUID; when real auth ships,
+// derive it from `ctx.auth.getUserIdentity().tokenIdentifier` instead
+// and update the validator accordingly.
+
+import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
+
+const flagValidator = v.object({
+  type: v.string(),
+  race: v.optional(v.number()),
+  description: v.string(),
+});
+
+const selectionValidator = v.object({
+  position: v.number(),
+  horseName: v.string(),
+  horseNumber: v.optional(v.number()),
+});
+
+const tipValidator = v.object({
+  tipsterName: v.string(),
+  selections: v.array(selectionValidator),
+});
+
+const raceValidator = v.object({
+  raceNumber: v.number(),
+  tips: v.array(tipValidator),
+});
+
+/** Generate an upload URL for direct browser → Convex storage uploads. */
+export const generateUploadUrl = mutation({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.storage.generateUploadUrl();
+  },
+});
+
+/** Persist a completed extraction for the current client. */
+export const create = mutation({
+  args: {
+    clientId: v.string(),
+    filename: v.string(),
+    imageStorageId: v.optional(v.id("_storage")),
+    publication: v.string(),
+    meeting: v.string(),
+    category: v.string(),
+    tipstersDetected: v.array(v.string()),
+    reasoning: v.array(v.string()),
+    races: v.array(raceValidator),
+    flags: v.array(flagValidator),
+    tokensIn: v.number(),
+    tokensOut: v.number(),
+    durationMs: v.number(),
+    model: v.string(),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("extractions", args);
+  },
+});
+
+/** List extractions for a given client, newest first. */
+export const listByClient = query({
+  args: {
+    clientId: v.string(),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const rows = await ctx.db
+      .query("extractions")
+      .withIndex("by_client", (q) => q.eq("clientId", args.clientId))
+      .order("desc")
+      .take(args.limit ?? 50);
+
+    return rows.map((row) => ({
+      _id: row._id,
+      _creationTime: row._creationTime,
+      filename: row.filename,
+      publication: row.publication,
+      meeting: row.meeting,
+      category: row.category,
+      tipsterCount: row.tipstersDetected.length,
+      raceCount: row.races.length,
+      flagCount: row.flags.length,
+      durationMs: row.durationMs,
+      model: row.model,
+      hasImage: row.imageStorageId !== undefined,
+    }));
+  },
+});
+
+/** Fetch a single extraction in full (for replay on the history detail page). */
+export const getById = query({
+  args: {
+    id: v.id("extractions"),
+    clientId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const row = await ctx.db.get(args.id);
+    if (!row) return null;
+    if (row.clientId !== args.clientId) {
+      // Soft auth: row exists but doesn't belong to this client.
+      return null;
+    }
+    let imageUrl: string | null = null;
+    if (row.imageStorageId) {
+      imageUrl = await ctx.storage.getUrl(row.imageStorageId);
+    }
+    return { ...row, imageUrl };
+  },
+});
+
+/** Delete an extraction (only if it belongs to the requesting client). */
+export const remove = mutation({
+  args: {
+    id: v.id("extractions"),
+    clientId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const row = await ctx.db.get(args.id);
+    if (!row) return { ok: false, reason: "not_found" as const };
+    if (row.clientId !== args.clientId) {
+      return { ok: false, reason: "wrong_client" as const };
+    }
+    if (row.imageStorageId) {
+      await ctx.storage.delete(row.imageStorageId);
+    }
+    await ctx.db.delete(args.id);
+    return { ok: true as const };
+  },
+});
+
+/** Per-client stats (used on the history page header). */
+export const statsByClient = query({
+  args: { clientId: v.string() },
+  handler: async (ctx, args) => {
+    const rows = await ctx.db
+      .query("extractions")
+      .withIndex("by_client", (q) => q.eq("clientId", args.clientId))
+      .collect();
+
+    const totalSelections = rows.reduce((n, row) => {
+      return (
+        n +
+        row.races.reduce(
+          (m: number, race: { tips: { selections: unknown[] }[] }) =>
+            m + race.tips.reduce((k, tip) => k + tip.selections.length, 0),
+          0,
+        )
+      );
+    }, 0);
+
+    const totalFlags = rows.reduce((n, row) => n + row.flags.length, 0);
+    const artefactsStripped = rows.reduce(
+      (n, row) =>
+        n + row.flags.filter((f) => f.type === "publication_artefact_stripped").length,
+      0,
+    );
+
+    return {
+      extractionCount: rows.length,
+      totalSelections,
+      totalFlags,
+      artefactsStripped,
+      firstExtractionAt: rows.length > 0 ? rows[rows.length - 1]?._creationTime : null,
+      latestExtractionAt: rows.length > 0 ? rows[0]?._creationTime : null,
+    };
+  },
+});

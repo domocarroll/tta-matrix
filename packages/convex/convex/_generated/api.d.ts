@@ -11,6 +11,7 @@
 import type * as aggregations from "../aggregations.js";
 import type * as cfBrowserScraper from "../cfBrowserScraper.js";
 import type * as crons from "../crons.js";
+import type * as extractions from "../extractions.js";
 import type * as horses from "../horses.js";
 import type * as http from "../http.js";
 import type * as meetings from "../meetings.js";
@@ -31,6 +32,7 @@ declare const fullApi: ApiFromModules<{
   aggregations: typeof aggregations;
   cfBrowserScraper: typeof cfBrowserScraper;
   crons: typeof crons;
+  extractions: typeof extractions;
   horses: typeof horses;
   http: typeof http;
   meetings: typeof meetings;

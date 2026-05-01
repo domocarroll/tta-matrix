@@ -169,4 +169,36 @@ export default defineSchema({
     data: v.any(),
     generatedAt: v.number(),
   }).index("by_race", ["raceId"]),
+
+  // ────────────────────────────────────────────────
+  // Stage 1: Customer-facing extraction history
+  // ────────────────────────────────────────────────
+  //
+  // `clientId` is a per-browser UUID stored in localStorage. When real
+  // auth lands, swap this for `tokenIdentifier` from `ctx.auth.getUser
+  // Identity()` — the rest of the queries don't change.
+
+  /** Per-customer extraction history surface (the "v0 replacement" data). */
+  extractions: defineTable({
+    clientId: v.string(),
+    filename: v.string(),
+    imageStorageId: v.optional(v.id("_storage")),
+    publication: v.string(),
+    meeting: v.string(),
+    category: v.string(),
+    tipstersDetected: v.array(v.string()),
+    reasoning: v.array(v.string()),
+    races: v.any(),
+    flags: v.array(
+      v.object({
+        type: v.string(),
+        race: v.optional(v.number()),
+        description: v.string(),
+      }),
+    ),
+    tokensIn: v.number(),
+    tokensOut: v.number(),
+    durationMs: v.number(),
+    model: v.string(),
+  }).index("by_client", ["clientId"]),
 });

@@ -26,6 +26,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
     "@tta/agent": "workspace:*",
-    "@tta/shared": "workspace:*"
+    "@tta/shared": "workspace:*",
+    "convex": "^1.34.0"
   }
 }

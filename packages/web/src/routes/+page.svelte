@@ -5,6 +5,7 @@
   import FlagPanel from '$lib/components/FlagPanel.svelte'
   import V0Comparison from '$lib/components/V0Comparison.svelte'
   import type { ExtractionResult, StreamEvent } from '$lib/types'
+  import { getClientId } from '$lib/clientId'
 
   type RunStatus = 'idle' | 'streaming' | 'parsed' | 'error'
 
@@ -16,6 +17,8 @@
   let result = $state<ExtractionResult | null>(null)
   let errorMessage = $state<string>('')
   let stats = $state<{ ms: number; tokensIn?: number; tokensOut?: number }>({ ms: 0 })
+  let persistedId = $state<string | null>(null)
+  let persistError = $state<string | null>(null)
 
   async function runExtraction(file: File, options: { cachedKey?: string } = {}) {
     status = 'streaming'
@@ -91,9 +94,48 @@
           throw new Error('Stream completed but no extraction parsed.')
         }
       }
+
+      // Persist to history (Stage 1)
+      if (result && !options.cachedKey) {
+        await persistExtraction(file.name, result, stats.ms, stats.tokensIn ?? 0, stats.tokensOut ?? 0)
+      }
     } catch (err) {
       status = 'error'
       errorMessage = err instanceof Error ? err.message : String(err)
+    }
+  }
+
+  async function persistExtraction(
+    filename: string,
+    payload: ExtractionResult,
+    durationMs: number,
+    tokensIn: number,
+    tokensOut: number
+  ): Promise<void> {
+    const clientId = getClientId()
+    if (!clientId) return
+    try {
+      const res = await fetch('/api/persist', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          clientId,
+          filename,
+          durationMs,
+          tokensIn,
+          tokensOut,
+          model: 'claude-sonnet-4-6',
+          payload
+        })
+      })
+      if (!res.ok) {
+        persistError = `persist failed: HTTP ${res.status}`
+        return
+      }
+      const j = (await res.json()) as { id: string }
+      persistedId = j.id
+    } catch (err) {
+      persistError = err instanceof Error ? err.message : 'persist failed'
     }
   }
 
@@ -137,6 +179,8 @@
     reasoning = []
     result = null
     errorMessage = ''
+    persistedId = null
+    persistError = null
   }
 
   /**
@@ -207,8 +251,10 @@
         class="mono text-[11px] uppercase tracking-[0.2em] text-text-muted"
       >v2 · agentic</span>
       <span class="h-px flex-1 bg-border"></span>
-      <span class="mono text-[11px] uppercase tracking-[0.2em] text-accent"
-        >Pete demo · 2026‑05‑01</span
+      <a
+        href="/history"
+        class="mono text-[11px] uppercase tracking-[0.18em] text-accent hover:text-accent-bright"
+        >history →</a
       >
     </div>
     <h1 class="serif mt-6 text-5xl md:text-6xl text-text-primary leading-[1.05]">
@@ -289,10 +335,31 @@
                     >· {stats.tokensIn}in/{stats.tokensOut}out</span
                   >{/if}
               </div>
-              <button
-                class="mt-3 mono text-[11px] uppercase tracking-[0.18em] text-accent hover:text-accent-bright underline"
-                onclick={reset}>run another →</button
-              >
+              {#if persistedId}
+                <div class="mt-2 mono text-[11px] uppercase tracking-wider text-text-muted">
+                  saved →
+                  <a
+                    href="/history/{persistedId}"
+                    class="text-accent hover:text-accent-bright underline"
+                    >open in history</a
+                  >
+                </div>
+              {:else if persistError}
+                <div class="mt-2 mono text-[11px] uppercase tracking-wider text-warning">
+                  not saved · {persistError}
+                </div>
+              {/if}
+              <div class="mt-3 flex items-baseline gap-4">
+                <button
+                  class="mono text-[11px] uppercase tracking-[0.18em] text-accent hover:text-accent-bright underline"
+                  onclick={reset}>run another →</button
+                >
+                <a
+                  href="/history"
+                  class="mono text-[11px] uppercase tracking-[0.18em] text-text-secondary hover:text-accent underline"
+                  >view all history</a
+                >
+              </div>
             {/if}
           </div>
         </aside>
