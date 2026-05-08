@@ -1,6 +1,8 @@
 <script lang="ts">
   import AggregationTable from './AggregationTable.svelte'
   import SpecialBets from './SpecialBets.svelte'
+  import ReasoningStream from './ReasoningStream.svelte'
+  import FlagPanel from './FlagPanel.svelte'
   import {
     buildMeetingCsv,
     buildCsvFilename,
@@ -19,6 +21,7 @@
   let { group, clientId, onPatchesChange, onClearMeeting }: Props = $props()
 
   let expanded = $state(true)
+  let openReasoningRowId = $state<string | null>(null)
   // svelte-ignore state_referenced_locally
   let labelDraft = $state(group.label ?? '')
   // svelte-ignore state_referenced_locally
@@ -36,10 +39,11 @@
   })
 
   function applyPatch(patch: HorsePatch): void {
-    // Strategy: ALWAYS replace entire patches array to keep things simple.
-    // Filter out earlier patches affecting same row+action, then append.
+    // One patch per (raceNumber, originalName) — replace any prior patch
+    // for the same row, then append. The new patch carries every override
+    // the row still wants (rename, renumber, count overrides, removed).
     const filtered = group.patches.filter(
-      (p) => !(p.raceNumber === patch.raceNumber && p.originalName === patch.originalName && p.action === patch.action)
+      (p) => !(p.raceNumber === patch.raceNumber && p.originalName === patch.originalName)
     )
     const next = [...filtered, patch]
     onPatchesChange(next as HorsePatch[], labelDraft || undefined, notesDraft || undefined)
@@ -238,6 +242,46 @@
     <!-- Special bets -->
     <section class="px-5 py-4 border-t border-border">
       <SpecialBets races={group.aggregated} />
+    </section>
+
+    <!-- Per-image reasoning + flags inspector -->
+    <section class="px-5 py-4 border-t border-border">
+      <div class="mono text-[11px] uppercase tracking-wider text-accent mb-3">
+        Source images · agent reasoning
+      </div>
+      <div class="space-y-2">
+        {#each group.rows as row (row._id)}
+          {@const open = openReasoningRowId === row._id}
+          <div class="rounded-md border border-border bg-bg-card">
+            <button
+              type="button"
+              class="w-full flex items-baseline gap-3 px-4 py-2.5 text-left hover:bg-bg-card-hover transition-colors"
+              onclick={() => (openReasoningRowId = open ? null : row._id)}
+            >
+              <span class="mono text-[10px] uppercase tracking-wider text-text-muted shrink-0">
+                {open ? '▾' : '▸'}
+              </span>
+              <span class="text-text-primary truncate flex-1">{row.filename}</span>
+              <span class="mono text-[10px] uppercase tracking-wider text-text-muted shrink-0">
+                {row.reasoning.length} steps · {row.flags.length} flag{row.flags.length === 1 ? '' : 's'} ·
+                {row.tipstersDetected.length} tipster{row.tipstersDetected.length === 1 ? '' : 's'} ·
+                {(row.durationMs / 1000).toFixed(1)}s
+              </span>
+            </button>
+            {#if open}
+              <div class="px-4 pt-2 pb-4 border-t border-border space-y-4">
+                {#if row.flags.length > 0}
+                  <FlagPanel flags={row.flags} />
+                {/if}
+                <ReasoningStream reasoning={row.reasoning} streaming={false} />
+                <div class="mono text-[10px] uppercase tracking-wider text-text-muted">
+                  {row.tokensIn} in / {row.tokensOut} out · {row.model} · {new Date(row._creationTime).toLocaleString()}
+                </div>
+              </div>
+            {/if}
+          </div>
+        {/each}
+      </div>
     </section>
 
     <!-- Export bar -->

@@ -23,6 +23,13 @@ interface PersistRequest {
   tokensOut: number
   model: string
   payload: ExtractionResult
+  /**
+   * Optional override applied AFTER agent extraction. Pete uses this from
+   * the workspace category strip to force grouping when the agent
+   * mis-detects venue (e.g. a TV screenshot of a Brisbane race in a
+   * Sydney newspaper layout).
+   */
+  overrideCategory?: string
 }
 
 export const POST: RequestHandler = async ({ request }) => {
@@ -43,6 +50,12 @@ export const POST: RequestHandler = async ({ request }) => {
     throw error(400, 'Missing payload')
   }
 
+  const validCategories = new Set(['SR', 'MR', 'BR', 'PR', 'AR', 'OR'])
+  const finalCategory =
+    body.overrideCategory && validCategories.has(body.overrideCategory)
+      ? body.overrideCategory
+      : body.payload.category
+
   const client = new ConvexHttpClient(url)
   try {
     const id = await client.mutation(api.extractions.create, {
@@ -50,7 +63,7 @@ export const POST: RequestHandler = async ({ request }) => {
       filename: body.filename,
       publication: body.payload.publication,
       meeting: body.payload.meeting,
-      category: body.payload.category,
+      category: finalCategory,
       tipstersDetected: body.payload.tipstersDetected as string[],
       reasoning: body.payload.reasoning as string[],
       races: body.payload.races,

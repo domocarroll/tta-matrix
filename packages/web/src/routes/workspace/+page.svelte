@@ -24,6 +24,17 @@
     abortCtl: AbortController | null
   }
 
+  type CategoryCode = 'ALL' | 'SR' | 'MR' | 'BR' | 'PR' | 'AR' | 'OR'
+  const CATEGORY_TABS: ReadonlyArray<{ code: CategoryCode; label: string }> = [
+    { code: 'ALL', label: 'All' },
+    { code: 'SR', label: 'Sydney' },
+    { code: 'MR', label: 'Melbourne' },
+    { code: 'BR', label: 'Brisbane' },
+    { code: 'PR', label: 'Perth' },
+    { code: 'AR', label: 'Adelaide' },
+    { code: 'OR', label: 'Other' }
+  ]
+
   let clientId = $state<string | null>(null)
   let rows = $state<WorkspaceRow[]>([])
   let corrections = $state<MeetingCorrection[]>([])
@@ -31,6 +42,7 @@
   let processing = $state(false)
   let loading = $state(true)
   let lastError = $state<string | null>(null)
+  let activeCategory = $state<CategoryCode>('ALL')
 
   // Range filter — default "today" (UTC). Clear to show everything.
   let onlyToday = $state(true)
@@ -60,7 +72,12 @@
     }
   }
 
-  const groups = $derived<MeetingGroup[]>(buildMeetingGroups(rows, corrections))
+  const allGroups = $derived<MeetingGroup[]>(buildMeetingGroups(rows, corrections))
+  const groups = $derived<MeetingGroup[]>(
+    activeCategory === 'ALL'
+      ? allGroups
+      : allGroups.filter((g) => g.category === activeCategory)
+  )
 
   async function clearMeeting(group: MeetingGroup): Promise<void> {
     if (!clientId) return
@@ -167,7 +184,8 @@
       tokensIn: outcome.tokensIn,
       tokensOut: outcome.tokensOut,
       model: MODEL,
-      payload: outcome.result
+      payload: outcome.result,
+      overrideCategory: activeCategory === 'ALL' ? undefined : activeCategory
     })
 
     if (!persistedId) {
@@ -290,6 +308,37 @@
           </button>
         {/if}
       </div>
+    {/if}
+  </section>
+
+  <!-- Category strip (v0 parity) — filters visible meetings + overrides
+       category for new uploads in the queue. -->
+  <section class="mx-auto max-w-7xl mb-5">
+    <div class="flex items-baseline gap-1 flex-wrap">
+      {#each CATEGORY_TABS as tab}
+        {@const count =
+          tab.code === 'ALL'
+            ? allGroups.length
+            : allGroups.filter((g) => g.category === tab.code).length}
+        {@const active = activeCategory === tab.code}
+        <button
+          type="button"
+          class="px-4 py-2 mono text-[11px] uppercase tracking-wider rounded-md border transition-colors {active
+            ? 'border-accent bg-accent/10 text-accent'
+            : 'border-border bg-bg-card hover:bg-bg-card-hover text-text-muted'}"
+          onclick={() => (activeCategory = tab.code)}
+        >
+          {tab.label}
+          {#if count > 0}
+            <span class="ml-1 text-[10px] {active ? 'text-accent-bright' : 'text-text-secondary'}">{count}</span>
+          {/if}
+        </button>
+      {/each}
+    </div>
+    {#if activeCategory !== 'ALL'}
+      <p class="mt-2 mono text-[10px] uppercase tracking-wider text-text-muted">
+        new uploads will be tagged {activeCategory} · {CATEGORY_TABS.find((t) => t.code === activeCategory)?.label}
+      </p>
     {/if}
   </section>
 

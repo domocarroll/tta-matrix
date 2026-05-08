@@ -222,18 +222,31 @@ export default defineSchema({
     label: v.optional(v.string()),
     /** Notes Pete wants attached to the meeting export. */
     notes: v.optional(v.string()),
-    /** Per-horse patches keyed by `R{raceNumber}|${normalisedOriginalName}`. */
+    /**
+     * Per-horse patches keyed by `R{raceNumber}|${normalisedOriginalName}`.
+     * `action` is legacy (rename/renumber/remove). New patches use any of
+     * the optional override fields directly; `removed: true` removes.
+     */
     horsePatches: v.array(
       v.object({
         raceNumber: v.number(),
         originalName: v.string(),
-        action: v.union(
-          v.literal("rename"),
-          v.literal("renumber"),
-          v.literal("remove"),
+        action: v.optional(
+          v.union(
+            v.literal("rename"),
+            v.literal("renumber"),
+            v.literal("remove"),
+          ),
         ),
+        removed: v.optional(v.boolean()),
         newHorseName: v.optional(v.string()),
         newHorseNumber: v.optional(v.number()),
+        newTotalTips: v.optional(v.number()),
+        newTipsterCount: v.optional(v.number()),
+        newWinTips: v.optional(v.number()),
+        newPlace2Tips: v.optional(v.number()),
+        newPlace3Tips: v.optional(v.number()),
+        newPlace4Tips: v.optional(v.number()),
       }),
     ),
     updatedAt: v.number(),

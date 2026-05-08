@@ -227,6 +227,8 @@ export async function persistExtraction(args: {
   tokensOut: number
   model: string
   payload: ExtractionResult
+  /** When set, overrides agent's category (workspace category strip selection). */
+  overrideCategory?: string
 }): Promise<string | null> {
   try {
     const res = await fetch('/api/persist', {

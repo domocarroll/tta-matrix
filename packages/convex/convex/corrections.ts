@@ -12,13 +12,22 @@ import { mutation, query } from "./_generated/server";
 const horsePatchValidator = v.object({
   raceNumber: v.number(),
   originalName: v.string(),
-  action: v.union(
-    v.literal("rename"),
-    v.literal("renumber"),
-    v.literal("remove"),
+  action: v.optional(
+    v.union(
+      v.literal("rename"),
+      v.literal("renumber"),
+      v.literal("remove"),
+    ),
   ),
+  removed: v.optional(v.boolean()),
   newHorseName: v.optional(v.string()),
   newHorseNumber: v.optional(v.number()),
+  newTotalTips: v.optional(v.number()),
+  newTipsterCount: v.optional(v.number()),
+  newWinTips: v.optional(v.number()),
+  newPlace2Tips: v.optional(v.number()),
+  newPlace3Tips: v.optional(v.number()),
+  newPlace4Tips: v.optional(v.number()),
 });
 
 /** Read corrections for a single meeting. Returns null if none recorded. */

@@ -12,8 +12,15 @@
   let { races, patches, onPatch, onClearRow }: Props = $props()
 
   let editingKey = $state<string | null>(null)
+  // Edit drafts — each may be edited independently
   let nameDraft = $state('')
   let numDraft = $state<string>('')
+  let totalDraft = $state<string>('')
+  let tipstersDraft = $state<string>('')
+  let winDraft = $state<string>('')
+  let p2Draft = $state<string>('')
+  let p3Draft = $state<string>('')
+  let p4Draft = $state<string>('')
 
   function rowKey(raceNumber: number, name: string): string {
     return `R${raceNumber}|${name}`
@@ -23,26 +30,65 @@
     editingKey = rowKey(raceNumber, tip.horseName)
     nameDraft = tip.horseName
     numDraft = tip.horseNumber !== undefined ? String(tip.horseNumber) : ''
+    totalDraft = String(tip.totalTips)
+    tipstersDraft = String(tip.tipsterCount)
+    winDraft = String(tip.winTips)
+    p2Draft = String(tip.place2Tips)
+    p3Draft = String(tip.place3Tips)
+    p4Draft = String(tip.place4Tips)
   }
 
-  function commit(raceNumber: number, originalName: string): void {
-    const newNum = numDraft.trim() === '' ? undefined : parseInt(numDraft.trim(), 10)
+  function parseInteger(raw: string): number | undefined {
+    const t = raw.trim()
+    if (t === '') return undefined
+    const n = parseInt(t, 10)
+    return Number.isFinite(n) ? n : undefined
+  }
+
+  function commit(raceNumber: number, originalName: string, original: AggregatedTip): void {
     const trimmedName = nameDraft.trim()
-    if (trimmedName !== originalName && trimmedName.length > 0) {
-      onPatch({
-        raceNumber,
-        originalName,
-        action: 'rename',
-        newHorseName: trimmedName
-      })
+    const newName = trimmedName.length > 0 ? trimmedName : originalName
+
+    const patch: HorsePatch = {
+      raceNumber,
+      originalName
     }
-    if (!Number.isNaN(newNum as number)) {
-      onPatch({
-        raceNumber,
-        originalName: trimmedName !== '' ? trimmedName : originalName,
-        action: 'renumber',
-        newHorseNumber: newNum
-      })
+    if (newName !== originalName) patch.newHorseName = newName
+
+    const newNum = parseInteger(numDraft)
+    if (newNum !== original.horseNumber) patch.newHorseNumber = newNum
+
+    const newTotal = parseInteger(totalDraft)
+    if (newTotal !== undefined && newTotal !== original.totalTips) patch.newTotalTips = newTotal
+
+    const newTipsters = parseInteger(tipstersDraft)
+    if (newTipsters !== undefined && newTipsters !== original.tipsterCount) patch.newTipsterCount = newTipsters
+
+    const newWin = parseInteger(winDraft)
+    if (newWin !== undefined && newWin !== original.winTips) patch.newWinTips = newWin
+
+    const newP2 = parseInteger(p2Draft)
+    if (newP2 !== undefined && newP2 !== original.place2Tips) patch.newPlace2Tips = newP2
+
+    const newP3 = parseInteger(p3Draft)
+    if (newP3 !== undefined && newP3 !== original.place3Tips) patch.newPlace3Tips = newP3
+
+    const newP4 = parseInteger(p4Draft)
+    if (newP4 !== undefined && newP4 !== original.place4Tips) patch.newPlace4Tips = newP4
+
+    // Only emit if anything actually changed
+    const fields: (keyof HorsePatch)[] = [
+      'newHorseName',
+      'newHorseNumber',
+      'newTotalTips',
+      'newTipsterCount',
+      'newWinTips',
+      'newPlace2Tips',
+      'newPlace3Tips',
+      'newPlace4Tips'
+    ]
+    if (fields.some((f) => patch[f] !== undefined)) {
+      onPatch(patch)
     }
     editingKey = null
   }
@@ -52,7 +98,7 @@
   }
 
   function removeRow(raceNumber: number, name: string): void {
-    onPatch({ raceNumber, originalName: name, action: 'remove' })
+    onPatch({ raceNumber, originalName: name, removed: true })
   }
 
   function tipsterPct(tip: AggregatedTip, totalTipsters: number): number {
@@ -102,25 +148,81 @@
             class="border-t border-border {patched ? 'bg-accent/5' : ''}"
           >
             {#if isEditing}
-              <td class="py-1.5">
+              <td class="py-1.5 pr-1">
                 <input
                   type="number"
                   bind:value={numDraft}
                   class="w-12 bg-bg-surface border border-border-focus rounded px-1 py-0.5 text-sm"
+                  aria-label="Horse number"
                 />
               </td>
-              <td class="py-1.5">
+              <td class="py-1.5 pr-2">
                 <input
                   type="text"
                   bind:value={nameDraft}
                   class="w-full bg-bg-surface border border-border-focus rounded px-2 py-0.5 text-sm"
+                  aria-label="Horse name"
                 />
               </td>
-              <td colspan="7" class="py-1.5"></td>
+              <td class="py-1.5 text-right">
+                <input
+                  type="number"
+                  min="0"
+                  bind:value={totalDraft}
+                  class="w-12 bg-bg-surface border border-border-focus rounded px-1 py-0.5 text-sm text-right"
+                  aria-label="Total tips"
+                />
+              </td>
+              <td class="py-1.5 text-right">
+                <input
+                  type="number"
+                  min="0"
+                  bind:value={tipstersDraft}
+                  class="w-12 bg-bg-surface border border-border-focus rounded px-1 py-0.5 text-sm text-right"
+                  aria-label="Tipster count"
+                />
+              </td>
+              <td class="py-1.5 text-right text-text-muted">—</td>
+              <td class="py-1.5 text-right">
+                <input
+                  type="number"
+                  min="0"
+                  bind:value={winDraft}
+                  class="w-10 bg-bg-surface border border-border-focus rounded px-1 py-0.5 text-sm text-right"
+                  aria-label="Win tips"
+                />
+              </td>
+              <td class="py-1.5 text-right">
+                <input
+                  type="number"
+                  min="0"
+                  bind:value={p2Draft}
+                  class="w-10 bg-bg-surface border border-border-focus rounded px-1 py-0.5 text-sm text-right"
+                  aria-label="2nd place tips"
+                />
+              </td>
+              <td class="py-1.5 text-right">
+                <input
+                  type="number"
+                  min="0"
+                  bind:value={p3Draft}
+                  class="w-10 bg-bg-surface border border-border-focus rounded px-1 py-0.5 text-sm text-right"
+                  aria-label="3rd place tips"
+                />
+              </td>
+              <td class="py-1.5 text-right">
+                <input
+                  type="number"
+                  min="0"
+                  bind:value={p4Draft}
+                  class="w-10 bg-bg-surface border border-border-focus rounded px-1 py-0.5 text-sm text-right"
+                  aria-label="4th place tips"
+                />
+              </td>
               <td class="py-1.5 text-right whitespace-nowrap">
                 <button
                   class="mono text-[10px] uppercase tracking-wider text-accent hover:text-accent-bright"
-                  onclick={() => commit(race.raceNumber, tip.horseName)}
+                  onclick={() => commit(race.raceNumber, tip.horseName, tip)}
                 >
                   save
                 </button>

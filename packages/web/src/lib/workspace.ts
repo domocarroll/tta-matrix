@@ -35,9 +35,17 @@ export interface WorkspaceRow {
 export interface HorsePatch {
   raceNumber: number
   originalName: string
-  action: 'rename' | 'renumber' | 'remove'
+  /** Legacy: kept for back-compat. New patches use the explicit fields below. */
+  action?: 'rename' | 'renumber' | 'remove'
+  removed?: boolean
   newHorseName?: string
   newHorseNumber?: number
+  newTotalTips?: number
+  newTipsterCount?: number
+  newWinTips?: number
+  newPlace2Tips?: number
+  newPlace3Tips?: number
+  newPlace4Tips?: number
 }
 
 export interface MeetingCorrection {
@@ -175,16 +183,43 @@ function applyPatches(
         const ps = byKey.get(key) ?? []
         let horseName = tip.horseName
         let horseNumber = tip.horseNumber
+        let totalTips = tip.totalTips
+        let tipsterCount = tip.tipsterCount
+        let winTips = tip.winTips
+        let place2Tips = tip.place2Tips
+        let place3Tips = tip.place3Tips
+        let place4Tips = tip.place4Tips
         let removed = false
         for (const p of ps) {
-          if (p.action === 'remove') removed = true
-          if (p.action === 'rename' && p.newHorseName) horseName = p.newHorseName
-          if (p.action === 'renumber') horseNumber = p.newHorseNumber
+          if (p.action === 'remove' || p.removed) removed = true
+          if (p.newHorseName !== undefined) horseName = p.newHorseName
+          if (p.newHorseNumber !== undefined) horseNumber = p.newHorseNumber
+          if (p.newTotalTips !== undefined) totalTips = p.newTotalTips
+          if (p.newTipsterCount !== undefined) tipsterCount = p.newTipsterCount
+          if (p.newWinTips !== undefined) winTips = p.newWinTips
+          if (p.newPlace2Tips !== undefined) place2Tips = p.newPlace2Tips
+          if (p.newPlace3Tips !== undefined) place3Tips = p.newPlace3Tips
+          if (p.newPlace4Tips !== undefined) place4Tips = p.newPlace4Tips
         }
         if (removed) return null
-        return { ...tip, horseName, horseNumber }
+        return {
+          ...tip,
+          horseName,
+          horseNumber,
+          totalTips,
+          tipsterCount,
+          winTips,
+          place2Tips,
+          place3Tips,
+          place4Tips
+        }
       })
       .filter((t): t is NonNullable<typeof t> => t !== null)
+      // Re-sort after edits — totalTips desc, winTips tiebreak (matches v0)
+      .sort((a, b) => {
+        if (b.totalTips !== a.totalTips) return b.totalTips - a.totalTips
+        return b.winTips - a.winTips
+      })
 
     return {
       ...race,
