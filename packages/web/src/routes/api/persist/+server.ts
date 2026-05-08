@@ -63,6 +63,7 @@ export const POST: RequestHandler = async ({ request }) => {
     return json({ id })
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'persist failed'
+    console.error('[persist] convex mutation failed:', msg)
     throw error(500, msg)
   }
 }

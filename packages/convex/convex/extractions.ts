@@ -16,8 +16,11 @@ const flagValidator = v.object({
   description: v.string(),
 });
 
+// Validators are deliberately permissive — Pete's images vary and the
+// agent occasionally omits `position` or `horseNumber`. We backfill in
+// the handler instead of failing the whole persist.
 const selectionValidator = v.object({
-  position: v.number(),
+  position: v.optional(v.number()),
   horseName: v.string(),
   horseNumber: v.optional(v.number()),
 });
@@ -32,6 +35,52 @@ const raceValidator = v.object({
   tips: v.array(tipValidator),
 });
 
+interface NormalisedSelection {
+  position: number;
+  horseName: string;
+  horseNumber?: number;
+}
+
+interface IncomingSelection {
+  position?: number;
+  horseName: string;
+  horseNumber?: number;
+}
+
+interface IncomingTip {
+  tipsterName: string;
+  selections: IncomingSelection[];
+}
+
+interface IncomingRace {
+  raceNumber: number;
+  tips: IncomingTip[];
+}
+
+interface NormalisedTip {
+  tipsterName: string;
+  selections: NormalisedSelection[];
+}
+
+interface NormalisedRace {
+  raceNumber: number;
+  tips: NormalisedTip[];
+}
+
+function normaliseRaces(races: IncomingRace[]): NormalisedRace[] {
+  return races.map((race) => ({
+    raceNumber: race.raceNumber,
+    tips: race.tips.map((tip) => ({
+      tipsterName: tip.tipsterName,
+      selections: tip.selections.map((sel, i) => ({
+        position: typeof sel.position === "number" ? sel.position : i + 1,
+        horseName: sel.horseName,
+        horseNumber: sel.horseNumber,
+      })),
+    })),
+  }));
+}
+
 /** Generate an upload URL for direct browser → Convex storage uploads. */
 export const generateUploadUrl = mutation({
   args: {},
@@ -39,6 +88,18 @@ export const generateUploadUrl = mutation({
     return await ctx.storage.generateUploadUrl();
   },
 });
+
+/** Build the workspace meeting key — `${YYYY-MM-DD}|${category}|${meeting}`. */
+function buildMeetingKey(category: string, meeting: string, when: number): string {
+  const d = new Date(when);
+  const yyyy = d.getUTCFullYear();
+  const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const dd = String(d.getUTCDate()).padStart(2, "0");
+  const date = `${yyyy}-${mm}-${dd}`;
+  const cat = (category || "OR").toUpperCase();
+  const norm = (meeting || "Unknown").trim().replace(/\s+/g, " ");
+  return `${date}|${cat}|${norm}`;
+}
 
 /** Persist a completed extraction for the current client. */
 export const create = mutation({
@@ -59,7 +120,73 @@ export const create = mutation({
     model: v.string(),
   },
   handler: async (ctx, args) => {
-    return await ctx.db.insert("extractions", args);
+    const meetingKey = buildMeetingKey(args.category, args.meeting, Date.now());
+    const races = normaliseRaces(args.races as IncomingRace[]);
+    return await ctx.db.insert("extractions", { ...args, races, meetingKey });
+  },
+});
+
+/**
+ * List FULL extractions for a client since a given timestamp.
+ * Powers the workspace surface — needs full race data so we can aggregate.
+ */
+export const listFullByClient = query({
+  args: {
+    clientId: v.string(),
+    sinceMs: v.optional(v.number()),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const since = args.sinceMs ?? 0;
+    const rows = await ctx.db
+      .query("extractions")
+      .withIndex("by_client", (q) => q.eq("clientId", args.clientId))
+      .order("desc")
+      .take(args.limit ?? 200);
+    return rows
+      .filter((r) => r._creationTime >= since)
+      .map((row) => ({
+        _id: row._id,
+        _creationTime: row._creationTime,
+        filename: row.filename,
+        publication: row.publication,
+        meeting: row.meeting,
+        category: row.category,
+        tipstersDetected: row.tipstersDetected,
+        reasoning: row.reasoning,
+        races: row.races,
+        flags: row.flags,
+        tokensIn: row.tokensIn,
+        tokensOut: row.tokensOut,
+        durationMs: row.durationMs,
+        model: row.model,
+        meetingKey:
+          row.meetingKey ??
+          buildMeetingKey(row.category, row.meeting, row._creationTime),
+      }));
+  },
+});
+
+/** Backfill meetingKey on existing rows lacking one. Idempotent. */
+export const backfillMeetingKeys = mutation({
+  args: { clientId: v.string() },
+  handler: async (ctx, args) => {
+    const rows = await ctx.db
+      .query("extractions")
+      .withIndex("by_client", (q) => q.eq("clientId", args.clientId))
+      .collect();
+    let patched = 0;
+    for (const row of rows) {
+      if (row.meetingKey) continue;
+      const meetingKey = buildMeetingKey(
+        row.category,
+        row.meeting,
+        row._creationTime,
+      );
+      await ctx.db.patch(row._id, { meetingKey });
+      patched += 1;
+    }
+    return { patched };
   },
 });
 

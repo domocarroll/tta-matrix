@@ -200,5 +200,54 @@ export default defineSchema({
     tokensOut: v.number(),
     durationMs: v.number(),
     model: v.string(),
-  }).index("by_client", ["clientId"]),
+    /** Workspace key — `${YYYY-MM-DD}|${category}|${meeting}` for daily grouping. */
+    meetingKey: v.optional(v.string()),
+  })
+    .index("by_client", ["clientId"])
+    .index("by_client_meeting", ["clientId", "meetingKey"]),
+
+  // ────────────────────────────────────────────────
+  // Workspace corrections — Pete's review/edit overlay
+  // ────────────────────────────────────────────────
+  //
+  // Aggregations are computed on the fly. Pete's edits sit on top as an
+  // overlay so the agentic ground truth is preserved (audit trail), and
+  // exports use the corrected values.
+
+  /** One row per (clientId, meetingKey). Patches are merged on read. */
+  meetingCorrections: defineTable({
+    clientId: v.string(),
+    meetingKey: v.string(),
+    /** Free-form display label override, e.g. "Randwick Saturday 10 May". */
+    label: v.optional(v.string()),
+    /** Notes Pete wants attached to the meeting export. */
+    notes: v.optional(v.string()),
+    /** Per-horse patches keyed by `R{raceNumber}|${normalisedOriginalName}`. */
+    horsePatches: v.array(
+      v.object({
+        raceNumber: v.number(),
+        originalName: v.string(),
+        action: v.union(
+          v.literal("rename"),
+          v.literal("renumber"),
+          v.literal("remove"),
+        ),
+        newHorseName: v.optional(v.string()),
+        newHorseNumber: v.optional(v.number()),
+      }),
+    ),
+    updatedAt: v.number(),
+  })
+    .index("by_client_meeting", ["clientId", "meetingKey"]),
+
+  /** Public read-only snapshots for Pete's "share to customers" links. */
+  meetingSnapshots: defineTable({
+    /** Random url-safe token used in the share link. */
+    token: v.string(),
+    clientId: v.string(),
+    meetingKey: v.string(),
+    /** Frozen aggregated payload at share time. */
+    payload: v.any(),
+    createdAt: v.number(),
+  }).index("by_token", ["token"]),
 });

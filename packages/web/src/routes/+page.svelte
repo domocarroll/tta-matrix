@@ -241,7 +241,7 @@
 </script>
 
 <svelte:head>
-  <title>The TipAnalyser · v2 demo</title>
+  <title>The TipAnalyser</title>
 </svelte:head>
 
 <main class="min-h-screen px-6 py-10 md:px-12 md:py-16">
@@ -249,11 +249,16 @@
     <div class="flex items-baseline gap-3">
       <span
         class="mono text-[11px] uppercase tracking-[0.2em] text-text-muted"
-      >v2 · agentic</span>
+      >single shot</span>
       <span class="h-px flex-1 bg-border"></span>
       <a
-        href="/history"
+        href="/workspace"
         class="mono text-[11px] uppercase tracking-[0.18em] text-accent hover:text-accent-bright"
+        >friday workspace →</a
+      >
+      <a
+        href="/history"
+        class="mono text-[11px] uppercase tracking-[0.18em] text-text-muted hover:text-accent ml-3"
         >history →</a
       >
     </div>
@@ -379,8 +384,8 @@
 
   <footer class="mx-auto max-w-6xl mt-20 pt-8 border-t border-border">
     <div class="flex justify-between text-[11px] mono uppercase tracking-[0.18em] text-text-muted">
-      <span>The TipAnalyser · v2 prototype</span>
-      <span>Claude Sonnet 4.6 · Convex · agentic loop</span>
+      <span>The TipAnalyser</span>
+      <span>agentic · Claude Sonnet 4.6</span>
     </div>
   </footer>
 </main>

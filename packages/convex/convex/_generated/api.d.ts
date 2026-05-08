@@ -10,6 +10,7 @@
 
 import type * as aggregations from "../aggregations.js";
 import type * as cfBrowserScraper from "../cfBrowserScraper.js";
+import type * as corrections from "../corrections.js";
 import type * as crons from "../crons.js";
 import type * as extractions from "../extractions.js";
 import type * as horses from "../horses.js";
@@ -19,6 +20,7 @@ import type * as predictions from "../predictions.js";
 import type * as races from "../races.js";
 import type * as scraping from "../scraping.js";
 import type * as seed from "../seed.js";
+import type * as snapshots from "../snapshots.js";
 import type * as tips from "../tips.js";
 import type * as tipsters from "../tipsters.js";
 
@@ -31,6 +33,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   aggregations: typeof aggregations;
   cfBrowserScraper: typeof cfBrowserScraper;
+  corrections: typeof corrections;
   crons: typeof crons;
   extractions: typeof extractions;
   horses: typeof horses;
@@ -40,6 +43,7 @@ declare const fullApi: ApiFromModules<{
   races: typeof races;
   scraping: typeof scraping;
   seed: typeof seed;
+  snapshots: typeof snapshots;
   tips: typeof tips;
   tipsters: typeof tipsters;
 }>;
