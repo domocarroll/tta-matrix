@@ -1,31 +1,84 @@
 # Stage 1 · Readiness
 
 **Goal:** drop-in v0 replacement on `thetipanalyser.com` — same upload UX,
-agentic backend, plus persistent per-customer history.
+agentic backend, plus persistent per-customer history AND Pete's full
+Friday workflow (multi-image, multi-meeting aggregation, edit-then-export).
 
-**Date:** 2026-05-01
+**Date:** 2026-05-08
 **Live at:** https://tta-pete-demo.pages.dev/ (staging)
 
 ---
 
 ## What's done (no Pete cooperation required)
 
+### Single-shot agent surface (`/`)
+
 | Capability | Status | Where |
 |---|---|---|
 | Agentic image extraction | ✅ live | `/` (drop image, watch reason) |
 | Streaming reasoning trace | ✅ live | server: `api/extract/+server.ts` |
+| Cached replay fallback (`?cached=pete-24apr`) | ✅ live | demo safety net |
+| v0 comparison panel | ✅ live | bottom of `/` |
+
+### Friday workspace (`/workspace`) — v0 production parity
+
+| Capability | Status | Where |
+|---|---|---|
+| Multi-image queue (drop N images, sequential process, cancel/retry per file) | ✅ live | `/workspace` |
+| Auto-grouping by `(date, category, meeting)` — many meetings in one session | ✅ live | shared/workspace.ts |
+| Per-meeting aggregation — totalTips, tipsterCount, tipster%, win/2nd/3rd/4th | ✅ live | shared/aggregation.ts |
+| Quaddie · Trifecta · First Four cards | ✅ live | components/SpecialBets.svelte |
+| **Inline review/edit** — rename horse, fix horse number, remove erroneous row | ✅ live | components/AggregationTable.svelte |
+| Corrections persisted as overlay (preserves agent ground truth) | ✅ live | convex/corrections.ts |
+| Display label + customer notes per meeting | ✅ live | meeting card meta editor |
+| **CSV export** (v0 schema columns) | ✅ live | shared/csv.ts |
+| **JSON export** (full aggregation incl. quaddie) | ✅ live | meeting card |
+| **Share link** — public read-only `/share/<token>` snapshot | ✅ live | convex/snapshots.ts |
+| Retry with exp backoff + jitter on transient errors | ✅ live | extractionRunner.ts |
+| Refusal detection (port from v0) | ✅ live | shared/extraction.ts |
+| Error categorisation (rate limit, parse, network, refusal, etc.) | ✅ live | shared/errors.ts |
+| Persist failure surfaced to queue UI | ✅ live | workspace/+page.svelte |
+
+### History (`/history`)
+
+| Capability | Status | Where |
+|---|---|---|
 | Per-customer extraction history | ✅ live | `/history` |
 | Detail view with reasoning + flags + races | ✅ live | `/history/[id]` |
 | Per-row delete | ✅ live | history list |
 | Stats strip (extractions, selections, flags) | ✅ live | history list |
-| Cached replay fallback (`?cached=pete-24apr`) | ✅ live | demo safety net |
-| v0 comparison panel | ✅ live | bottom of `/` and `/history/[id]` |
-| Convex schema with `extractions` table | ✅ deployed | `dev:ardent-hound-725` |
+
+### Infrastructure
+
+| Capability | Status | Where |
+|---|---|---|
+| Convex schema (extractions, meetingCorrections, meetingSnapshots) | ✅ deployed | `dev:ardent-hound-725` |
 | `clientId` localStorage identity | ✅ live | bridge to real auth |
 | Cloudflare Pages deployment | ✅ live | `tta-pete-demo.pages.dev` |
 | ANTHROPIC_API_KEY + CONVEX_URL secrets | ✅ set | wrangler pages secrets |
 
-End-to-end verified: drop image → reasoning streams → flags render → row appears in `/history` → click row → full detail with all 54 reasoning steps. Tested on production CF deployment.
+End-to-end verified on prod URL: drop fixture → 54 reasoning steps stream →
+extraction lands in workspace → 8 races aggregated, xx-prefix dedup correct
+(Call Me Gorgeous = 5/83% in R4, not split) → Quaddie/Trifecta/First Four
+computed → CSV / JSON downloaded → share link minted → public `/share/<token>`
+renders the customer-facing read-only view.
+
+---
+
+## What v0 had that we now match
+
+| v0 feature | v2 status |
+|---|---|
+| Single-image upload | ✅ `/` |
+| Multi-image batch | ✅ `/workspace` (queue) |
+| Per-race aggregation across tipsters | ✅ aggregation table |
+| Quaddie / Trifecta / First Four | ✅ special bets cards |
+| Review/edit aggregated tips before export | ✅ inline edit + corrections overlay |
+| CSV export | ✅ v0-compatible schema |
+| JSON export | ✅ |
+| URL share | ✅ `/share/<token>` |
+| Refusal detection + retry | ✅ |
+| Error categorisation | ✅ |
 
 ---
 
@@ -37,8 +90,7 @@ End-to-end verified: drop image → reasoning streams → flags render → row a
 | **Customer list / data export from v0** | Migrate existing customer histories so they don't lose anything | 2-3 hours of script work + a soak |
 | **Decision on auth provider** | Convex Auth (free) vs Clerk (paid, polished) vs custom email-OTP | 4-8 hours to implement + test |
 | **Decision on cutover style** | Hard cutover with rollback OR side-by-side soak (`old.thetipanalyser.com` + `thetipanalyser.com`) | depends on choice |
-| **Branding pass** | Replace "v2 · agentic · Pete demo" with thetipanalyser branding | 1-2 hours |
-| **Feature parity audit** | v0 has review/edit step + horse details photos + export/share — decide whether to keep, drop, or replicate | 1-3 days depending on which |
+| **Convex prod deploy decision** | Currently on Convex `dev` tier. Stage 1 stays on dev (free, ample headroom). Prod tier ($25/mo) unlocks higher limits and is a separate deployment with empty data — only worth it once ready to migrate v0 customers. | 30 min once decided |
 
 ---
 
@@ -49,9 +101,11 @@ End-to-end verified: drop image → reasoning streams → flags render → row a
 | `clientId` collision (two browsers, same UUID) | Vanishing low (random 122-bit) | Customer sees someone else's history | Real auth before public launch |
 | Pete's customers lose history at cutover | Medium | Trust hit | Side-by-side soak + migration script |
 | Cloudflare Workers timeout on long extractions | Low (verified at 114s on paid plan) | One extraction fails; user retries | Already streams; 5-minute paid plan ceiling |
-| Anthropic rate limit at peak load | Medium | Slow extractions Saturday morning | Add per-IP throttle; Convex action queue if needed |
+| Anthropic rate limit at peak load (Sat morning) | Medium | Slow extractions | Sequential queue already throttles; add per-IP cap if needed |
 | Convex free tier quota exhausted | Low (massive headroom for v0 audience) | Read errors | Upgrade plan ($25/mo) |
-| Image PII in extractions | Low (tip sheets are public publications) | Privacy concern | Document retention policy; add `delete` UX (already done) |
+| Pete edits aggregation, refresh loses edits | None | None | Edits persisted to Convex meetingCorrections immediately |
+| Share link leaks sensitive data | Low (tip sheets are public publications) | Privacy concern | Document retention policy; tokens are 22-char random |
+| Image PII in extractions | Low | Privacy | `delete` UX exists; add retention cron later |
 | Domain ownership of `tta-pete-demo.pages.dev` | None | None | Custom domain swap is reversible |
 
 ---
@@ -73,15 +127,24 @@ Total Stage 2: **~3 weeks** of focused work.
 
 ---
 
-## What to demo Pete tomorrow morning
+## What to show Pete
 
-The same pitch deck, but you can now also show:
+Same pitch but with a complete Friday demo:
 
-1. The same extraction flow he's used to in v0...
-2. ...automatically saved to a persistent history he can revisit
-3. Tap his clientId in localStorage → "every customer gets the same surface"
-4. Click into a past extraction → "every reasoning step preserved, auditable, replayable"
+1. Open `https://tta-pete-demo.pages.dev/workspace` on the call
+2. Drop the morning's tip sheets (multiple, multiple meetings)
+3. Watch each one stream reasoning live
+4. Watch them group into per-meeting cards as they land
+5. Open one card, walk the aggregation table
+6. Edit a horse name (e.g. fix a typo) — show that special bets recompute
+7. Download the CSV — same shape his customers already get
+8. Click "Copy share link" — open the public URL in a new tab — show the read-only customer view
+9. Refresh the workspace — corrections still there
 
-The history surface IS the strongest material answer to "where does this go?"
-v0 is stateless. v2 compounds. Pete's customers won't know the engine swapped;
-they'll only know the app suddenly remembers them.
+The diff vs v0:
+- v0: stateless single-pass; corrupts data on edge cases (xx-prefix bug)
+- v2: agentic, reasons through edge cases, persists to history, AND
+  surfaces every customer-facing feature he already runs (review, export, share)
+
+He doesn't need to give up anything. He gets the same workflow on a system
+that won't keep silently corrupting tip sheets every other Saturday.
