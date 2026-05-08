@@ -241,6 +241,43 @@ export const getById = query({
   },
 });
 
+/**
+ * Delete every extraction (and the correction overlay) for a meetingKey.
+ * Pete uses this from the workspace to clear a meeting's data — useful
+ * after he's exported and wants the slate clean for the next session.
+ */
+export const removeByMeetingKey = mutation({
+  args: {
+    clientId: v.string(),
+    meetingKey: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const rows = await ctx.db
+      .query("extractions")
+      .withIndex("by_client", (q) => q.eq("clientId", args.clientId))
+      .collect();
+    let deleted = 0;
+    for (const row of rows) {
+      const key =
+        row.meetingKey ??
+        buildMeetingKey(row.category, row.meeting, row._creationTime);
+      if (key !== args.meetingKey) continue;
+      if (row.imageStorageId) await ctx.storage.delete(row.imageStorageId);
+      await ctx.db.delete(row._id);
+      deleted += 1;
+    }
+    // Also clear corrections overlay for this meeting
+    const correction = await ctx.db
+      .query("meetingCorrections")
+      .withIndex("by_client_meeting", (q) =>
+        q.eq("clientId", args.clientId).eq("meetingKey", args.meetingKey),
+      )
+      .unique();
+    if (correction) await ctx.db.delete(correction._id);
+    return { deleted };
+  },
+});
+
 /** Delete an extraction (only if it belongs to the requesting client). */
 export const remove = mutation({
   args: {

@@ -96,5 +96,15 @@
     >
       Pete 24 Apr · "xx prefix"
     </button>
+    <button
+      type="button"
+      class="rounded-md border border-border bg-bg-card hover:bg-bg-card-hover px-4 py-2 text-sm text-text-primary transition-colors"
+      onclick={(e) => {
+        e.stopPropagation()
+        void loadFixture('/fixtures/pete-14mar-duplicates.png')
+      }}
+    >
+      Pete 14 Mar · phantom horses
+    </button>
   </div>
 </div>

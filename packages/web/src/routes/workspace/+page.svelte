@@ -62,6 +62,20 @@
 
   const groups = $derived<MeetingGroup[]>(buildMeetingGroups(rows, corrections))
 
+  async function clearMeeting(group: MeetingGroup): Promise<void> {
+    if (!clientId) return
+    try {
+      const res = await fetch(
+        `/api/workspace?clientId=${encodeURIComponent(clientId)}&meetingKey=${encodeURIComponent(group.meetingKey)}`,
+        { method: 'DELETE' }
+      )
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      await refresh()
+    } catch (err) {
+      lastError = err instanceof Error ? err.message : 'clear failed'
+    }
+  }
+
   async function persistCorrections(group: MeetingGroup, patches: HorsePatch[], label?: string, notes?: string): Promise<void> {
     if (!clientId) return
     try {
@@ -315,6 +329,7 @@
             clientId={clientId!}
             onPatchesChange={(patches, label, notes) =>
               persistCorrections(group, patches, label, notes)}
+            onClearMeeting={() => clearMeeting(group)}
           />
         {/each}
       </div>

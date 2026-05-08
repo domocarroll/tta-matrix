@@ -34,3 +34,20 @@ export const GET: RequestHandler = async ({ url }) => {
 
   return json({ rows, corrections })
 }
+
+export const DELETE: RequestHandler = async ({ url }) => {
+  const convexUrl = env.CONVEX_URL
+  if (!convexUrl) throw error(500, 'CONVEX_URL not configured')
+
+  const clientId = url.searchParams.get('clientId')
+  const meetingKey = url.searchParams.get('meetingKey')
+  if (!clientId) throw error(400, 'Missing clientId')
+  if (!meetingKey) throw error(400, 'Missing meetingKey')
+
+  const client = new ConvexHttpClient(convexUrl)
+  const out = (await client.mutation(api.extractions.removeByMeetingKey, {
+    clientId,
+    meetingKey
+  })) as { deleted: number }
+  return json(out)
+}

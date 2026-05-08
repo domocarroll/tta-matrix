@@ -13,12 +13,15 @@
     group: MeetingGroup
     clientId: string
     onPatchesChange: (patches: HorsePatch[], label?: string, notes?: string) => void
+    onClearMeeting: () => Promise<void>
   }
 
-  let { group, clientId, onPatchesChange }: Props = $props()
+  let { group, clientId, onPatchesChange, onClearMeeting }: Props = $props()
 
   let expanded = $state(true)
+  // svelte-ignore state_referenced_locally
   let labelDraft = $state(group.label ?? '')
+  // svelte-ignore state_referenced_locally
   let notesDraft = $state(group.notes ?? '')
   let busy = $state(false)
   let shareUrl = $state<string | null>(null)
@@ -171,6 +174,9 @@
         {group.totalTipsters.length} tipster{group.totalTipsters.length === 1 ? '' : 's'} ·
         {group.raceNumbers.length} race{group.raceNumbers.length === 1 ? '' : 's'}
       </div>
+      <div class="mt-1 mono text-[10px] uppercase tracking-wider text-text-muted truncate">
+        {group.rows.map((r) => r.filename).join(' · ')}
+      </div>
     </div>
     <div class="flex items-baseline gap-3 shrink-0">
       <button
@@ -266,8 +272,27 @@
           <a class="mono text-[11px] underline text-accent" href={shareUrl} target="_blank" rel="noreferrer">{shareUrl.replace(/^https?:\/\//, '')}</a>
         {/if}
       </div>
-      <div class="mono text-[10px] uppercase tracking-wider text-text-muted">
-        {#if savedAt}saved · {new Date(savedAt).toLocaleTimeString()}{/if}
+      <div class="flex items-baseline gap-3">
+        {#if savedAt}
+          <span class="mono text-[10px] uppercase tracking-wider text-text-muted">
+            saved · {new Date(savedAt).toLocaleTimeString()}
+          </span>
+        {/if}
+        <button
+          type="button"
+          class="mono text-[10px] uppercase tracking-wider text-text-muted hover:text-error"
+          onclick={async () => {
+            if (!confirm(`Clear ${group.rows.length} extraction${group.rows.length === 1 ? '' : 's'} for ${group.label ?? group.meeting}? This cannot be undone.`)) return
+            busy = true
+            try {
+              await onClearMeeting()
+            } finally {
+              busy = false
+            }
+          }}
+        >
+          clear meeting
+        </button>
       </div>
     </footer>
   {/if}
