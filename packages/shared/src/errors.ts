@@ -47,7 +47,7 @@ const ERROR_CONFIG: Record<
   },
   PAYLOAD_TOO_LARGE: {
     isRetryable: false,
-    userMessage: "Image exceeds 3MB limit. Please compress and retry.",
+    userMessage: "Image is too large. Please compress and retry.",
   },
   PARSE_ERROR: {
     isRetryable: true,
@@ -67,12 +67,31 @@ const ERROR_CONFIG: Record<
   },
 } as const;
 
+/**
+ * Extract an HTTP status code from a thrown value.
+ *
+ * Handles a native `Response` as well as error objects that carry a numeric
+ * `status` or `statusCode` field. The Anthropic SDK (@anthropic-ai/sdk) throws
+ * `APIError` subclasses (RateLimitError, BadRequestError, AuthenticationError,
+ * etc.) that expose the HTTP status on `.status`, so detecting that here is
+ * what makes 429/413/401 retry/categorise correctly instead of falling to
+ * UNKNOWN.
+ */
+function extractStatusCode(error: unknown): number | undefined {
+  if (error instanceof Response) return error.status;
+  if (typeof error === "object" && error !== null) {
+    const candidate = error as { status?: unknown; statusCode?: unknown };
+    if (typeof candidate.status === "number") return candidate.status;
+    if (typeof candidate.statusCode === "number") return candidate.statusCode;
+  }
+  return undefined;
+}
+
 /** Categorise an error from the extraction pipeline */
 export function categoriseError(error: unknown): CategorisedError {
   const message =
     error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
-  const statusCode =
-    error instanceof Response ? error.status : undefined;
+  const statusCode = extractStatusCode(error);
 
   let category: ErrorCategory;
 
@@ -82,6 +101,8 @@ export function categoriseError(error: unknown): CategorisedError {
     category = "PAYLOAD_TOO_LARGE";
   } else if (statusCode === 401 || statusCode === 403 || message.includes("api key") || message.includes("unauthorized")) {
     category = "API_KEY_ERROR";
+  } else if (statusCode !== undefined && statusCode >= 500 && statusCode <= 599) {
+    category = "NETWORK_ERROR";
   } else if (message.includes("timeout") || message.includes("timed out")) {
     category = "TIMEOUT";
   } else if (message.includes("fetch") || message.includes("network") || message.includes("econnrefused")) {

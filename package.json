@@ -12,6 +12,7 @@
     "dev:convex": "pnpm --filter @tta/convex dev",
     "dev:agent": "pnpm --filter @tta/agent dev",
     "dev:bot": "pnpm --filter @tta/matrix-bot dev",
+    "tips:csv": "tsx scripts/tips-to-csv.ts",
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",

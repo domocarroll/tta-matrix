@@ -64,6 +64,15 @@ export interface AggregatedTip {
   readonly place2Tips: number;
   readonly place3Tips: number;
   readonly place4Tips: number;
+  // ── Field-match enrichment (additive, optional — see fieldMatch.ts) ──
+  /** Jockey from the authoritative race field, if confidently matched */
+  readonly jockey?: string;
+  /** Trainer from the authoritative race field, if confidently matched */
+  readonly trainer?: string;
+  /** Barrier draw from the authoritative race field, if confidently matched */
+  readonly barrier?: number;
+  /** True when this tip was anchored to a runner in the official field */
+  readonly fieldMatched?: boolean;
 }
 
 export interface AggregatedRace {

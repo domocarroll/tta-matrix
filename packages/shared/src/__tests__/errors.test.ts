@@ -31,6 +31,68 @@ describe("categoriseError", () => {
     expect(result.category).toBe("UNKNOWN");
     expect(result.isRetryable).toBe(true);
   });
+
+  // Anthropic SDK throws APIError subclasses with a numeric `.status` (not a
+  // Response). These must be categorised by status so rate limits get retried.
+  it("categorises an Anthropic RateLimitError (status 429)", () => {
+    const err = Object.assign(new Error("Rate limit reached"), { status: 429 });
+    const result = categoriseError(err);
+    expect(result.category).toBe("RATE_LIMITED");
+    expect(result.isRetryable).toBe(true);
+  });
+
+  it("categorises an Anthropic BadRequestError 413 payload (status 413)", () => {
+    const err = Object.assign(new Error("Bad request"), { status: 413 });
+    const result = categoriseError(err);
+    expect(result.category).toBe("PAYLOAD_TOO_LARGE");
+    expect(result.isRetryable).toBe(false);
+  });
+
+  it("categorises an Anthropic AuthenticationError (status 401)", () => {
+    const err = Object.assign(new Error("invalid x-api-key"), { status: 401 });
+    const result = categoriseError(err);
+    expect(result.category).toBe("API_KEY_ERROR");
+    expect(result.isRetryable).toBe(false);
+  });
+
+  it("categorises a status 403 permission error as API_KEY_ERROR", () => {
+    const err = Object.assign(new Error("forbidden"), { status: 403 });
+    const result = categoriseError(err);
+    expect(result.category).toBe("API_KEY_ERROR");
+    expect(result.isRetryable).toBe(false);
+  });
+
+  it("categorises an Anthropic 5xx (status 529 overloaded) as NETWORK_ERROR", () => {
+    const err = Object.assign(new Error("Overloaded"), { status: 529 });
+    const result = categoriseError(err);
+    expect(result.category).toBe("NETWORK_ERROR");
+    expect(result.isRetryable).toBe(true);
+  });
+
+  it("categorises a generic 500 InternalServerError as NETWORK_ERROR", () => {
+    const err = Object.assign(new Error("internal server error"), { status: 500 });
+    const result = categoriseError(err);
+    expect(result.category).toBe("NETWORK_ERROR");
+    expect(result.isRetryable).toBe(true);
+  });
+
+  it("also reads a numeric `statusCode` field", () => {
+    const result = categoriseError({ statusCode: 429, message: "too many" });
+    expect(result.category).toBe("RATE_LIMITED");
+    expect(result.isRetryable).toBe(true);
+  });
+
+  it("still categorises a native Response by status (no regression)", () => {
+    const result = categoriseError(new Response(null, { status: 429 }));
+    expect(result.category).toBe("RATE_LIMITED");
+    expect(result.isRetryable).toBe(true);
+  });
+
+  it("ignores a non-numeric status field and falls back to message", () => {
+    const err = Object.assign(new Error("something weird"), { status: "oops" });
+    const result = categoriseError(err);
+    expect(result.category).toBe("UNKNOWN");
+  });
 });
 
 describe("shouldRetry", () => {

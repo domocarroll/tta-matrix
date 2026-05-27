@@ -12,6 +12,7 @@
     type MeetingCorrection,
     type HorsePatch
   } from '$lib/workspace'
+  import { resolveField, type ResolvedField } from '$lib/fieldResolution'
 
   type QueueStatus = 'pending' | 'streaming' | 'done' | 'error' | 'cancelled'
   interface QueueItem {
@@ -38,6 +39,11 @@
   let clientId = $state<string | null>(null)
   let rows = $state<WorkspaceRow[]>([])
   let corrections = $state<MeetingCorrection[]>([])
+  // Resolved authoritative fields, keyed by meetingKey. Reassigned (not
+  // mutated) so the $derived groups recompute.
+  let fieldsByKey = $state(new Map<string, ResolvedField>())
+  // Non-reactive guard: one auto-resolve attempt per meetingKey.
+  const fieldRequested = new Set<string>()
   let queue = $state<QueueItem[]>([])
   let processing = $state(false)
   let loading = $state(true)
@@ -72,7 +78,46 @@
     }
   }
 
-  const allGroups = $derived<MeetingGroup[]>(buildMeetingGroups(rows, corrections))
+  const allGroups = $derived<MeetingGroup[]>(
+    buildMeetingGroups(rows, corrections, fieldsByKey)
+  )
+
+  function storeField(key: string, result: ResolvedField): void {
+    const next = new Map(fieldsByKey)
+    next.set(key, result)
+    fieldsByKey = next
+  }
+
+  // Auto-resolve the field for each visible meeting exactly once. A miss
+  // (no API key, field not published) is cached as a negative so we
+  // don't hammer the resolver on every recompute.
+  $effect(() => {
+    for (const g of allGroups) {
+      if (fieldRequested.has(g.meetingKey)) continue
+      fieldRequested.add(g.meetingKey)
+      const key = g.meetingKey
+      void resolveField({
+        date: g.date,
+        meetingName: g.meeting,
+        category: g.category
+      }).then((r) => storeField(key, r))
+    }
+  })
+
+  async function resolveMeetingField(group: MeetingGroup): Promise<void> {
+    // Manual refetch — force a fresh pull (picks up late scratchings).
+    fieldRequested.add(group.meetingKey)
+    const next = new Map(fieldsByKey)
+    next.delete(group.meetingKey)
+    fieldsByKey = next
+    const r = await resolveField({
+      date: group.date,
+      meetingName: group.meeting,
+      category: group.category,
+      force: true
+    })
+    storeField(group.meetingKey, r)
+  }
   const groups = $derived<MeetingGroup[]>(
     activeCategory === 'ALL'
       ? allGroups
@@ -379,6 +424,7 @@
             onPatchesChange={(patches, label, notes) =>
               persistCorrections(group, patches, label, notes)}
             onClearMeeting={() => clearMeeting(group)}
+            onResolveField={() => resolveMeetingField(group)}
           />
         {/each}
       </div>

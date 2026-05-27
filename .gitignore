@@ -10,3 +10,9 @@ dist/
 .wrangler/
 .convex/
 *.tsbuildinfo
+
+# Private client data + local agent/orchestration state — never publish
+demo-fixtures/
+.claude/
+.sisyphus/
+.planning/

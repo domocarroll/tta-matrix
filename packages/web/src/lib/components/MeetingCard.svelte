@@ -16,9 +16,33 @@
     clientId: string
     onPatchesChange: (patches: HorsePatch[], label?: string, notes?: string) => void
     onClearMeeting: () => Promise<void>
+    onResolveField: () => Promise<void>
   }
 
-  let { group, clientId, onPatchesChange, onClearMeeting }: Props = $props()
+  let { group, clientId, onPatchesChange, onClearMeeting, onResolveField }: Props = $props()
+
+  let includeFieldData = $state(false)
+  let resolvingField = $state(false)
+
+  const FIELD_REASON_LABEL: Record<string, string> = {
+    no_api_key: 'Perplexity key not configured',
+    field_unavailable: 'field not published yet',
+    resolver_unreachable: 'resolver offline',
+    request_failed: 'request failed'
+  }
+
+  function fieldReasonText(reason: string): string {
+    return FIELD_REASON_LABEL[reason] ?? reason.replace(/^http_/, 'resolver error ')
+  }
+
+  async function refetchField(): Promise<void> {
+    resolvingField = true
+    try {
+      await onResolveField()
+    } finally {
+      resolvingField = false
+    }
+  }
 
   let expanded = $state(true)
   let openReasoningRowId = $state<string | null>(null)
@@ -77,10 +101,14 @@
   }
 
   function exportCsv(): void {
-    const csv = buildMeetingCsv(group.aggregated, {
-      meeting: group.label ?? group.meeting,
-      date: group.date
-    })
+    const csv = buildMeetingCsv(
+      group.aggregated,
+      {
+        meeting: group.label ?? group.meeting,
+        date: group.date
+      },
+      { includeFieldData }
+    )
     downloadBlob(
       buildCsvFilename(group.label ?? group.meeting, group.date),
       'text/csv;charset=utf-8',
@@ -169,6 +197,27 @@
             {group.flagCount} flag{group.flagCount === 1 ? '' : 's'}
           </span>
         {/if}
+        {#if group.field.state === 'resolved'}
+          <span
+            class="mono text-[10px] uppercase tracking-wider text-success"
+            title="{group.field.source} · {group.field.citations.length} source{group.field.citations.length === 1 ? '' : 's'}"
+          >
+            field ✓ {new Date(group.field.fetchedAt).toLocaleTimeString()}
+          </span>
+        {:else if group.field.state === 'pending'}
+          <span class="mono text-[10px] uppercase tracking-wider text-text-muted">
+            field · resolving…
+          </span>
+        {:else}
+          <span class="mono text-[10px] uppercase tracking-wider text-text-muted">
+            field unavailable · {fieldReasonText(group.field.reason)}
+          </span>
+        {/if}
+        {#if group.fieldFlags.length > 0}
+          <span class="mono text-[10px] uppercase tracking-wider text-warning">
+            {group.fieldFlags.length} field flag{group.fieldFlags.length === 1 ? '' : 's'}
+          </span>
+        {/if}
       </div>
       <h2 class="serif text-2xl text-text-primary mt-1 truncate">
         {group.label ?? group.meeting}
@@ -183,6 +232,15 @@
       </div>
     </div>
     <div class="flex items-baseline gap-3 shrink-0">
+      <button
+        type="button"
+        disabled={resolvingField || group.field.state === 'pending'}
+        class="mono text-[11px] uppercase tracking-wider text-text-muted hover:text-accent disabled:opacity-50"
+        onclick={refetchField}
+        title="Re-pull the official field from Perplexity (picks up late scratchings)"
+      >
+        {resolvingField ? 'resolving…' : group.field.state === 'resolved' ? 'refresh field' : 'resolve field'}
+      </button>
       <button
         type="button"
         class="mono text-[11px] uppercase tracking-wider text-text-muted hover:text-text-primary"
@@ -228,6 +286,42 @@
         </div>
       {/if}
     </section>
+
+    <!-- Field resolution: flags + sources -->
+    {#if group.fieldFlags.length > 0 || group.field.state === 'resolved'}
+      <section class="px-5 py-3 border-b border-border">
+        <div class="mono text-[10px] uppercase tracking-wider text-text-muted mb-2">
+          authoritative field
+          {#if group.field.state === 'resolved'}
+            · {group.field.source} · {new Date(group.field.fetchedAt).toLocaleString()}
+          {/if}
+        </div>
+        {#if group.fieldFlags.length > 0}
+          <ul class="space-y-1 mb-2">
+            {#each group.fieldFlags as f}
+              <li class="text-sm flex items-baseline gap-2">
+                <span
+                  class="mono text-[10px] uppercase tracking-wider shrink-0 {f.type === 'tip_on_scratched' ? 'text-error' : 'text-warning'}"
+                >
+                  {f.type === 'tip_on_scratched' ? 'scratched' : 'unmatched'}
+                </span>
+                <span class="text-text-secondary">{f.description}</span>
+              </li>
+            {/each}
+          </ul>
+        {/if}
+        {#if group.field.state === 'resolved' && group.field.citations.length > 0}
+          <div class="mono text-[10px] text-text-muted">
+            sources:
+            {#each group.field.citations.slice(0, 4) as c, i}
+              <a href={c} target="_blank" rel="noreferrer" class="underline text-accent ml-1"
+                >[{i + 1}]</a
+              >
+            {/each}
+          </div>
+        {/if}
+      </section>
+    {/if}
 
     <!-- Aggregation table -->
     <section class="px-5 py-4">
@@ -294,6 +388,13 @@
         >
           Download CSV
         </button>
+        <label
+          class="mono text-[10px] uppercase tracking-wider text-text-muted flex items-center gap-1.5 select-none"
+          title="Append Jockey / Trainer / Barrier columns (v0 columns unchanged)"
+        >
+          <input type="checkbox" bind:checked={includeFieldData} />
+          + field cols
+        </label>
         <button
           type="button"
           class="rounded-md border border-border bg-bg-card hover:bg-bg-card-hover px-4 py-2 text-sm text-text-primary transition-colors"

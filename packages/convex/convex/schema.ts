@@ -27,6 +27,18 @@ export default defineSchema({
       v.literal("completed"),
     ),
     raceCount: v.number(),
+    // ── Field resolution metadata (Perplexity-backed, additive/optional) ──
+    // Set when the authoritative runner field has been resolved for this
+    // meeting. Absent on legacy/unresolved rows — readers must tolerate
+    // undefined and degrade to tip-only aggregation.
+    fieldStatus: v.optional(
+      v.union(v.literal("resolved"), v.literal("unavailable")),
+    ),
+    /** e.g. "perplexity:sonar-pro" */
+    fieldSource: v.optional(v.string()),
+    fieldFetchedAt: v.optional(v.number()),
+    /** Source URLs Perplexity grounded the field on (audit trail). */
+    fieldCitations: v.optional(v.array(v.string())),
   })
     .index("by_date", ["date"])
     .index("by_status", ["status"])

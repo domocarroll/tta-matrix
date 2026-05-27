@@ -11,6 +11,7 @@
 
 import type { AggregatedRace } from "./types.ts";
 
+// v0 columns — order is contractual, Pete's customers parse this.
 const HEADER = [
   "Category",
   "Race",
@@ -26,6 +27,10 @@ const HEADER = [
   "4th",
 ];
 
+// Field-resolution enrichment — APPENDED after the v0 columns so the
+// historical layout is byte-for-byte preserved when this is off.
+const FIELD_HEADER = ["Jockey", "Trainer", "Barrier"];
+
 function escape(field: string | number | undefined | null): string {
   if (field === undefined || field === null) return "";
   const s = String(field);
@@ -35,38 +40,48 @@ function escape(field: string | number | undefined | null): string {
   return s;
 }
 
-/** Build CSV body for a meeting's aggregated races. */
+/**
+ * Build CSV body for a meeting's aggregated races.
+ *
+ * @param opts.includeFieldData when true, appends Jockey/Trainer/Barrier
+ *   columns sourced from the resolved field (blank where a tip wasn't
+ *   confidently matched). Default false → identical to the v0 export.
+ */
 export function buildMeetingCsv(
   races: ReadonlyArray<AggregatedRace>,
   meta: { meeting: string; date: string },
+  opts: { includeFieldData?: boolean } = {},
 ): string {
+  const withField = opts.includeFieldData === true;
+  const header = withField ? [...HEADER, ...FIELD_HEADER] : HEADER;
+
   const lines: string[] = [];
   lines.push(`# ${meta.meeting} — ${meta.date}`);
-  lines.push(HEADER.map(escape).join(","));
+  lines.push(header.map(escape).join(","));
   for (const race of races) {
     for (const tip of race.tips) {
       const tipsterPct =
         race.totalTipstersInRace > 0
           ? Math.round((tip.tipsterCount / race.totalTipstersInRace) * 100)
           : 0;
-      lines.push(
-        [
-          race.category,
-          race.raceNumber,
-          tip.horseNumber ?? "",
-          tip.horseName,
-          tip.totalTips,
-          tip.tipsterCount,
-          race.totalTipstersInRace,
-          tipsterPct,
-          tip.winTips,
-          tip.place2Tips,
-          tip.place3Tips,
-          tip.place4Tips,
-        ]
-          .map(escape)
-          .join(","),
-      );
+      const base = [
+        race.category,
+        race.raceNumber,
+        tip.horseNumber ?? "",
+        tip.horseName,
+        tip.totalTips,
+        tip.tipsterCount,
+        race.totalTipstersInRace,
+        tipsterPct,
+        tip.winTips,
+        tip.place2Tips,
+        tip.place3Tips,
+        tip.place4Tips,
+      ];
+      const row = withField
+        ? [...base, tip.jockey ?? "", tip.trainer ?? "", tip.barrier ?? ""]
+        : base;
+      lines.push(row.map(escape).join(","));
     }
   }
   return lines.join("\n") + "\n";

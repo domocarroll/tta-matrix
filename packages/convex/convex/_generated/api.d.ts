@@ -8,17 +8,17 @@
  * @module
  */
 
+import type * as _debug from "../_debug.js";
 import type * as aggregations from "../aggregations.js";
-import type * as cfBrowserScraper from "../cfBrowserScraper.js";
 import type * as corrections from "../corrections.js";
 import type * as crons from "../crons.js";
 import type * as extractions from "../extractions.js";
+import type * as fieldResolution from "../fieldResolution.js";
 import type * as horses from "../horses.js";
 import type * as http from "../http.js";
 import type * as meetings from "../meetings.js";
 import type * as predictions from "../predictions.js";
 import type * as races from "../races.js";
-import type * as scraping from "../scraping.js";
 import type * as seed from "../seed.js";
 import type * as snapshots from "../snapshots.js";
 import type * as tips from "../tips.js";
@@ -31,17 +31,17 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  _debug: typeof _debug;
   aggregations: typeof aggregations;
-  cfBrowserScraper: typeof cfBrowserScraper;
   corrections: typeof corrections;
   crons: typeof crons;
   extractions: typeof extractions;
+  fieldResolution: typeof fieldResolution;
   horses: typeof horses;
   http: typeof http;
   meetings: typeof meetings;
   predictions: typeof predictions;
   races: typeof races;
-  scraping: typeof scraping;
   seed: typeof seed;
   snapshots: typeof snapshots;
   tips: typeof tips;

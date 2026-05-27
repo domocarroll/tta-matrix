@@ -15,10 +15,17 @@ import type { RequestHandler } from './$types'
 import { error } from '@sveltejs/kit'
 import { env } from '$env/dynamic/private'
 import Anthropic from '@anthropic-ai/sdk'
+import { categoriseError } from '@tta/shared'
 import type { ExtractionResult, StreamEvent } from '$lib/types'
+import { makeReasoningEmitter } from '$lib/reasoningEmitter.ts'
 
 const MODEL = () => env.TTA_MODEL || 'claude-sonnet-4-6'
 const MAX_TOKENS = 16384
+
+// Anthropic's vision API has a practical per-image ceiling; sending more just
+// earns a 413. Reject early with a clean categorised message instead of
+// letting that surface as an opaque stream failure.
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024 // 8 MB
 
 const SYSTEM_PROMPT = `You are TipBot v2, an agentic horse-racing tip extraction system for Australian racing.
 
@@ -103,94 +110,6 @@ function parseLooseJson(raw: string): ExtractionResult | null {
   }
 }
 
-/**
- * Walk the streaming raw JSON; whenever a new full string element appears
- * inside the top-level "reasoning" array, emit it as a reasoning_step event.
- */
-function makeReasoningEmitter() {
-  let lastEmittedCount = 0
-  return (raw: string, emit: (step: string) => void) => {
-    // Locate the reasoning array
-    const key = '"reasoning"'
-    const keyIdx = raw.indexOf(key)
-    if (keyIdx < 0) return
-    const arrStart = raw.indexOf('[', keyIdx)
-    if (arrStart < 0) return
-    // Find array end (best effort — may not exist yet during streaming)
-    let depth = 0
-    let arrEnd = -1
-    let inString = false
-    let escape = false
-    for (let i = arrStart; i < raw.length; i++) {
-      const ch = raw[i]
-      if (escape) {
-        escape = false
-        continue
-      }
-      if (ch === '\\') {
-        escape = true
-        continue
-      }
-      if (ch === '"') {
-        inString = !inString
-        continue
-      }
-      if (inString) continue
-      if (ch === '[') depth++
-      else if (ch === ']') {
-        depth--
-        if (depth === 0) {
-          arrEnd = i
-          break
-        }
-      }
-    }
-    const arrSlice = raw.slice(arrStart + 1, arrEnd === -1 ? raw.length : arrEnd)
-    // Extract complete JSON strings out of the slice
-    const items: string[] = []
-    let i = 0
-    while (i < arrSlice.length) {
-      // skip whitespace + commas
-      while (i < arrSlice.length && /[\s,]/.test(arrSlice[i] ?? '')) i++
-      if (arrSlice[i] !== '"') break
-      let j = i + 1
-      let esc = false
-      let closed = false
-      while (j < arrSlice.length) {
-        const ch = arrSlice[j]
-        if (esc) {
-          esc = false
-          j++
-          continue
-        }
-        if (ch === '\\') {
-          esc = true
-          j++
-          continue
-        }
-        if (ch === '"') {
-          closed = true
-          break
-        }
-        j++
-      }
-      if (!closed) break
-      const jsonStr = arrSlice.slice(i, j + 1)
-      try {
-        items.push(JSON.parse(jsonStr) as string)
-      } catch {
-        break
-      }
-      i = j + 1
-    }
-    while (lastEmittedCount < items.length) {
-      const v = items[lastEmittedCount]
-      if (typeof v === 'string') emit(v)
-      lastEmittedCount++
-    }
-  }
-}
-
 export const POST: RequestHandler = async ({ request }) => {
   const apiKey = env.ANTHROPIC_API_KEY
   if (!apiKey) {
@@ -204,6 +123,14 @@ export const POST: RequestHandler = async ({ request }) => {
   }
   if (!file.type.startsWith('image/')) {
     throw error(400, `Invalid image type: ${file.type}`)
+  }
+  if (file.size > MAX_IMAGE_BYTES) {
+    // Categorise as PAYLOAD_TOO_LARGE so the client surfaces the canonical
+    // (non-retryable) user message rather than an opaque Anthropic 413 stream
+    // failure. The runner reads this body text on a non-OK response.
+    const cat = categoriseError(new Response(null, { status: 413 }))
+    const mb = (file.size / (1024 * 1024)).toFixed(1)
+    throw error(413, `${cat.userMessage} (image was ${mb} MB; limit 8 MB)`)
   }
 
   const buf = Buffer.from(await file.arrayBuffer())

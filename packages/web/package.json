@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "prepare": "svelte-kit sync || echo ''",
-    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "test": "vitest run"
   },
   "devDependencies": {
     "@sveltejs/adapter-cloudflare": "^7.2.8",
@@ -21,12 +22,13 @@
     "tailwindcss": "^4.2.1",
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
+    "vitest": "^3.0.0",
     "wrangler": "^4.76.0"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
     "@tta/agent": "workspace:*",
     "@tta/shared": "workspace:*",
-    "convex": "^1.34.0"
+    "convex": "^1.39.1"
   }
 }

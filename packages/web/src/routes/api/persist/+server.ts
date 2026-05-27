@@ -15,6 +15,31 @@ import type { ExtractionResult } from '$lib/types'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const api = anyApi as any
 
+/**
+ * Claude occasionally emits `horseNumber: null` for a selection it can read
+ * the name of but not the saddlecloth. The Convex schema types horseNumber
+ * as an optional float64 — `null` violates the validator. Normalise to
+ * "omitted" so the document persists cleanly. Applies to every caller
+ * (single-shot, workspace, classic).
+ */
+function sanitizeRaces(races: ExtractionResult['races']): ExtractionResult['races'] {
+  return races.map((race) => ({
+    raceNumber: race.raceNumber,
+    tips: race.tips.map((tip) => ({
+      tipsterName: tip.tipsterName,
+      selections: tip.selections.map((sel) => {
+        const n = sel.horseNumber
+        const clean: { position: number; horseName: string; horseNumber?: number } = {
+          position: sel.position,
+          horseName: sel.horseName
+        }
+        if (typeof n === 'number' && Number.isFinite(n)) clean.horseNumber = n
+        return clean
+      })
+    }))
+  }))
+}
+
 interface PersistRequest {
   clientId: string
   filename: string
@@ -66,7 +91,7 @@ export const POST: RequestHandler = async ({ request }) => {
       category: finalCategory,
       tipstersDetected: body.payload.tipstersDetected as string[],
       reasoning: body.payload.reasoning as string[],
-      races: body.payload.races,
+      races: sanitizeRaces(body.payload.races),
       flags: body.payload.flags,
       tokensIn: body.tokensIn,
       tokensOut: body.tokensOut,

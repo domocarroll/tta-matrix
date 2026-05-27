@@ -47,12 +47,36 @@ export const getByToken = query({
   },
 });
 
+// The Convex runtime exposes the Web Crypto API as a global `crypto`, but the
+// typecheck tsconfig uses `lib: ES2022` (no DOM lib), so we declare just the
+// surface we use here. This keeps snapshots.ts typechecking cleanly without
+// touching the shared tsconfig.
+declare const crypto: { getRandomValues(array: Uint8Array): Uint8Array };
+
+/**
+ * Mint a 22-char url-safe token using the Convex runtime's Web Crypto global.
+ * `crypto.getRandomValues` is cryptographically secure (unlike Math.random,
+ * whose output is predictable and would make share links guessable).
+ *
+ * Rejection sampling keeps the distribution uniform across the 62-char
+ * alphabet: a byte is only consumed if it falls within the largest multiple
+ * of 62 (<=247), so no character is over-represented by the modulo bias.
+ */
 function randomToken(): string {
   const alphabet =
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  let out = "";
-  for (let i = 0; i < 22; i += 1) {
-    out += alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+  const tokenLength = 22;
+  const max = Math.floor(256 / alphabet.length) * alphabet.length; // 248
+
+  const chars: string[] = [];
+  while (chars.length < tokenLength) {
+    const bytes = new Uint8Array(tokenLength);
+    crypto.getRandomValues(bytes);
+    for (const byte of bytes) {
+      if (byte >= max) continue; // discard to avoid modulo bias
+      chars.push(alphabet.charAt(byte % alphabet.length));
+      if (chars.length === tokenLength) break;
+    }
   }
-  return out;
+  return chars.join("");
 }

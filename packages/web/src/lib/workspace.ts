@@ -6,12 +6,15 @@ import {
   aggregateRaces,
   buildMeetingKey,
   parseMeetingKey,
+  matchField,
   type AggregatedRace,
   type ExpandedTip,
   type RaceCategory,
+  type FieldMatchFlag,
 } from '@tta/shared'
 
 import type { ExtractionResult } from './types'
+import type { ResolvedField } from './fieldResolution'
 
 /** A row coming back from /api/workspace (full-fat extraction). */
 export interface WorkspaceRow {
@@ -56,6 +59,17 @@ export interface MeetingCorrection {
   updatedAt: number
 }
 
+/** Field-resolution status surfaced per meeting card. */
+export type FieldStatus =
+  | { state: 'pending' }
+  | {
+      state: 'resolved'
+      source: string
+      fetchedAt: number
+      citations: ReadonlyArray<string>
+    }
+  | { state: 'unavailable'; reason: string }
+
 export interface MeetingGroup {
   meetingKey: string
   date: string
@@ -67,18 +81,67 @@ export interface MeetingGroup {
   totalTipsters: ReadonlyArray<string>
   raceNumbers: ReadonlyArray<number>
   flagCount: number
-  /** Aggregated races AFTER Pete's corrections applied. */
+  /** Aggregated races AFTER field-anchoring + Pete's corrections. */
   aggregated: ReadonlyArray<AggregatedRace>
   /** Aggregated races as the agent originally produced (no overlay). */
   aggregatedRaw: ReadonlyArray<AggregatedRace>
   /** The patches in effect, for the edit UI. */
   patches: ReadonlyArray<HorsePatch>
+  /** Authoritative-field resolution status for this meeting. */
+  field: FieldStatus
+  /** Quality flags raised by anchoring tips to the field. */
+  fieldFlags: ReadonlyArray<FieldMatchFlag>
+}
+
+/**
+ * Anchor a meeting's aggregated races to the resolved field.
+ *
+ * Ordering is deliberate: agent ground truth → field canonicalisation
+ * → Pete's manual patches (applied by the caller AFTER this). The human
+ * override always wins; the field just gives it a correct baseline so
+ * Pete rarely has to fix OCR noise by hand any more.
+ */
+function applyFieldMatch(
+  races: ReadonlyArray<AggregatedRace>,
+  resolved: ResolvedField | undefined,
+): { races: AggregatedRace[]; field: FieldStatus; flags: FieldMatchFlag[] } {
+  if (!resolved) {
+    return { races: races as AggregatedRace[], field: { state: 'pending' }, flags: [] }
+  }
+  if (!resolved.resolved) {
+    return {
+      races: races as AggregatedRace[],
+      field: { state: 'unavailable', reason: resolved.reason },
+      flags: [],
+    }
+  }
+
+  const byRaceNumber = new Map(resolved.races.map((r) => [r.raceNumber, r.runners]))
+  const flags: FieldMatchFlag[] = []
+  const anchored = races.map((race) => {
+    const runners = byRaceNumber.get(race.raceNumber) ?? []
+    const result = matchField(race, runners)
+    for (const f of result.flags) flags.push(f)
+    return result.race
+  })
+
+  return {
+    races: anchored,
+    field: {
+      state: 'resolved',
+      source: resolved.source,
+      fetchedAt: resolved.fetchedAt,
+      citations: resolved.citations,
+    },
+    flags,
+  }
 }
 
 /** Group rows by meetingKey then aggregate each group. */
 export function buildMeetingGroups(
   rows: ReadonlyArray<WorkspaceRow>,
-  corrections: ReadonlyArray<MeetingCorrection>
+  corrections: ReadonlyArray<MeetingCorrection>,
+  fields?: ReadonlyMap<string, ResolvedField>
 ): MeetingGroup[] {
   const correctionsByKey = new Map<string, MeetingCorrection>()
   for (const c of corrections) correctionsByKey.set(c.meetingKey, c)
@@ -99,7 +162,10 @@ export function buildMeetingGroups(
     // Build ExpandedTip[] from all rows in this group
     const allTips = expandedTipsFromRows(groupRows)
     const aggregatedRaw = aggregateRaces(allTips, category, meeting)
-    const aggregated = applyPatches(aggregatedRaw, correction?.horsePatches ?? [])
+    // Anchor to the authoritative field (if resolved), THEN apply Pete's
+    // manual patches on top — human override wins over both.
+    const fm = applyFieldMatch(aggregatedRaw, fields?.get(meetingKey))
+    const aggregated = applyPatches(fm.races, correction?.horsePatches ?? [])
 
     const tipsters = new Set<string>()
     const raceNums = new Set<number>()
@@ -123,7 +189,9 @@ export function buildMeetingGroups(
       flagCount,
       aggregated,
       aggregatedRaw,
-      patches: correction?.horsePatches ?? []
+      patches: correction?.horsePatches ?? [],
+      field: fm.field,
+      fieldFlags: fm.flags
     })
   }
 

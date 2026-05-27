@@ -76,3 +76,6 @@ export {
   buildMeetingCsv,
   buildCsvFilename,
 } from "./csv.ts";
+
+export { matchField } from "./fieldMatch.ts";
+export type { FieldRunner, FieldMatchFlag } from "./fieldMatch.ts";
