@@ -83,7 +83,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
   const client = new ConvexHttpClient(url)
   try {
-    const id = await client.mutation(api.extractions.create, {
+    const result = await client.mutation(api.extractions.create, {
       clientId: body.clientId,
       filename: body.filename,
       publication: body.payload.publication,
@@ -98,7 +98,10 @@ export const POST: RequestHandler = async ({ request }) => {
       durationMs: body.durationMs,
       model: body.model
     })
-    return json({ id })
+    // Echo the routing decision so /work can show "routed → Gate 3" or
+    // "pending — lock now" without re-deriving (which is racy). Existing
+    // callers that only consume `id` keep working unchanged.
+    return json(result)
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'persist failed'
     console.error('[persist] convex mutation failed:', msg)

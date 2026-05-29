@@ -33,6 +33,12 @@ export interface WorkspaceRow {
   durationMs: number
   model: string
   meetingKey: string
+  /**
+   * 3-Gate routing state. Legacy rows lacking this default to `routed`
+   * (set in extractions.listFullByClient).
+   */
+  state?: 'routed' | 'pending-meeting'
+  pendingReason?: string
 }
 
 export interface HorsePatch {

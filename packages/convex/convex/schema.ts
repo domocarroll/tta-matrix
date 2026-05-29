@@ -214,9 +214,46 @@ export default defineSchema({
     model: v.string(),
     /** Workspace key — `${YYYY-MM-DD}|${category}|${meeting}` for daily grouping. */
     meetingKey: v.optional(v.string()),
+    // ── 3-Gate routing (additive — legacy rows = state undefined → routed) ──
+    /**
+     * `routed` = landed in a locked customerMeeting.
+     * `pending-meeting` = no locked meeting for derived key; surfaced in
+     * Gate 2 for Pete to fix.
+     */
+    state: v.optional(
+      v.union(v.literal("routed"), v.literal("pending-meeting")),
+    ),
+    /** Reason a row is pending, e.g. "no_locked_meeting_for_key". */
+    pendingReason: v.optional(v.string()),
   })
     .index("by_client", ["clientId"])
     .index("by_client_meeting", ["clientId", "meetingKey"]),
+
+  // ────────────────────────────────────────────────
+  // 3-Gate workspace — Customer meeting registry (Gate 1)
+  // ────────────────────────────────────────────────
+  //
+  // One row per (clientId, meetingKey). `state === 'locked'` is the
+  // load-bearing invariant: tips can only route to a locked meeting.
+  // Denormalised mirror of "userFields row exists + approved" for cheap
+  // lookups during /api/persist.
+
+  customerMeetings: defineTable({
+    clientId: v.string(),
+    meetingKey: v.string(),
+    date: v.string(),
+    category: v.string(),
+    name: v.string(),
+    state: v.union(
+      v.literal("draft"),
+      v.literal("cards-pending"),
+      v.literal("locked"),
+    ),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_client_meeting", ["clientId", "meetingKey"])
+    .index("by_client_date", ["clientId", "date"]),
 
   // ────────────────────────────────────────────────
   // Workspace corrections — Pete's review/edit overlay
@@ -264,6 +301,40 @@ export default defineSchema({
     updatedAt: v.number(),
   })
     .index("by_client_meeting", ["clientId", "meetingKey"]),
+
+  // ────────────────────────────────────────────────
+  // User-approved authoritative field (Pete uploads race cards)
+  // ────────────────────────────────────────────────
+  //
+  // Pete drops the official race-card image(s) per meeting. We extract
+  // {number, name, jockey, trainer, barrier, scratched} via Claude, he
+  // reviews + approves, and the approved field anchors tip aggregation
+  // for that meetingKey — takes priority over Perplexity / scraped data.
+  //
+  // One row per (clientId, meetingKey). Re-uploading replaces.
+
+  userFields: defineTable({
+    clientId: v.string(),
+    meetingKey: v.string(),
+    races: v.array(
+      v.object({
+        raceNumber: v.number(),
+        distance: v.optional(v.number()),
+        runners: v.array(
+          v.object({
+            number: v.number(),
+            name: v.string(),
+            jockey: v.optional(v.string()),
+            trainer: v.optional(v.string()),
+            barrier: v.optional(v.number()),
+            scratched: v.optional(v.boolean()),
+          }),
+        ),
+      }),
+    ),
+    sourceFilenames: v.array(v.string()),
+    approvedAt: v.number(),
+  }).index("by_client_meeting", ["clientId", "meetingKey"]),
 
   /** Public read-only snapshots for Pete's "share to customers" links. */
   meetingSnapshots: defineTable({

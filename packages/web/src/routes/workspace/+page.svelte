@@ -13,6 +13,8 @@
     type HorsePatch
   } from '$lib/workspace'
   import { resolveField, type ResolvedField } from '$lib/fieldResolution'
+  import { loadUserFields, userFieldsToResolvedMap, type UserField } from '$lib/userFields'
+  import RaceCardUploadModal from '$lib/components/RaceCardUploadModal.svelte'
 
   type QueueStatus = 'pending' | 'streaming' | 'done' | 'error' | 'cancelled'
   interface QueueItem {
@@ -42,6 +44,10 @@
   // Resolved authoritative fields, keyed by meetingKey. Reassigned (not
   // mutated) so the $derived groups recompute.
   let fieldsByKey = $state(new Map<string, ResolvedField>())
+  // User-approved (Pete-uploaded) fields. Win over Perplexity for the same key.
+  let userFields = $state<UserField[]>([])
+  let uploadModalKey = $state<string | null>(null)
+  let uploadModalMeeting = $state<{ date: string; meeting: string } | null>(null)
   // Non-reactive guard: one auto-resolve attempt per meetingKey.
   const fieldRequested = new Set<string>()
   let queue = $state<QueueItem[]>([])
@@ -66,11 +72,15 @@
     try {
       const params = new URLSearchParams({ clientId })
       if (onlyToday) params.set('sinceMs', String(todayStartUtcMs()))
-      const res = await fetch(`/api/workspace?${params.toString()}`)
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const j = (await res.json()) as { rows: WorkspaceRow[]; corrections: MeetingCorrection[] }
+      const [wsRes, ufs] = await Promise.all([
+        fetch(`/api/workspace?${params.toString()}`),
+        loadUserFields(clientId)
+      ])
+      if (!wsRes.ok) throw new Error(`HTTP ${wsRes.status}`)
+      const j = (await wsRes.json()) as { rows: WorkspaceRow[]; corrections: MeetingCorrection[] }
       rows = j.rows
       corrections = j.corrections
+      userFields = ufs
     } catch (err) {
       lastError = err instanceof Error ? err.message : 'load failed'
     } finally {
@@ -78,8 +88,29 @@
     }
   }
 
+  function openUploadModal(group: MeetingGroup): void {
+    uploadModalKey = group.meetingKey
+    uploadModalMeeting = { date: group.date, meeting: group.meeting }
+  }
+  function closeUploadModal(): void {
+    uploadModalKey = null
+    uploadModalMeeting = null
+  }
+  async function onFieldApproved(): Promise<void> {
+    closeUploadModal()
+    await refresh()
+  }
+
+  // User-approved fields override auto-resolved fields for the same key.
+  const mergedFieldsByKey = $derived(() => {
+    const user = userFieldsToResolvedMap(userFields)
+    const merged = new Map(fieldsByKey)
+    for (const [k, v] of user) merged.set(k, v)
+    return merged
+  })
+
   const allGroups = $derived<MeetingGroup[]>(
-    buildMeetingGroups(rows, corrections, fieldsByKey)
+    buildMeetingGroups(rows, corrections, mergedFieldsByKey())
   )
 
   function storeField(key: string, result: ResolvedField): void {
@@ -425,11 +456,23 @@
               persistCorrections(group, patches, label, notes)}
             onClearMeeting={() => clearMeeting(group)}
             onResolveField={() => resolveMeetingField(group)}
+            onUploadCard={() => openUploadModal(group)}
           />
         {/each}
       </div>
     {/if}
   </section>
+
+  {#if uploadModalKey && uploadModalMeeting && clientId}
+    <RaceCardUploadModal
+      clientId={clientId}
+      meetingKey={uploadModalKey}
+      meetingLabel={uploadModalMeeting.meeting}
+      meetingDate={uploadModalMeeting.date}
+      onClose={closeUploadModal}
+      onApproved={onFieldApproved}
+    />
+  {/if}
 
   <footer class="mx-auto max-w-7xl mt-16 pt-8 border-t border-border flex justify-between items-baseline">
     <div class="mono text-[11px] uppercase tracking-[0.18em] text-text-muted">

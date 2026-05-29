@@ -4,8 +4,28 @@
 agentic backend, plus persistent per-customer history AND Pete's full
 Friday workflow (multi-image, multi-meeting aggregation, edit-then-export).
 
-**Date:** 2026-05-08
-**Live at:** https://tta-pete-demo.pages.dev/ (staging)
+**Date:** 2026-05-29
+**Live at:** https://tta-pete-demo.pages.dev/ (production)
+**Front door:** `/work` (3-Gate workspace). `/classic` stays as rollback escape.
+
+## 3-Gate workspace cutover (2026-05-29)
+
+Pete's mental model "set the rules first, then play the game" encoded as
+three approval gates:
+
+| Gate | Action | Output |
+|---|---|---|
+| ① field | Create meeting · upload official cards · review · approve | LOCKED FIELD |
+| ② tips | Drop tip sheets · server post-routes to locked meetings | Routed / pending tips |
+| ③ review | ClassicMeetingCard per meeting · quaddie/trif/F4 · edit · export | Customer payload |
+
+**Load-bearing rule:** tips cannot land in an unlocked meeting. Enforced
+server-side in `extractions.create` — locked meetings matched by
+`(category, normalised-name)` not date, so Friday-extracted tips
+correctly route to Saturday-locked meetings.
+
+Tests added: 41 (routeExtraction · meetingState · inferCustomerMeetings ·
+threeGateInvariant). 120 → 125 shared tests pass.
 
 ---
 

@@ -141,7 +141,8 @@ export const POST: RequestHandler = async ({ request }) => {
       : 'image/jpeg'
   ) as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif'
 
-  const client = new Anthropic({ apiKey })
+  const baseURL = env.ANTHROPIC_BASE_URL || undefined
+  const client = new Anthropic({ apiKey, baseURL })
   const encoder = new TextEncoder()
 
   const stream = new ReadableStream({
@@ -150,13 +151,22 @@ export const POST: RequestHandler = async ({ request }) => {
         const emitReasoning = makeReasoningEmitter()
         let raw = ''
 
+        const useProxy = !!baseURL
         const anthropicStream = client.messages.stream({
           model: MODEL(),
           max_tokens: MAX_TOKENS,
           temperature: 0.1,
-          system: [
-            { type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }
-          ],
+          // When pointed at a Claude-Code-CLI proxy, the proxy injects its
+          // own system prompt and strips ours — so we inline the system
+          // prompt into the user message instead. Direct Anthropic still
+          // gets the proper system+cache.
+          ...(useProxy
+            ? {}
+            : {
+                system: [
+                  { type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }
+                ]
+              }),
           messages: [
             {
               role: 'user',
@@ -167,7 +177,9 @@ export const POST: RequestHandler = async ({ request }) => {
                 },
                 {
                   type: 'text',
-                  text: 'Extract this tip sheet. Reason first, then output the JSON object. No prose outside JSON.'
+                  text: useProxy
+                    ? `${SYSTEM_PROMPT}\n\n---\n\nExtract this tip sheet. Reason first, then output the JSON object. No prose outside JSON.`
+                    : 'Extract this tip sheet. Reason first, then output the JSON object. No prose outside JSON.'
                 }
               ]
             }

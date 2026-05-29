@@ -1,8 +1,8 @@
-// Classic (v0) is the interface Pete is onboarded on — make it the front
-// door. The old single-shot UI in +page.svelte is preserved but routed past.
-// Reversible: delete this file to restore the single-shot landing.
+// 3-Gate workspace is the front door. /classic stays reachable as a
+// rollback escape hatch for one week. Reversible: change target back to
+// '/classic' (or delete this file to restore the single-shot landing).
 import { redirect } from '@sveltejs/kit'
 
 export const load = () => {
-  redirect(308, '/classic')
+  redirect(308, '/work')
 }

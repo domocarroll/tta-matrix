@@ -79,3 +79,28 @@ export {
 
 export { matchField } from "./fieldMatch.ts";
 export type { FieldRunner, FieldMatchFlag } from "./fieldMatch.ts";
+
+export {
+  routeExtraction,
+  deriveMeetingKeyFromExtraction,
+} from "./routeExtraction.ts";
+export type {
+  ExtractedTarget,
+  LockedMeeting,
+  RouteResult,
+  RouteFailureReason,
+} from "./routeExtraction.ts";
+
+export { nextState, stateLabel } from "./meetingState.ts";
+export type {
+  MeetingState,
+  MeetingEvent,
+  TransitionResult,
+} from "./meetingState.ts";
+
+export { inferCustomerMeetings } from "./inferCustomerMeetings.ts";
+export type {
+  ExtractionSeed,
+  UserFieldSeed,
+  InferredCustomerMeeting,
+} from "./inferCustomerMeetings.ts";

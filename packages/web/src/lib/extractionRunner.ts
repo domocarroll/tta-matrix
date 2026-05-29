@@ -218,7 +218,19 @@ async function runExtractionOnce(
   }
 }
 
-/** Persist an extraction to history. Returns the new doc id, or null on error. */
+/** Server-echoed routing decision after persist. */
+export interface PersistRouteResult {
+  id: string
+  meetingKey: string
+  state: 'routed' | 'pending-meeting'
+  pendingReason?: string
+  derivedKey: string
+  derivedDate: string
+  derivedCategory: string
+  derivedMeetingName: string
+}
+
+/** Persist an extraction to history. Returns the routing result, or null on error. */
 export async function persistExtraction(args: {
   clientId: string
   filename: string
@@ -229,7 +241,7 @@ export async function persistExtraction(args: {
   payload: ExtractionResult
   /** When set, overrides agent's category (workspace category strip selection). */
   overrideCategory?: string
-}): Promise<string | null> {
+}): Promise<PersistRouteResult | null> {
   try {
     const res = await fetch('/api/persist', {
       method: 'POST',
@@ -237,8 +249,7 @@ export async function persistExtraction(args: {
       body: JSON.stringify(args)
     })
     if (!res.ok) return null
-    const j = (await res.json()) as { id: string }
-    return j.id
+    return (await res.json()) as PersistRouteResult
   } catch {
     return null
   }

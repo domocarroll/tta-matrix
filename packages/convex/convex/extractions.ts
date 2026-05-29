@@ -101,7 +101,42 @@ function buildMeetingKey(category: string, meeting: string, when: number): strin
   return `${date}|${cat}|${norm}`;
 }
 
-/** Persist a completed extraction for the current client. */
+function normaliseMeetingName(raw: string): string {
+  return (raw || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+}
+
+function utcDateString(when: number): string {
+  const d = new Date(when);
+  const yyyy = d.getUTCFullYear();
+  const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const dd = String(d.getUTCDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+/** Persist a completed extraction for the current client.
+ *
+ * 3-Gate routing (Pete's load-bearing invariant: tips cannot land in an
+ * unlocked meeting):
+ *
+ *   1. Look up ALL locked customerMeetings for the client.
+ *   2. Filter by (case-insensitive) (category, meeting-name) match.
+ *      Date is NOT part of the match key — Pete plans Saturday's
+ *      meeting on Friday, so the extracted "today" almost never lines
+ *      up with the meeting date.
+ *   3. If exactly one match → route to it (use its meetingKey, which
+ *      preserves Pete's chosen date for downstream grouping).
+ *   4. If multiple matches (same venue, different days) → prefer the
+ *      one whose date is today (UTC) OR the most-recently-updated.
+ *   5. If zero matches → persist with `state: 'pending-meeting'`
+ *      under a today-UTC-derived key so Gate 2 can surface "lock now".
+ *
+ * Returns rich result so the persist API can echo the routing decision
+ * back to the client without the client re-deriving it (which is racy
+ * and disagrees with the server when the client's snapshot is stale).
+ */
 export const create = mutation({
   args: {
     clientId: v.string(),
@@ -120,9 +155,93 @@ export const create = mutation({
     model: v.string(),
   },
   handler: async (ctx, args) => {
-    const meetingKey = buildMeetingKey(args.category, args.meeting, Date.now());
     const races = normaliseRaces(args.races as IncomingRace[]);
-    return await ctx.db.insert("extractions", { ...args, races, meetingKey });
+
+    // Resolve the locked meeting (if any) by venue+category, NOT by date.
+    const lockedMeetings = await ctx.db
+      .query("customerMeetings")
+      .withIndex("by_client_meeting", (q) => q.eq("clientId", args.clientId))
+      .collect();
+    const targetCat = (args.category || "OR").toUpperCase();
+    const targetName = normaliseMeetingName(args.meeting);
+    const candidates = lockedMeetings.filter(
+      (m) =>
+        m.state === "locked" &&
+        m.category.toUpperCase() === targetCat &&
+        normaliseMeetingName(m.name) === targetName,
+    );
+
+    let routedMeetingKey: string | undefined;
+    if (candidates.length === 1) {
+      routedMeetingKey = candidates[0]!.meetingKey;
+    } else if (candidates.length > 1) {
+      // Edge case: two locked meetings share (category, name) but differ
+      // by date — e.g. back-to-back Royal Randwicks. We prefer the
+      // today-UTC match; otherwise the most-recently-updated. The server
+      // cannot know which calendar day the tip image was for, so this is
+      // a reasonable default. If it misfires, the user can `clear
+      // meeting` and re-drop after deleting the wrong-day lock.
+      const today = utcDateString(Date.now());
+      const todayMatch = candidates.find((c) => c.date === today);
+      const pick = todayMatch
+        ? todayMatch
+        : [...candidates].sort((a, b) => b.updatedAt - a.updatedAt)[0]!;
+      routedMeetingKey = pick.meetingKey;
+    }
+
+    const routed = routedMeetingKey !== undefined;
+    const meetingKey =
+      routedMeetingKey ??
+      buildMeetingKey(args.category, args.meeting, Date.now());
+    const state = routed ? ("routed" as const) : ("pending-meeting" as const);
+    const pendingReason = routed ? undefined : "no_locked_meeting_for_key";
+
+    const id = await ctx.db.insert("extractions", {
+      ...args,
+      races,
+      meetingKey,
+      state,
+      pendingReason,
+    });
+    // Echo the decision so the client UI can reflect it without re-deriving.
+    return {
+      id,
+      meetingKey,
+      state,
+      pendingReason,
+      derivedKey: buildMeetingKey(args.category, args.meeting, Date.now()),
+      derivedDate: utcDateString(Date.now()),
+      derivedCategory: targetCat,
+      derivedMeetingName: args.meeting.trim().replace(/\s+/g, " "),
+    };
+  },
+});
+
+/**
+ * Re-route a single existing extraction. Called from /api/meetings PUT
+ * after Pete locks a meeting so previously-pending extractions for that
+ * key flip to `routed` without re-uploading.
+ */
+export const reroutePendingForMeeting = mutation({
+  args: { clientId: v.string(), meetingKey: v.string() },
+  handler: async (ctx, args) => {
+    const rows = await ctx.db
+      .query("extractions")
+      .withIndex("by_client_meeting", (q) =>
+        q.eq("clientId", args.clientId).eq("meetingKey", args.meetingKey),
+      )
+      .collect();
+    let rerouted = 0;
+    for (const row of rows) {
+      if (row.state === "pending-meeting") {
+        await ctx.db.patch(row._id, {
+          state: "routed",
+          pendingReason: undefined,
+        });
+        rerouted += 1;
+      }
+    }
+    return { rerouted };
   },
 });
 
@@ -163,6 +282,11 @@ export const listFullByClient = query({
         meetingKey:
           row.meetingKey ??
           buildMeetingKey(row.category, row.meeting, row._creationTime),
+        // Legacy rows without state are treated as routed by readers —
+        // they pre-date the 3-gate cutover and lived under the implicit
+        // "everything goes" rule.
+        state: row.state ?? ("routed" as const),
+        pendingReason: row.pendingReason,
       }));
   },
 });

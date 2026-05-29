@@ -16,6 +16,8 @@
     type HorsePatch
   } from '$lib/workspace'
   import { resolveField, type ResolvedField } from '$lib/fieldResolution'
+  import { loadUserFields, userFieldsToResolvedMap, type UserField } from '$lib/userFields'
+  import RaceCardUploadModal from '$lib/components/RaceCardUploadModal.svelte'
   import { categoryConfig, CATEGORY_ORDER } from '$lib/classic/categoryConfig'
   import type { ProcessedPhoto, RaceCategory } from '$lib/classic/types'
 
@@ -26,6 +28,9 @@
   let corrections = $state<MeetingCorrection[]>([])
   let fieldsByKey = $state(new Map<string, ResolvedField>())
   const fieldRequested = new Set<string>()
+  let userFields = $state<UserField[]>([])
+  let uploadModalKey = $state<string | null>(null)
+  let uploadModalMeeting = $state<{ date: string; meeting: string } | null>(null)
   let photos = $state<ProcessedPhoto[]>([])
   let processing = $state(false)
   let loading = $state(true)
@@ -44,11 +49,15 @@
     try {
       const params = new URLSearchParams({ clientId })
       if (onlyToday) params.set('sinceMs', String(todayStartUtcMs()))
-      const res = await fetch(`/api/workspace?${params.toString()}`)
+      const [res, ufs] = await Promise.all([
+        fetch(`/api/workspace?${params.toString()}`),
+        loadUserFields(clientId)
+      ])
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const j = (await res.json()) as { rows: WorkspaceRow[]; corrections: MeetingCorrection[] }
       rows = j.rows
       corrections = j.corrections
+      userFields = ufs
     } catch (err) {
       lastError = err instanceof Error ? err.message : 'load failed'
     } finally {
@@ -56,7 +65,26 @@
     }
   }
 
-  const allGroups = $derived<MeetingGroup[]>(buildMeetingGroups(rows, corrections, fieldsByKey))
+  const mergedFieldsByKey = $derived(() => {
+    const user = userFieldsToResolvedMap(userFields)
+    const merged = new Map(fieldsByKey)
+    for (const [k, v] of user) merged.set(k, v)
+    return merged
+  })
+  const allGroups = $derived<MeetingGroup[]>(buildMeetingGroups(rows, corrections, mergedFieldsByKey()))
+
+  function openUploadModal(group: MeetingGroup): void {
+    uploadModalKey = group.meetingKey
+    uploadModalMeeting = { date: group.date, meeting: group.meeting }
+  }
+  function closeUploadModal(): void {
+    uploadModalKey = null
+    uploadModalMeeting = null
+  }
+  async function onFieldApproved(): Promise<void> {
+    closeUploadModal()
+    await refresh()
+  }
   const groups = $derived<MeetingGroup[]>(
     activeCategory === 'ALL' ? allGroups : allGroups.filter((g) => g.category === activeCategory)
   )
@@ -281,12 +309,24 @@
             onPatchesChange={(patches, label, notes) => persistCorrections(group, patches, label, notes)}
             onClearMeeting={() => clearMeeting(group)}
             onResolveField={() => resolveMeetingField(group)}
+            onUploadCard={() => openUploadModal(group)}
           />
         {/each}
       </div>
     {/if}
   </section>
 </main>
+
+{#if uploadModalKey && uploadModalMeeting && clientId}
+  <RaceCardUploadModal
+    clientId={clientId}
+    meetingKey={uploadModalKey}
+    meetingLabel={uploadModalMeeting.meeting}
+    meetingDate={uploadModalMeeting.date}
+    onClose={closeUploadModal}
+    onApproved={onFieldApproved}
+  />
+{/if}
 
 <footer class="c-muted mt-16 border-t border-soft bg-soft-50 py-8 text-center text-sm">
   <p class="font-semibold">&copy; {new Date().getFullYear()} The TipAnalyser</p>

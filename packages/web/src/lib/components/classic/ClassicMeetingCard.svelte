@@ -18,8 +18,9 @@
     onPatchesChange: (patches: HorsePatch[], label?: string, notes?: string) => void
     onClearMeeting: () => Promise<void>
     onResolveField: () => Promise<void>
+    onUploadCard?: () => void
   }
-  let { group, clientId, onPatchesChange, onClearMeeting, onResolveField }: Props = $props()
+  let { group, clientId, onPatchesChange, onClearMeeting, onResolveField, onUploadCard }: Props = $props()
 
   let showCorrections = $state(false)
   let showReasoning = $state(false)
@@ -182,6 +183,15 @@
         </div>
       </div>
       <div class="flex shrink-0 items-baseline gap-3 text-xs font-bold uppercase tracking-wider">
+        {#if onUploadCard}
+          <button
+            class="c-accent hover:underline"
+            onclick={onUploadCard}
+            title="Upload the official race card(s) — extract, review, approve"
+          >
+            upload race cards →
+          </button>
+        {/if}
         <button class="c-accent disabled:opacity-50 hover:underline" disabled={resolvingField || group.field.state === 'pending'} onclick={refetchField}>
           {resolvingField ? 'resolving…' : group.field.state === 'resolved' ? 'refresh field' : 'resolve field'}
         </button>

@@ -8,10 +8,10 @@
  * @module
  */
 
-import type * as _debug from "../_debug.js";
 import type * as aggregations from "../aggregations.js";
 import type * as corrections from "../corrections.js";
 import type * as crons from "../crons.js";
+import type * as customerMeetings from "../customerMeetings.js";
 import type * as extractions from "../extractions.js";
 import type * as fieldResolution from "../fieldResolution.js";
 import type * as horses from "../horses.js";
@@ -23,6 +23,7 @@ import type * as seed from "../seed.js";
 import type * as snapshots from "../snapshots.js";
 import type * as tips from "../tips.js";
 import type * as tipsters from "../tipsters.js";
+import type * as userFields from "../userFields.js";
 
 import type {
   ApiFromModules,
@@ -31,10 +32,10 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  _debug: typeof _debug;
   aggregations: typeof aggregations;
   corrections: typeof corrections;
   crons: typeof crons;
+  customerMeetings: typeof customerMeetings;
   extractions: typeof extractions;
   fieldResolution: typeof fieldResolution;
   horses: typeof horses;
@@ -46,6 +47,7 @@ declare const fullApi: ApiFromModules<{
   snapshots: typeof snapshots;
   tips: typeof tips;
   tipsters: typeof tipsters;
+  userFields: typeof userFields;
 }>;
 
 /**
