@@ -35,6 +35,7 @@
     type CustomerMeeting
   } from '$lib/customerMeetings'
   import { todayUtc } from '@tta/shared'
+  import '$lib/styles/classic-theme.css'
 
   let clientId = $state<string | null>(null)
   let meetings = $state<CustomerMeeting[]>([])
@@ -200,8 +201,15 @@
 
 <svelte:head>
   <title>The TipAnalyser — 3-Gate Workspace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
 </svelte:head>
 
+<div class="tta-classic">
 <ClassicHeader />
 
 <main class="container mx-auto max-w-7xl px-4 py-10 md:px-8">
@@ -288,3 +296,4 @@
   <p class="font-semibold">&copy; {new Date().getFullYear()} The TipAnalyser</p>
   <p class="mt-2 text-xs">Please gamble responsibly. Only bet what you can afford to lose.</p>
 </footer>
+</div>
