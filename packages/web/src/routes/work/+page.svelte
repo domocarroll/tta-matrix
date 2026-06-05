@@ -14,9 +14,7 @@
   import { getClientId } from '$lib/clientId'
   import ClassicHeader from '$lib/components/classic/ClassicHeader.svelte'
   import GateHeader from '$lib/components/work/GateHeader.svelte'
-  import GateOneMeetings from '$lib/components/work/GateOneMeetings.svelte'
-  import GateTwoTipIntake from '$lib/components/work/GateTwoTipIntake.svelte'
-  import GateThreeReview from '$lib/components/work/GateThreeReview.svelte'
+  import WorkMeetingCard from '$lib/components/work/WorkMeetingCard.svelte'
   import NewMeetingModal from '$lib/components/work/NewMeetingModal.svelte'
   import RaceCardUploadModal from '$lib/components/RaceCardUploadModal.svelte'
   import {
@@ -30,7 +28,6 @@
   import {
     listCustomerMeetings,
     deleteCustomerMeeting,
-    setCustomerMeetingState,
     runBackfill,
     type CustomerMeeting
   } from '$lib/customerMeetings'
@@ -85,6 +82,10 @@
     buildMeetingGroups(rows, corrections, mergedFieldsByKey())
   )
   const userFieldsByKey = $derived(new Map(userFields.map((u) => [u.meetingKey, u])))
+  const groupByKey = $derived(new Map(allGroups.map((g) => [g.meetingKey, g])))
+  // Meetings sorted: most-recently-updated first, so the one Pete's working
+  // on stays at the top.
+  const sortedMeetings = $derived([...meetings].sort((a, b) => b.updatedAt - a.updatedAt))
 
   const lockedCount = $derived(meetings.filter((m) => m.state === 'locked').length)
   const routedTipCount = $derived(rows.filter((r) => (r.state ?? 'routed') === 'routed').length)
@@ -94,10 +95,6 @@
   function openUploadForMeeting(m: CustomerMeeting): void {
     uploadModalKey = m.meetingKey
     uploadModalMeeting = { date: m.date, meeting: m.name }
-  }
-  function openUploadForGroup(group: MeetingGroup): void {
-    uploadModalKey = group.meetingKey
-    uploadModalMeeting = { date: group.date, meeting: group.meeting }
   }
   function closeUploadModal(): void {
     uploadModalKey = null
@@ -171,15 +168,9 @@
     // intentionally empty
   }
 
-  // Gate 2 → Gate 1 jump (Pete clicks "lock now" on a pending tip).
+  // Reserved for a future prefilled "new meeting" entry; always null in the
+  // hard-wall model (no pending-tip jump).
   let jumpPrefill = $state<{ date: string; category: string; name: string } | null>(null)
-  function jumpToGateOne(prefill: { date: string; category: string; name: string }): void {
-    jumpPrefill = prefill
-    showNewMeeting = true
-    if (typeof document !== 'undefined') {
-      document.getElementById('gate-1')?.scrollIntoView({ behavior: 'smooth' })
-    }
-  }
 
   async function onNewMeetingCreated(meetingKey: string): Promise<void> {
     showNewMeeting = false
@@ -239,33 +230,64 @@
   {#if !clientId}
     <p class="c-muted">Browser identity unavailable. Re-open this page.</p>
   {:else}
-    <div class="space-y-12">
-      <GateOneMeetings
-        {meetings}
-        userFieldsByKey={userFieldsByKey}
-        onNewMeeting={() => (showNewMeeting = true)}
-        onUploadCard={(m) => openUploadForMeeting(m)}
-        onEditField={(m) => openUploadForMeeting(m)}
-        onUnlock={handleUnlock}
-        onDelete={handleDelete}
-      />
-
-      <GateTwoTipIntake
-        clientId={clientId!}
-        {meetings}
-        onChange={refresh}
-        onJumpToGateOne={jumpToGateOne}
-      />
-
-      <GateThreeReview
-        groups={allGroups}
-        clientId={clientId!}
-        onPatchesChange={persistCorrections}
-        onClearMeeting={clearMeeting}
-        onResolveField={resolveMeetingField}
-        onUploadCard={openUploadForGroup}
-      />
+    <div class="mb-6 flex items-center justify-between">
+      <p class="text-[10px] uppercase tracking-[0.2em] c-muted font-bold">
+        {meetings.length} meeting{meetings.length === 1 ? '' : 's'} today
+      </p>
+      <button
+        type="button"
+        class="rounded-md bg-blue-600 px-4 py-2 text-[11px] font-bold uppercase tracking-wider text-white hover:bg-blue-700"
+        onclick={() => (showNewMeeting = true)}
+      >
+        + new meeting
+      </button>
     </div>
+
+    {#if meetings.length === 0}
+      <div class="rounded-xl border-2 border-dashed border-soft bg-soft-50/50 px-6 py-16 text-center">
+        <div class="mb-2 text-4xl">🏇</div>
+        <p class="c-fg text-lg font-bold">No meetings yet.</p>
+        <p class="c-muted mx-auto mt-1 max-w-md text-sm">
+          Start a meeting, upload its official race card to lock the field, then drop all
+          that meeting's tip sheets in. One meeting at a time — set the rules, then play.
+        </p>
+        <button
+          type="button"
+          class="mt-5 rounded-md bg-blue-600 px-4 py-2 text-[11px] font-bold uppercase tracking-wider text-white hover:bg-blue-700"
+          onclick={() => (showNewMeeting = true)}
+        >
+          + new meeting
+        </button>
+      </div>
+    {:else}
+      <div class="space-y-8">
+        {#each sortedMeetings as m (m.meetingKey)}
+          <WorkMeetingCard
+            meeting={m}
+            userField={userFieldsByKey.get(m.meetingKey) ?? null}
+            group={groupByKey.get(m.meetingKey)}
+            clientId={clientId!}
+            onUploadCard={() => openUploadForMeeting(m)}
+            onEditField={() => openUploadForMeeting(m)}
+            onUnlock={() => handleUnlock(m)}
+            onDelete={() => handleDelete(m)}
+            onTipsChange={refresh}
+            onPatchesChange={(patches, label, notes) => {
+              const g = groupByKey.get(m.meetingKey)
+              if (g) void persistCorrections(g, patches, label, notes)
+            }}
+            onClearMeeting={async () => {
+              const g = groupByKey.get(m.meetingKey)
+              if (g) await clearMeeting(g)
+            }}
+            onResolveField={async () => {
+              const g = groupByKey.get(m.meetingKey)
+              if (g) await resolveMeetingField(g)
+            }}
+          />
+        {/each}
+      </div>
+    {/if}
   {/if}
 </main>
 

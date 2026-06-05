@@ -19,8 +19,14 @@
     onClearMeeting: () => Promise<void>
     onResolveField: () => Promise<void>
     onUploadCard?: () => void
+    /**
+     * Embedded mode: the parent (WorkMeetingCard) already renders the
+     * meeting header + lifecycle actions, so suppress this card's own
+     * header and outer chrome to avoid a doubled title.
+     */
+    embedded?: boolean
   }
-  let { group, clientId, onPatchesChange, onClearMeeting, onResolveField, onUploadCard }: Props = $props()
+  let { group, clientId, onPatchesChange, onClearMeeting, onResolveField, onUploadCard, embedded = false }: Props = $props()
 
   let showCorrections = $state(false)
   let showReasoning = $state(false)
@@ -153,8 +159,9 @@
   const config = $derived(categoryConfig[group.category as keyof typeof categoryConfig] ?? categoryConfig.OR)
 </script>
 
-<article class="card animate-slide-up overflow-hidden" style="padding:0;">
+<article class="card animate-slide-up overflow-hidden" style="padding:0;{embedded ? 'border:none;box-shadow:none;border-radius:0;' : ''}">
   <!-- Header -->
+  {#if !embedded}
   <header class="border-b border-soft px-6 py-5" style="background:linear-gradient(to right, rgba(30,58,95,0.04), rgba(66,133,244,0.04));">
     <div class="flex flex-wrap items-start justify-between gap-4">
       <div class="min-w-0 flex-1">
@@ -198,6 +205,7 @@
       </div>
     </div>
   </header>
+  {/if}
 
   <!-- Field flags + sources -->
   {#if group.fieldFlags.length > 0 || (group.field.state === 'resolved' && group.field.citations.length > 0)}

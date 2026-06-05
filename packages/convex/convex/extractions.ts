@@ -153,11 +153,44 @@ export const create = mutation({
     tokensOut: v.number(),
     durationMs: v.number(),
     model: v.string(),
+    // Hard-wall path: when the tip sheet was dropped INTO a specific locked
+    // meeting (per-meeting bound dropzone), the caller passes that meeting's
+    // key explicitly. We bind the extraction to it directly — no venue
+    // inference, no pending state. This is the primary path in the 3-gate
+    // workspace; venue-matching below is now only a fallback for any legacy
+    // caller that still omits the key.
+    forceMeetingKey: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    // `forceMeetingKey` is a routing directive, not a stored column — strip
+    // it from the document payload spread into inserts below.
+    const { forceMeetingKey, ...doc } = args;
     const races = normaliseRaces(args.races as IncomingRace[]);
 
-    // Resolve the locked meeting (if any) by venue+category, NOT by date.
+    // Bound path: explicit meeting key → bind directly, skip all matching.
+    if (forceMeetingKey) {
+      const id = await ctx.db.insert("extractions", {
+        ...doc,
+        races,
+        meetingKey: forceMeetingKey,
+        state: "routed" as const,
+        pendingReason: undefined,
+      });
+      const targetCat = (args.category || "OR").toUpperCase();
+      return {
+        id,
+        meetingKey: forceMeetingKey,
+        state: "routed" as const,
+        pendingReason: undefined,
+        derivedKey: forceMeetingKey,
+        derivedDate: utcDateString(Date.now()),
+        derivedCategory: targetCat,
+        derivedMeetingName: args.meeting.trim().replace(/\s+/g, " "),
+      };
+    }
+
+    // Fallback (legacy global dropzone): resolve the locked meeting by
+    // venue+category, NOT by date.
     const lockedMeetings = await ctx.db
       .query("customerMeetings")
       .withIndex("by_client_meeting", (q) => q.eq("clientId", args.clientId))
@@ -197,7 +230,7 @@ export const create = mutation({
     const pendingReason = routed ? undefined : "no_locked_meeting_for_key";
 
     const id = await ctx.db.insert("extractions", {
-      ...args,
+      ...doc,
       races,
       meetingKey,
       state,

@@ -1,6 +1,6 @@
 <script lang="ts">
   // Sticky strip at the top of /work. Shows the day's date and a 3-stop
-  // status bar — click a stop to jump to that gate.
+  // status summary across all meetings (field → tips → review).
   interface Props {
     today: string
     lockedCount: number
@@ -17,12 +17,6 @@
     pendingTipCount,
     readyMeetingCount
   }: Props = $props()
-
-  function jump(id: string): void {
-    if (typeof document === 'undefined') return
-    const el = document.getElementById(id)
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
 
   function formatDate(iso: string): string {
     try {
@@ -45,31 +39,16 @@
     <p class="text-[10px] uppercase tracking-[0.2em] c-muted font-bold">
       {formatDate(today)}
     </p>
-    <nav class="flex flex-wrap items-baseline gap-2 text-[11px] uppercase tracking-wider font-bold">
-      <button
-        type="button"
-        onclick={() => jump('gate-1')}
-        class="rounded-md border border-soft bg-soft-50 hover:bg-soft px-3 py-1.5"
-      >
+    <div class="flex flex-wrap items-baseline gap-2 text-[11px] uppercase tracking-wider font-bold">
+      <span class="rounded-md border border-soft bg-soft-50 px-3 py-1.5">
         ① field <span class="c-muted">{lockedCount}/{totalMeetings} locked</span>
-      </button>
-      <button
-        type="button"
-        onclick={() => jump('gate-2')}
-        class="rounded-md border border-soft bg-soft-50 hover:bg-soft px-3 py-1.5"
-      >
-        ② tips
-        <span class="c-muted">
-          {routedTipCount} routed{pendingTipCount > 0 ? ` · ${pendingTipCount} pending` : ''}
-        </span>
-      </button>
-      <button
-        type="button"
-        onclick={() => jump('gate-3')}
-        class="rounded-md border border-soft bg-soft-50 hover:bg-soft px-3 py-1.5"
-      >
+      </span>
+      <span class="rounded-md border border-soft bg-soft-50 px-3 py-1.5">
+        ② tips <span class="c-muted">{routedTipCount} in{pendingTipCount > 0 ? ` · ${pendingTipCount} pending` : ''}</span>
+      </span>
+      <span class="rounded-md border border-soft bg-soft-50 px-3 py-1.5">
         ③ review <span class="c-muted">{readyMeetingCount} ready</span>
-      </button>
-    </nav>
+      </span>
+    </div>
   </div>
 </div>

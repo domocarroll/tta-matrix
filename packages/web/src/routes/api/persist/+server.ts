@@ -55,6 +55,12 @@ interface PersistRequest {
    * Sydney newspaper layout).
    */
   overrideCategory?: string
+  /**
+   * Hard-wall path: when a tip sheet is dropped INTO a specific locked
+   * meeting, the caller passes that meeting's key. The extraction binds
+   * to it directly — no venue inference, no pending state.
+   */
+  meetingKey?: string
 }
 
 export const POST: RequestHandler = async ({ request }) => {
@@ -96,7 +102,8 @@ export const POST: RequestHandler = async ({ request }) => {
       tokensIn: body.tokensIn,
       tokensOut: body.tokensOut,
       durationMs: body.durationMs,
-      model: body.model
+      model: body.model,
+      ...(body.meetingKey ? { forceMeetingKey: body.meetingKey } : {})
     })
     // Echo the routing decision so /work can show "routed → Gate 3" or
     // "pending — lock now" without re-deriving (which is racy). Existing

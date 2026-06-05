@@ -241,6 +241,8 @@ export async function persistExtraction(args: {
   payload: ExtractionResult
   /** When set, overrides agent's category (workspace category strip selection). */
   overrideCategory?: string
+  /** Hard-wall path: bind this extraction to an explicit locked meeting. */
+  meetingKey?: string
 }): Promise<PersistRouteResult | null> {
   try {
     const res = await fetch('/api/persist', {
