@@ -96,8 +96,9 @@ export const POST: RequestHandler = async ({ request }) => {
       : 'image/jpeg'
   ) as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif'
 
-  // Always Anthropic direct — no proxy (see extract/+server.ts for why).
-  const client = new Anthropic({ apiKey })
+  // Always Anthropic direct, baseURL pinned explicitly so the SDK can't fall
+  // back to a stale process.env.ANTHROPIC_BASE_URL (see extract/+server.ts).
+  const client = new Anthropic({ apiKey, baseURL: 'https://api.anthropic.com' })
 
   const msg = await client.messages.create({
     model: MODEL(),

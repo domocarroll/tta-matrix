@@ -192,12 +192,12 @@ export const POST: RequestHandler = async ({ request }) => {
   const fieldBlock = buildFieldBlock(fd.get('field'))
   const systemText = SYSTEM_PROMPT + fieldBlock
 
-  // Always Anthropic direct. The old Claude-Code-CLI proxy (cliproxyapi) was a
-  // cost-dodge that stripped our system prompt, killed prompt caching, and — when
-  // it went down — failed every upload (Pete's "images failing at upload" bug).
-  // Direct is more robust, higher quality, and the billing decision (Pete's own
-  // key, ~$1.50/pull) makes the proxy pointless.
-  const client = new Anthropic({ apiKey })
+  // Always Anthropic direct. baseURL is pinned EXPLICITLY — not just omitted —
+  // because the SDK auto-falls-back to process.env.ANTHROPIC_BASE_URL when it's
+  // unset, and a stale proxy var (cliproxyapi) lingers in the CF environment.
+  // That fallback is exactly Pete's "images failing at upload" bug: the dead
+  // proxy host no longer resolves (Cloudflare 1016). Pinning the URL ignores it.
+  const client = new Anthropic({ apiKey, baseURL: 'https://api.anthropic.com' })
   const encoder = new TextEncoder()
 
   const stream = new ReadableStream({

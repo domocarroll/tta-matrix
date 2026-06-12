@@ -3,9 +3,7 @@ compatibility_date = "2026-04-01"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = ".svelte-kit/cloudflare"
 
-# Plaintext config only. The secret ANTHROPIC_API_KEY is set via
-# `wrangler pages secret put` — encrypted, never committed to git.
-# The old ANTHROPIC_BASE_URL proxy var is intentionally absent: the code now
-# always calls Anthropic direct, so any stale value is ignored.
-[vars]
-TTA_MODEL = "claude-sonnet-4-6"
+# Env vars (TTA_MODEL) and the ANTHROPIC_API_KEY secret are managed in the
+# Cloudflare dashboard, not here (defining them in [vars] conflicts with the
+# existing bindings). The old ANTHROPIC_BASE_URL proxy var is now inert — the
+# code always calls Anthropic direct.
