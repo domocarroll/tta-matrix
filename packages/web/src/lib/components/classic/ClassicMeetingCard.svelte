@@ -36,6 +36,9 @@
   let shareUrl = $state<string | null>(null)
   let savedAt = $state<number | null>(null)
   let openRowId = $state<string | null>(null)
+  let publishing = $state(false)
+  let publishMsg = $state<string | null>(null)
+  let publishErr = $state<string | null>(null)
 
   // svelte-ignore state_referenced_locally
   let labelDraft = $state(group.label ?? '')
@@ -113,6 +116,42 @@
       'application/json',
       JSON.stringify(payload, null, 2)
     )
+  }
+
+  async function publishToSite(): Promise<void> {
+    publishing = true
+    publishMsg = null
+    publishErr = null
+    try {
+      const csv = buildMeetingCsv(
+        group.aggregated,
+        { meeting: group.label ?? group.meeting, date: group.date },
+        { includeFieldData }
+      )
+      const res = await fetch('/api/publish-wp', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          csv,
+          title: `${group.label ?? group.meeting} — ${group.date}`,
+          raceDate: group.date
+        })
+      })
+      const j = (await res.json().catch(() => null)) as
+        | { ok?: boolean; shortcodeId?: string; stats?: { races: number; tipsters: number } }
+        | { message?: string }
+        | null
+      if (!res.ok || !(j && 'ok' in j && j.ok)) {
+        const msg = j && 'message' in j && j.message ? j.message : `HTTP ${res.status}`
+        throw new Error(msg)
+      }
+      const ok = j as { shortcodeId?: string; stats?: { races: number; tipsters: number } }
+      publishMsg = `Published to site · ${ok.stats?.races ?? '?'} races, ${ok.stats?.tipsters ?? '?'} tipsters · id ${ok.shortcodeId ?? ''}`
+    } catch (e) {
+      publishErr = e instanceof Error ? e.message : 'Publish failed'
+    } finally {
+      publishing = false
+    }
   }
 
   async function makeShareLink(): Promise<void> {
@@ -329,6 +368,13 @@
       <button class="btn btn-outline" disabled={busy} onclick={makeShareLink}>{busy ? 'creating…' : '🔗 Share link'}</button>
       {#if shareUrl}
         <a class="c-accent text-xs underline" href={shareUrl} target="_blank" rel="noreferrer">{shareUrl.replace(/^https?:\/\//, '')}</a>
+      {/if}
+      <button class="btn btn-primary" disabled={publishing} onclick={publishToSite}>{publishing ? 'publishing…' : '🚀 Publish to site'}</button>
+      {#if publishMsg}
+        <span class="c-accent text-xs font-semibold">{publishMsg}</span>
+      {/if}
+      {#if publishErr}
+        <span class="text-xs font-semibold" style="color:#e94e37">{publishErr}</span>
       {/if}
     </div>
     <div class="flex items-baseline gap-3">
