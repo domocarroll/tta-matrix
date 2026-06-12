@@ -18,6 +18,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { categoriseError } from '@tta/shared'
 import type { ExtractionResult, StreamEvent } from '$lib/types'
 import { makeReasoningEmitter } from '$lib/reasoningEmitter.ts'
+import { sanitiseRaces } from '$lib/sanitiseRaces.ts'
 
 const MODEL = () => env.TTA_MODEL || 'claude-sonnet-4-6'
 // 32K output ceiling. This endpoint streams (no HTTP-timeout risk), and a dense
@@ -241,7 +242,9 @@ export const POST: RequestHandler = async ({ request }) => {
         const final = await anthropicStream.finalMessage()
         const result = parseLooseJson(raw)
         if (result) {
-          send(controller, encoder, { type: 'extraction', payload: result })
+          const { races, flags } = sanitiseRaces(result.races)
+          const payload = { ...result, races, flags: [...(result.flags ?? []), ...flags] }
+          send(controller, encoder, { type: 'extraction', payload })
         } else {
           send(controller, encoder, { type: 'error', message: 'Failed to parse extraction JSON.' })
         }

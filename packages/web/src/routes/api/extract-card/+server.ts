@@ -12,6 +12,7 @@ import type { RequestHandler } from './$types'
 import { error, json } from '@sveltejs/kit'
 import { env } from '$env/dynamic/private'
 import Anthropic from '@anthropic-ai/sdk'
+import { sanitiseRaces } from '$lib/sanitiseRaces.ts'
 
 const MODEL = () => env.TTA_MODEL || 'claude-sonnet-4-6'
 const MAX_TOKENS = 16384
@@ -132,9 +133,12 @@ export const POST: RequestHandler = async ({ request }) => {
     return json({ ok: false, error: 'Failed to parse race-card JSON', raw }, { status: 500 })
   }
 
+  const { races, flags } = sanitiseRaces((parsed as { races: Array<{ raceNumber?: unknown }> }).races)
+
   return json({
     ok: true,
-    races: (parsed as { races: unknown[] }).races,
+    races,
+    flags,
     tokensIn: msg.usage.input_tokens,
     tokensOut: msg.usage.output_tokens,
     filename: file.name
