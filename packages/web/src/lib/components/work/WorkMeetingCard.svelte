@@ -111,7 +111,7 @@
       </div>
     {:else}
       <!-- ② TIPS stage -->
-      <MeetingTipDrop {clientId} meetingKey={meeting.meetingKey} meetingName={meeting.name} onChange={onTipsChange} />
+      <MeetingTipDrop {clientId} meetingKey={meeting.meetingKey} meetingName={meeting.name} field={userField} onChange={onTipsChange} />
 
       <!-- ③ REVIEW stage -->
       {#if hasTips && group}

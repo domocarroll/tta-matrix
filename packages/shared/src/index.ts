@@ -79,6 +79,24 @@ export {
 
 export { matchField } from "./fieldMatch.ts";
 export type { FieldRunner, FieldMatchFlag } from "./fieldMatch.ts";
+export { validateAgainstField } from "./fieldGate.ts";
+export {
+  humanAdjudicator,
+  reasoningAdjudicator,
+  runAdjudication,
+  ADJUDICATOR_SYSTEM,
+} from "./adjudicator.ts";
+export type {
+  Adjudicator,
+  AdjudicationCase,
+  AdjudicationOutcome,
+  AdjudicationPrompt,
+  Resolution,
+  Verdict,
+  RawVerdict,
+  ImageRegion,
+  ReasoningAdjudicatorOptions,
+} from "./adjudicator.ts";
 
 export {
   routeExtraction,

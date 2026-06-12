@@ -24,7 +24,15 @@ export interface FieldRunner {
 
 /** A correctness/quality flag raised during matching */
 export interface FieldMatchFlag {
-  readonly type: "unmatched_runner" | "tip_on_scratched";
+  // unmatched_runner/tip_on_scratched: raised by matchField during anchoring.
+  // cross_race/phantom/number_mismatch: raised by the Field Gate (fieldGate.ts),
+  // the richer, attributed catch tier layered on top.
+  readonly type:
+    | "unmatched_runner"
+    | "tip_on_scratched"
+    | "cross_race"
+    | "phantom"
+    | "number_mismatch";
   readonly race: number;
   readonly description: string;
 }

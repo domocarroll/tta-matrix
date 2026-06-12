@@ -4,14 +4,23 @@
   // pending state. Pete locks the field once, then drops all of that
   // meeting's tip sheets in here.
   import { runExtractionWithRetry, persistExtraction } from '$lib/extractionRunner'
+  import type { UserField } from '$lib/userFields'
 
   interface Props {
     clientId: string
     meetingKey: string
     meetingName: string
+    /** Locked field for this meeting — anchors extraction (V2 grounding). */
+    field: UserField | null
     onChange: () => void | Promise<void>
   }
-  let { clientId, meetingKey, meetingName, onChange }: Props = $props()
+  let { clientId, meetingKey, meetingName, field, onChange }: Props = $props()
+
+  // Serialise the locked field once for the extract call. Null until Gate 1
+  // is approved — extraction degrades gracefully to ungrounded if absent.
+  const fieldJson = $derived(
+    field && field.races?.length ? JSON.stringify({ races: field.races }) : undefined
+  )
 
   type ItemStatus = 'queued' | 'extracting' | 'done' | 'error'
   interface Item {
@@ -60,7 +69,7 @@
 
   async function processOne(id: string, file: File): Promise<void> {
     update(id, { status: 'extracting' })
-    const outcome = await runExtractionWithRetry(file, {})
+    const outcome = await runExtractionWithRetry(file, {}, undefined, fieldJson)
     if (!outcome.result) {
       update(id, { status: 'error', errorMessage: outcome.errorMessage ?? 'extraction failed' })
       return

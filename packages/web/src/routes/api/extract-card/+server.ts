@@ -96,15 +96,14 @@ export const POST: RequestHandler = async ({ request }) => {
       : 'image/jpeg'
   ) as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif'
 
-  const baseURL = env.ANTHROPIC_BASE_URL || undefined
-  const client = new Anthropic({ apiKey, baseURL })
+  // Always Anthropic direct — no proxy (see extract/+server.ts for why).
+  const client = new Anthropic({ apiKey })
 
-  const useProxy = !!baseURL
   const msg = await client.messages.create({
     model: MODEL(),
     max_tokens: MAX_TOKENS,
     temperature: 0.1,
-    ...(useProxy ? {} : { system: SYSTEM_PROMPT }),
+    system: SYSTEM_PROMPT,
     messages: [
       {
         role: 'user',
@@ -115,9 +114,7 @@ export const POST: RequestHandler = async ({ request }) => {
           },
           {
             type: 'text',
-            text: useProxy
-              ? `${SYSTEM_PROMPT}\n\n---\n\nExtract this race card. Output the JSON object only.`
-              : 'Extract this race card. Output the JSON object only.'
+            text: 'Extract this race card. Output the JSON object only.'
           }
         ]
       }

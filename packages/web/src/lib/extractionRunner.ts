@@ -44,7 +44,9 @@ export interface RunOutcome {
 export async function runExtractionWithRetry(
   file: File,
   cb: RunCallbacks,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  /** V2 grounding: JSON of the meeting's locked field ({races:[...]}). */
+  fieldJson?: string
 ): Promise<RunOutcome> {
   const maxAttempts = MAX_RETRIES + 1
   let lastOutcome: RunOutcome = {
@@ -63,7 +65,7 @@ export async function runExtractionWithRetry(
       }
     }
     cb.onAttempt?.(attempt + 1, maxAttempts)
-    const outcome = await runExtractionOnce(file, cb, signal)
+    const outcome = await runExtractionOnce(file, cb, signal, fieldJson)
 
     if (outcome.errorMessage === 'cancelled') return outcome
 
@@ -113,18 +115,21 @@ function wait(ms: number, signal?: AbortSignal): Promise<void> {
 export async function runExtraction(
   file: File,
   cb: RunCallbacks,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  fieldJson?: string
 ): Promise<RunOutcome> {
-  return runExtractionOnce(file, cb, signal)
+  return runExtractionOnce(file, cb, signal, fieldJson)
 }
 
 async function runExtractionOnce(
   file: File,
   cb: RunCallbacks,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  fieldJson?: string
 ): Promise<RunOutcome> {
   const fd = new FormData()
   fd.append('image', file)
+  if (fieldJson) fd.append('field', fieldJson)
 
   const t0 = performance.now()
   let tokensIn = 0

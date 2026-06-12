@@ -7,6 +7,7 @@ import {
   buildMeetingKey,
   parseMeetingKey,
   matchField,
+  validateAgainstField,
   type AggregatedRace,
   type ExpandedTip,
   type RaceCategory,
@@ -123,13 +124,22 @@ function applyFieldMatch(
   }
 
   const byRaceNumber = new Map(resolved.races.map((r) => [r.raceNumber, r.runners]))
-  const flags: FieldMatchFlag[] = []
+  const matchFlags: FieldMatchFlag[] = []
   const anchored = races.map((race) => {
     const runners = byRaceNumber.get(race.raceNumber) ?? []
     const result = matchField(race, runners)
-    for (const f of result.flags) flags.push(f)
+    for (const f of result.flags) matchFlags.push(f)
     return result.race
   })
+
+  // The Field Gate: deterministic, attributed catch over the anchored result.
+  // Its cross_race / phantom / number_mismatch supersede matchField's blunt
+  // "unmatched_runner"; we keep only the scratched flags from anchoring.
+  const gateFlags = validateAgainstField(anchored, byRaceNumber)
+  const flags: FieldMatchFlag[] = [
+    ...gateFlags,
+    ...matchFlags.filter((f) => f.type === 'tip_on_scratched'),
+  ]
 
   return {
     races: anchored,
