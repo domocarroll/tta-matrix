@@ -13,6 +13,12 @@
         <p class="c-muted mt-2 text-sm font-medium">Horse Racing Tip Aggregator</p>
       </div>
       <div class="flex items-baseline gap-4">
+        <a
+          href="/classic/learned"
+          class="c-muted text-sm font-medium underline-offset-4 hover:underline"
+        >
+          what it&rsquo;s learned
+        </a>
         <span class="badge badge-accent font-bold">Claude</span>
       </div>
     </div>

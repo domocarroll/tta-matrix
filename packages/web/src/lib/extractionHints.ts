@@ -12,6 +12,8 @@ export interface ExtractionHint {
   hint: string
   source: 'manual' | 'derived'
   createdAt: number
+  /** Present only on the "all" variant (loadAllHints); active hints are injected into prompts. */
+  active?: boolean
 }
 
 function norm(s: string | undefined): string {
@@ -48,6 +50,23 @@ export function hintsPromptBlock(hints: ReadonlyArray<ExtractionHint>): string {
 export async function loadHints(clientId: string): Promise<ExtractionHint[]> {
   try {
     const r = await fetch(`/api/extraction-hints?clientId=${encodeURIComponent(clientId)}`)
+    if (!r.ok) return []
+    const j = (await r.json()) as { hints: ExtractionHint[] }
+    return j.hints
+  } catch {
+    return []
+  }
+}
+
+/**
+ * Load ALL hints for a client — active and inactive, across every scope —
+ * each carrying an `active` flag. Powers the global "what it's learned" page.
+ */
+export async function loadAllHints(clientId: string): Promise<ExtractionHint[]> {
+  try {
+    const r = await fetch(
+      `/api/extraction-hints?clientId=${encodeURIComponent(clientId)}&all=1`
+    )
     if (!r.ok) return []
     const j = (await r.json()) as { hints: ExtractionHint[] }
     return j.hints
