@@ -31,6 +31,7 @@ export const POST: RequestHandler = async ({ request }) => {
     meetingKey?: string
     races?: unknown
     sourceFilenames?: string[]
+    imageStorageIds?: string[]
   }
   if (!body.clientId || !body.meetingKey) throw error(400, 'Missing clientId/meetingKey')
   if (!Array.isArray(body.races)) throw error(400, 'races must be an array')
@@ -39,7 +40,10 @@ export const POST: RequestHandler = async ({ request }) => {
     clientId: body.clientId,
     meetingKey: body.meetingKey,
     races: body.races,
-    sourceFilenames: body.sourceFilenames ?? []
+    sourceFilenames: body.sourceFilenames ?? [],
+    ...(body.imageStorageIds && body.imageStorageIds.length
+      ? { imageStorageIds: body.imageStorageIds }
+      : {})
   })
   return json(out)
 }

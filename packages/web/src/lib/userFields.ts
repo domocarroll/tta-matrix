@@ -28,6 +28,8 @@ export interface UserField {
   meetingKey: string
   races: UserFieldRace[]
   sourceFilenames: string[]
+  /** Persisted card image storageIds (for cross-session re-extract). */
+  imageStorageIds?: string[]
   approvedAt: number
 }
 
@@ -47,6 +49,7 @@ export async function saveUserField(input: {
   meetingKey: string
   races: UserFieldRace[]
   sourceFilenames: string[]
+  imageStorageIds?: string[]
 }): Promise<boolean> {
   try {
     const r = await fetch('/api/user-fields', {

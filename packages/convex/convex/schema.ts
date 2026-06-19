@@ -343,6 +343,8 @@ export default defineSchema({
       }),
     ),
     sourceFilenames: v.array(v.string()),
+    /** Persisted official card image(s) backing this field — for re-extraction. */
+    imageStorageIds: v.optional(v.array(v.id("_storage"))),
     approvedAt: v.number(),
   }).index("by_client_meeting", ["clientId", "meetingKey"]),
 

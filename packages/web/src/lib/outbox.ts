@@ -41,6 +41,8 @@ export interface PersistBody {
   payload: ExtractionResult
   overrideCategory?: string
   meetingKey?: string
+  /** Persisted source image (Convex storageId) — enables cross-session re-extract. */
+  imageStorageId?: string
 }
 
 interface JobBase {

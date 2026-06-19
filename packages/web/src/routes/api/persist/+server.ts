@@ -67,6 +67,8 @@ interface PersistRequest {
    * inserting a duplicate.
    */
   clientTxId?: string
+  /** Convex storageId of the persisted source image (optional). */
+  imageStorageId?: string
 }
 
 export const POST: RequestHandler = async ({ request }) => {
@@ -110,7 +112,8 @@ export const POST: RequestHandler = async ({ request }) => {
       durationMs: body.durationMs,
       model: body.model,
       ...(body.meetingKey ? { forceMeetingKey: body.meetingKey } : {}),
-      ...(body.clientTxId ? { clientTxId: body.clientTxId } : {})
+      ...(body.clientTxId ? { clientTxId: body.clientTxId } : {}),
+      ...(body.imageStorageId ? { imageStorageId: body.imageStorageId } : {})
     })
     // Echo the routing decision so /work can show "routed → Gate 3" or
     // "pending — lock now" without re-deriving (which is racy). Existing

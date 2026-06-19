@@ -25,6 +25,7 @@
     type FlushResult
   } from '$lib/outbox'
   import { resolveField, type ResolvedField } from '$lib/fieldResolution'
+  import { uploadImage } from '$lib/uploadImage'
   import { loadUserFields, userFieldsToResolvedMap, type UserField } from '$lib/userFields'
   import RaceCardUploadModal from '$lib/components/RaceCardUploadModal.svelte'
   import { categoryConfig, CATEGORY_ORDER } from '$lib/classic/categoryConfig'
@@ -211,6 +212,11 @@
       return
     }
 
+    // Persist the source image so the sheet can be re-extracted in a later
+    // session (best-effort — a failed upload just means no cross-session redo
+    // for this row; everything else still works).
+    const imageStorageId = (await uploadImage(photo.file)) ?? undefined
+
     // Durable: the extraction result is buffered in the outbox before delivery.
     // Even if persist fails or the tab closes now, the result is safe and will
     // be delivered on retry / next load — never re-extract the same image.
@@ -224,7 +230,8 @@
       tokensOut: outcome.tokensOut,
       model: MODEL,
       payload: outcome.result,
-      overrideCategory: photo.category
+      overrideCategory: photo.category,
+      imageStorageId
     })
     syncOutboxState()
     // Keep the raw result on the photo so a "fix this sheet" re-extract can

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte'
+  import { uploadImage } from '$lib/uploadImage'
   import { saveUserField, type UserFieldRace, type UserFieldRunner } from '$lib/userFields'
   import {
     saveHint,
@@ -249,7 +250,12 @@
 
   async function approve(): Promise<void> {
     stage = 'saving'
-    const ok = await saveUserField({ clientId, meetingKey, races, sourceFilenames })
+    // Persist the card image(s) so the field can be re-extracted in a later
+    // session (best-effort — keep whatever uploads succeed).
+    const imageStorageIds = (await Promise.all(files.map((f) => uploadImage(f)))).filter(
+      (id): id is string => !!id
+    )
+    const ok = await saveUserField({ clientId, meetingKey, races, sourceFilenames, imageStorageIds })
     if (!ok) {
       stage = 'error'
       errorMsg = 'Failed to save approved field.'

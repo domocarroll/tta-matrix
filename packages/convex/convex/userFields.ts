@@ -29,6 +29,7 @@ export const setForMeeting = mutation({
     meetingKey: v.string(),
     races: v.array(raceSchema),
     sourceFilenames: v.array(v.string()),
+    imageStorageIds: v.optional(v.array(v.id("_storage"))),
   },
   handler: async (ctx, args) => {
     const existing = await ctx.db
@@ -41,9 +42,17 @@ export const setForMeeting = mutation({
     const now = Date.now();
     let result: { id: string; replaced: boolean };
     if (existing) {
+      // Re-approving replaces the field. If new card images were supplied,
+      // the previous ones are superseded — delete them so storage doesn't orphan.
+      if (args.imageStorageIds && existing.imageStorageIds) {
+        for (const old of existing.imageStorageIds) {
+          await ctx.storage.delete(old);
+        }
+      }
       await ctx.db.patch(existing._id, {
         races: args.races,
         sourceFilenames: args.sourceFilenames,
+        ...(args.imageStorageIds ? { imageStorageIds: args.imageStorageIds } : {}),
         approvedAt: now,
       });
       result = { id: existing._id as unknown as string, replaced: true };
@@ -53,6 +62,7 @@ export const setForMeeting = mutation({
         meetingKey: args.meetingKey,
         races: args.races,
         sourceFilenames: args.sourceFilenames,
+        imageStorageIds: args.imageStorageIds,
         approvedAt: now,
       });
       result = { id: id as unknown as string, replaced: false };
@@ -117,6 +127,7 @@ export const listForClient = query({
       meetingKey: r.meetingKey,
       races: r.races,
       sourceFilenames: r.sourceFilenames,
+      imageStorageIds: r.imageStorageIds ?? [],
       approvedAt: r.approvedAt,
     }));
   },
@@ -132,6 +143,9 @@ export const removeForMeeting = mutation({
       )
       .unique();
     if (!row) return { deleted: 0 };
+    if (row.imageStorageIds) {
+      for (const sid of row.imageStorageIds) await ctx.storage.delete(sid);
+    }
     await ctx.db.delete(row._id);
 
     // ── 3-Gate side-effect ──
