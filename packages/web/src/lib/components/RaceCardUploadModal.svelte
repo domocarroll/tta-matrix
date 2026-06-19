@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { uploadImage } from '$lib/uploadImage'
+  import { loadImageUrl } from '$lib/imageUrl'
   import { saveUserField, type UserFieldRace, type UserFieldRunner } from '$lib/userFields'
   import {
     saveHint,
@@ -46,6 +47,8 @@
   let feedbackHistory = $state<string[]>([])
   let reExtracting = $state(false)
   let hintsApplied = $state(0)
+  // Source-card thumbnails (object URLs for fresh uploads, signed URLs from storage).
+  let previewUrls = $state<string[]>([])
 
   // Learned-hints (compounding) state.
   let relevantHints = $state<ExtractionHint[]>([])
@@ -98,6 +101,9 @@
         .map((race) => ({ ...race, runners: race.runners.slice().sort((a, b) => a.number - b.number) }))
       hintsApplied = j.hintsApplied ?? 0
       sourceFilenames = ['saved card']
+      previewUrls = (await Promise.all(storageIds.map((id) => loadImageUrl(id)))).filter(
+        (u): u is string => !!u
+      )
       stage = races.length > 0 ? 'review' : 'error'
       if (races.length === 0) errorMsg = 'No races extracted from the saved card.'
     } catch (e) {
@@ -166,6 +172,7 @@
   async function handleFiles(list: FileList | null): Promise<void> {
     if (!list || list.length === 0) return
     files = Array.from(list)
+    previewUrls = files.map((f) => URL.createObjectURL(f))
     stage = 'extracting'
     errorMsg = null
     const mergedByRace = new Map<number, UserFieldRunner[]>()
@@ -316,6 +323,7 @@
   }
 
   function close(): void {
+    for (const u of previewUrls) if (u.startsWith('blob:')) URL.revokeObjectURL(u)
     onClose()
   }
 </script>
@@ -409,6 +417,15 @@
           </p>
         </div>
         {@render learnedHints('learned & applied to this card')}
+        {#if previewUrls.length > 0}
+          <div class="mb-4 flex gap-2 overflow-x-auto pb-1">
+            {#each previewUrls as src, i (i)}
+              <a href={src} target="_blank" rel="noreferrer" title="Open full card image" class="shrink-0">
+                <img src={src} alt="source card {i + 1}" class="h-24 rounded border border-border" />
+              </a>
+            {/each}
+          </div>
+        {/if}
         <div class="space-y-5 max-h-[60vh] overflow-y-auto pr-1">
           {#each races as race, rIdx (race.raceNumber)}
             <section class="rounded-md border border-border bg-bg-surface/30">

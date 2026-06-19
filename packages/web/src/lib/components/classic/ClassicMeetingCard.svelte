@@ -10,6 +10,7 @@
     buildCsvFilename,
     calculateQuaddie
   } from '@tta/shared'
+  import { loadImageUrl } from '$lib/imageUrl'
   import type { MeetingGroup, HorsePatch, WorkspaceRow } from '$lib/workspace'
 
   interface Props {
@@ -35,6 +36,20 @@
   // Per-source-image "fix this sheet" state (keyed by row id).
   let rowFeedback = $state<Record<string, string>>({})
   let reextractingRowId = $state<string | null>(null)
+
+  // Lazy-loaded signed URLs for source-image thumbnails (keyed by row id).
+  let rowImageUrls = $state<Record<string, string | null>>({})
+
+  function toggleRow(row: WorkspaceRow): void {
+    const opening = openRowId !== row._id
+    openRowId = opening ? row._id : null
+    if (opening && row.imageStorageId && rowImageUrls[row._id] === undefined) {
+      rowImageUrls = { ...rowImageUrls, [row._id]: null } // mark in-flight
+      void loadImageUrl(row.imageStorageId).then((url) => {
+        rowImageUrls = { ...rowImageUrls, [row._id]: url }
+      })
+    }
+  }
 
   async function submitRowReExtract(row: WorkspaceRow): Promise<void> {
     const fb = (rowFeedback[row._id] ?? '').trim()
@@ -350,7 +365,7 @@
         {#each group.rows as row (row._id)}
           {@const open = openRowId === row._id}
           <div class="rounded-lg border border-soft bg-soft-50">
-            <button class="flex w-full items-baseline gap-3 px-4 py-2.5 text-left" onclick={() => (openRowId = open ? null : row._id)}>
+            <button class="flex w-full items-baseline gap-3 px-4 py-2.5 text-left" onclick={() => toggleRow(row)}>
               <span class="c-muted shrink-0 text-xs">{open ? '▾' : '▸'}</span>
               <span class="c-fg flex-1 truncate font-medium">{row.filename}</span>
               <span class="c-muted shrink-0 text-xs">
@@ -359,6 +374,16 @@
             </button>
             {#if open}
               <div class="space-y-3 border-t border-soft px-4 pb-4 pt-3">
+                {#if row.imageStorageId}
+                  {@const imgSrc = rowImageUrls[row._id]}
+                  {#if imgSrc}
+                    <a href={imgSrc} target="_blank" rel="noreferrer" title="Open full source image">
+                      <img src={imgSrc} alt="source sheet {row.filename}" class="max-h-56 rounded-lg border border-soft" />
+                    </a>
+                  {:else}
+                    <p class="c-muted text-xs">loading source image…</p>
+                  {/if}
+                {/if}
                 {#if row.flags.length > 0}
                   <ul class="space-y-1">
                     {#each row.flags as flag, i (i)}
