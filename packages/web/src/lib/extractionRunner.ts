@@ -45,6 +45,8 @@ export interface ReExtractOptions {
   feedback?: string
   priorResult?: ExtractionResult | null
   clientId?: string
+  /** Cross-session re-extract: source the image from Convex storage by id (no File needed). */
+  imageStorageId?: string
 }
 
 /**
@@ -53,7 +55,7 @@ export interface ReExtractOptions {
  * detection runs over the streamed reasoning + result payload.
  */
 export async function runExtractionWithRetry(
-  file: File,
+  file: File | null,
   cb: RunCallbacks,
   signal?: AbortSignal,
   /** V2 grounding: JSON of the meeting's locked field ({races:[...]}). */
@@ -126,7 +128,7 @@ function wait(ms: number, signal?: AbortSignal): Promise<void> {
  * wrapper above (workspace queue).
  */
 export async function runExtraction(
-  file: File,
+  file: File | null,
   cb: RunCallbacks,
   signal?: AbortSignal,
   fieldJson?: string,
@@ -136,14 +138,14 @@ export async function runExtraction(
 }
 
 async function runExtractionOnce(
-  file: File,
+  file: File | null,
   cb: RunCallbacks,
   signal?: AbortSignal,
   fieldJson?: string,
   reExtract?: ReExtractOptions
 ): Promise<RunOutcome> {
   const fd = new FormData()
-  fd.append('image', file)
+  if (file) fd.append('image', file)
   if (fieldJson) fd.append('field', fieldJson)
   // "Fix this sheet": feedback + prior JSON drive a multi-turn correction.
   if (reExtract?.feedback && reExtract.priorResult) {
@@ -151,6 +153,8 @@ async function runExtractionOnce(
     fd.append('priorResult', JSON.stringify(reExtract.priorResult))
   }
   if (reExtract?.clientId) fd.append('clientId', reExtract.clientId)
+  // Cross-session re-extract sources the image server-side from storage.
+  if (!file && reExtract?.imageStorageId) fd.append('imageStorageId', reExtract.imageStorageId)
 
   const t0 = performance.now()
   let tokensIn = 0

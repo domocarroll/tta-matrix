@@ -389,6 +389,7 @@ export const listFullByClient = query({
         tokensOut: row.tokensOut,
         durationMs: row.durationMs,
         model: row.model,
+        imageStorageId: row.imageStorageId,
         meetingKey:
           row.meetingKey ??
           buildMeetingKey(row.category, row.meeting, row._creationTime),

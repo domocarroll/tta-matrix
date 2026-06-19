@@ -10,7 +10,7 @@
     buildCsvFilename,
     calculateQuaddie
   } from '@tta/shared'
-  import type { MeetingGroup, HorsePatch } from '$lib/workspace'
+  import type { MeetingGroup, HorsePatch, WorkspaceRow } from '$lib/workspace'
 
   interface Props {
     group: MeetingGroup
@@ -19,6 +19,10 @@
     onClearMeeting: () => Promise<void>
     onResolveField: () => Promise<void>
     onUploadCard?: () => void
+    /** Cross-session "fix this sheet": re-extract a stored source image with a correction. */
+    onReExtractRow?: (row: WorkspaceRow, feedback: string) => Promise<void>
+    /** Re-extract the already-approved card from its stored images. */
+    onReExtractCard?: () => void
     /**
      * Embedded mode: the parent (WorkMeetingCard) already renders the
      * meeting header + lifecycle actions, so suppress this card's own
@@ -26,7 +30,23 @@
      */
     embedded?: boolean
   }
-  let { group, clientId, onPatchesChange, onClearMeeting, onResolveField, onUploadCard, embedded = false }: Props = $props()
+  let { group, clientId, onPatchesChange, onClearMeeting, onResolveField, onUploadCard, onReExtractRow, onReExtractCard, embedded = false }: Props = $props()
+
+  // Per-source-image "fix this sheet" state (keyed by row id).
+  let rowFeedback = $state<Record<string, string>>({})
+  let reextractingRowId = $state<string | null>(null)
+
+  async function submitRowReExtract(row: WorkspaceRow): Promise<void> {
+    const fb = (rowFeedback[row._id] ?? '').trim()
+    if (!fb || !onReExtractRow || reextractingRowId) return
+    reextractingRowId = row._id
+    try {
+      await onReExtractRow(row, fb)
+      rowFeedback = { ...rowFeedback, [row._id]: '' }
+    } finally {
+      reextractingRowId = null
+    }
+  }
 
   let showCorrections = $state(false)
   let showReasoning = $state(false)
@@ -238,6 +258,15 @@
             upload race cards →
           </button>
         {/if}
+        {#if onReExtractCard}
+          <button
+            class="c-accent hover:underline"
+            onclick={onReExtractCard}
+            title="Re-extract the saved card — correct it and re-approve"
+          >
+            re-extract saved card →
+          </button>
+        {/if}
         <button class="c-accent disabled:opacity-50 hover:underline" disabled={resolvingField || group.field.state === 'pending'} onclick={refetchField}>
           {resolvingField ? 'resolving…' : group.field.state === 'resolved' ? 'refresh field' : 'resolve field'}
         </button>
@@ -349,6 +378,28 @@
                   {/each}
                 </ol>
                 <div class="c-muted text-xs">{row.tokensIn} in / {row.tokensOut} out · {row.model}</div>
+                {#if onReExtractRow && row.imageStorageId}
+                  {@const busyRow = reextractingRowId === row._id}
+                  <div class="border-t border-soft pt-3">
+                    <p class="c-muted mb-1 text-xs font-bold uppercase tracking-wider">not right? tell it what to fix</p>
+                    <textarea
+                      class="form-input w-full text-sm"
+                      rows="2"
+                      disabled={busyRow}
+                      placeholder="e.g. you merged race 3 and 4 — they're separate"
+                      bind:value={rowFeedback[row._id]}
+                    ></textarea>
+                    <div class="mt-2 flex justify-end">
+                      <button
+                        class="c-accent text-xs font-bold uppercase tracking-wider hover:underline disabled:opacity-40"
+                        disabled={busyRow || !(rowFeedback[row._id]?.trim())}
+                        onclick={() => submitRowReExtract(row)}
+                      >
+                        {busyRow ? 're-reading…' : 'fix this sheet'}
+                      </button>
+                    </div>
+                  </div>
+                {/if}
               </div>
             {/if}
           </div>

@@ -19,9 +19,19 @@
     meetingDate: string
     onClose: () => void
     onApproved: () => void | Promise<void>
+    /** Re-extract an already-approved card from its stored images (no fresh upload). */
+    existingImageStorageIds?: string[]
   }
 
-  let { clientId, meetingKey, meetingLabel, meetingDate, onClose, onApproved }: Props = $props()
+  let {
+    clientId,
+    meetingKey,
+    meetingLabel,
+    meetingDate,
+    onClose,
+    onApproved,
+    existingImageStorageIds
+  }: Props = $props()
 
   type Stage = 'pick' | 'extracting' | 'review' | 'saving' | 'done' | 'error'
   let stage = $state<Stage>('pick')
@@ -57,7 +67,44 @@
 
   onMount(() => {
     void refreshHints()
+    // Re-extract mode: no fresh upload — pull the saved card from storage and
+    // go straight to review (Pete can then correct + re-approve).
+    if (existingImageStorageIds && existingImageStorageIds.length > 0) {
+      void extractFromStorage(existingImageStorageIds)
+    }
   })
+
+  async function extractFromStorage(storageIds: string[]): Promise<void> {
+    stage = 'extracting'
+    errorMsg = null
+    progressMsg = 'Re-reading the saved card…'
+    try {
+      const fd = new FormData()
+      fd.append('imageStorageIds', JSON.stringify(storageIds))
+      fd.append('clientId', clientId)
+      fd.append('meetingKey', meetingKey)
+      const r = await fetch('/api/extract-card', { method: 'POST', body: fd })
+      const j = (await r.json()) as
+        | { ok: true; races: UserFieldRace[]; hintsApplied?: number }
+        | { ok: false; error: string }
+      if (!r.ok || !('ok' in j) || j.ok !== true) {
+        errorMsg = 'ok' in j && !j.ok ? j.error : `HTTP ${r.status}`
+        stage = 'error'
+        return
+      }
+      races = j.races
+        .slice()
+        .sort((a, b) => a.raceNumber - b.raceNumber)
+        .map((race) => ({ ...race, runners: race.runners.slice().sort((a, b) => a.number - b.number) }))
+      hintsApplied = j.hintsApplied ?? 0
+      sourceFilenames = ['saved card']
+      stage = races.length > 0 ? 'review' : 'error'
+      if (races.length === 0) errorMsg = 'No races extracted from the saved card.'
+    } catch (e) {
+      errorMsg = e instanceof Error ? e.message : 'Re-extract failed'
+      stage = 'error'
+    }
+  }
 
   async function removeHint(h: ExtractionHint): Promise<void> {
     await deleteHint(clientId, h.id)
@@ -161,12 +208,15 @@
   // (and the current table state as the prior answer), then replace the table.
   async function reExtract(): Promise<void> {
     const note = feedback.trim()
-    if (!note || files.length === 0 || reExtracting) return
+    const storageIds = existingImageStorageIds ?? []
+    // Need the image source: either retained upload files, or the saved card.
+    if (!note || (files.length === 0 && storageIds.length === 0) || reExtracting) return
     reExtracting = true
     errorMsg = null
     try {
       const fd = new FormData()
-      for (const f of files) fd.append('image', f)
+      if (files.length > 0) for (const f of files) fd.append('image', f)
+      else fd.append('imageStorageIds', JSON.stringify(storageIds))
       fd.append('feedback', note)
       fd.append('priorResult', JSON.stringify({ races }))
       fd.append('clientId', clientId)

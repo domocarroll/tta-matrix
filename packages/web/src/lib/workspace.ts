@@ -34,6 +34,8 @@ export interface WorkspaceRow {
   durationMs: number
   model: string
   meetingKey: string
+  /** Persisted source image (Convex storageId) — enables cross-session re-extract. */
+  imageStorageId?: string
   /**
    * 3-Gate routing state. Legacy rows lacking this default to `routed`
    * (set in extractions.listFullByClient).

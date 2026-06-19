@@ -41,6 +41,7 @@
   let userFields = $state<UserField[]>([])
   let uploadModalKey = $state<string | null>(null)
   let uploadModalMeeting = $state<{ date: string; meeting: string } | null>(null)
+  let uploadModalStorageIds = $state<string[] | undefined>(undefined)
   let photos = $state<ProcessedPhoto[]>([])
   let processing = $state(false)
   let loading = $state(true)
@@ -127,10 +128,22 @@
   function openUploadModal(group: MeetingGroup): void {
     uploadModalKey = group.meetingKey
     uploadModalMeeting = { date: group.date, meeting: group.meeting }
+    uploadModalStorageIds = undefined
+  }
+  // Stored card images for a meeting (present once a card has been approved
+  // with image persistence) — enables "re-extract saved card".
+  function storedCardIds(meetingKey: string): string[] {
+    return userFields.find((f) => f.meetingKey === meetingKey)?.imageStorageIds ?? []
+  }
+  function openReExtractCard(group: MeetingGroup): void {
+    uploadModalKey = group.meetingKey
+    uploadModalMeeting = { date: group.date, meeting: group.meeting }
+    uploadModalStorageIds = storedCardIds(group.meetingKey)
   }
   function closeUploadModal(): void {
     uploadModalKey = null
     uploadModalMeeting = null
+    uploadModalStorageIds = undefined
   }
   async function onFieldApproved(): Promise<void> {
     closeUploadModal()
@@ -292,6 +305,48 @@
     }
 
     setPhoto(id, { status: 'ready', lastResult: outcome.result, error: undefined })
+    await refresh()
+  }
+
+  // Cross-session "fix this sheet": a row loaded from a previous session has no
+  // File, but its image is in storage — re-extract from there + replace in place.
+  async function reExtractRow(row: WorkspaceRow, feedback: string): Promise<void> {
+    if (!clientId) return
+    const trimmed = feedback.trim()
+    if (!trimmed || !row.imageStorageId) return
+    const priorResult = {
+      publication: row.publication,
+      meeting: row.meeting,
+      category: row.category,
+      tipstersDetected: row.tipstersDetected as string[],
+      reasoning: row.reasoning as string[],
+      races: row.races,
+      flags: row.flags
+    } as unknown as Parameters<typeof replaceExtraction>[0]['payload']
+
+    const outcome = await runExtractionWithRetry(null, {}, undefined, undefined, {
+      feedback: trimmed,
+      priorResult,
+      clientId,
+      imageStorageId: row.imageStorageId
+    })
+    if (outcome.errorMessage || !outcome.result) {
+      lastError = outcome.errorMessage ?? 're-extract failed'
+      return
+    }
+    const ok = await replaceExtraction({
+      clientId,
+      id: row._id,
+      durationMs: outcome.durationMs,
+      tokensIn: outcome.tokensIn,
+      tokensOut: outcome.tokensOut,
+      model: MODEL,
+      payload: outcome.result
+    })
+    if (!ok) {
+      lastError = 'Could not save the corrected sheet — try again.'
+      return
+    }
     await refresh()
   }
 
@@ -464,6 +519,8 @@
             onClearMeeting={() => clearMeeting(group)}
             onResolveField={() => resolveMeetingField(group)}
             onUploadCard={() => openUploadModal(group)}
+            onReExtractRow={reExtractRow}
+            onReExtractCard={storedCardIds(group.meetingKey).length > 0 ? () => openReExtractCard(group) : undefined}
           />
         {/each}
       </div>
@@ -479,6 +536,7 @@
     meetingDate={uploadModalMeeting.date}
     onClose={closeUploadModal}
     onApproved={onFieldApproved}
+    existingImageStorageIds={uploadModalStorageIds}
   />
 {/if}
 

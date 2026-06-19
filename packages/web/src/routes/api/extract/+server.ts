@@ -26,6 +26,7 @@ import {
   hintsPromptBlock,
   type ExtractionHint
 } from '$lib/extractionHints'
+import { imagePartsFromStorage, type StoredImagePart } from '$lib/server/storageImages'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const convexApi = anyApi as any
@@ -197,28 +198,39 @@ export const POST: RequestHandler = async ({ request }) => {
 
   const fd = await request.formData()
   const file = fd.get('image')
-  if (!(file instanceof File)) {
+  const imageStorageId = (fd.get('imageStorageId') as string | null) || ''
+
+  // The sheet image comes either from a fresh upload OR, on a cross-session
+  // re-extract, from Convex storage by id.
+  let imageBlock: StoredImagePart
+  if (file instanceof File) {
+    if (!file.type.startsWith('image/')) {
+      throw error(400, `Invalid image type: ${file.type}`)
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      // Categorise as PAYLOAD_TOO_LARGE so the client surfaces the canonical
+      // (non-retryable) user message rather than an opaque Anthropic 413 stream
+      // failure. The runner reads this body text on a non-OK response.
+      const cat = categoriseError(new Response(null, { status: 413 }))
+      const mb = (file.size / (1024 * 1024)).toFixed(1)
+      throw error(413, `${cat.userMessage} (image was ${mb} MB; limit 8 MB)`)
+    }
+    const mediaType = (
+      ['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)
+        ? file.type
+        : 'image/jpeg'
+    ) as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif'
+    imageBlock = {
+      type: 'image',
+      source: { type: 'base64', media_type: mediaType, data: Buffer.from(await file.arrayBuffer()).toString('base64') }
+    }
+  } else if (imageStorageId) {
+    const parts = await imagePartsFromStorage([imageStorageId])
+    if (parts.length === 0) throw error(400, 'Stored image not found')
+    imageBlock = parts[0]!
+  } else {
     throw error(400, 'Missing image file')
   }
-  if (!file.type.startsWith('image/')) {
-    throw error(400, `Invalid image type: ${file.type}`)
-  }
-  if (file.size > MAX_IMAGE_BYTES) {
-    // Categorise as PAYLOAD_TOO_LARGE so the client surfaces the canonical
-    // (non-retryable) user message rather than an opaque Anthropic 413 stream
-    // failure. The runner reads this body text on a non-OK response.
-    const cat = categoriseError(new Response(null, { status: 413 }))
-    const mb = (file.size / (1024 * 1024)).toFixed(1)
-    throw error(413, `${cat.userMessage} (image was ${mb} MB; limit 8 MB)`)
-  }
-
-  const buf = Buffer.from(await file.arrayBuffer())
-  const base64 = buf.toString('base64')
-  const mediaType = (
-    ['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)
-      ? file.type
-      : 'image/jpeg'
-  ) as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif'
 
   // Optional "fix this sheet" re-extract: prior result + a reviewer correction.
   // When both are present we run a multi-turn call so the model sees its own
@@ -241,10 +253,7 @@ export const POST: RequestHandler = async ({ request }) => {
       ? [
           {
             role: 'user',
-            content: [
-              { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
-              { type: 'text', text: baseInstruction }
-            ]
+            content: [imageBlock, { type: 'text', text: baseInstruction }]
           },
           { role: 'assistant', content: priorResult },
           {
@@ -255,10 +264,7 @@ export const POST: RequestHandler = async ({ request }) => {
       : [
           {
             role: 'user',
-            content: [
-              { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
-              { type: 'text', text: baseInstruction }
-            ]
+            content: [imageBlock, { type: 'text', text: baseInstruction }]
           }
         ]
 

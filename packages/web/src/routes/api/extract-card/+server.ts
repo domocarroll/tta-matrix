@@ -26,6 +26,7 @@ import {
   hintsPromptBlock,
   type ExtractionHint
 } from '$lib/extractionHints'
+import { imagePartsFromStorage } from '$lib/server/storageImages'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const convexApi = anyApi as any
@@ -40,7 +41,6 @@ interface ImagePart {
 /** Read every uploaded image (FormData may carry one or several). */
 async function readImages(fd: FormData): Promise<{ parts: ImagePart[]; filenames: string[] }> {
   const files = fd.getAll('image').filter((f): f is File => f instanceof File)
-  if (files.length === 0) throw error(400, 'Missing image file')
   const parts: ImagePart[] = []
   const filenames: string[] = []
   for (const file of files) {
@@ -155,7 +155,22 @@ export const POST: RequestHandler = async ({ request }) => {
   if (!apiKey) throw error(500, 'ANTHROPIC_API_KEY not configured')
 
   const fd = await request.formData()
-  const { parts, filenames } = await readImages(fd)
+  let { parts, filenames } = await readImages(fd)
+  // Cross-session re-extract: no uploaded files, source the card from storage.
+  if (parts.length === 0) {
+    const raw = (fd.get('imageStorageIds') as string | null) || ''
+    let ids: string[] = []
+    try {
+      ids = raw ? (JSON.parse(raw) as string[]) : []
+    } catch {
+      ids = []
+    }
+    if (ids.length > 0) {
+      parts = (await imagePartsFromStorage(ids)) as typeof parts
+      filenames = []
+    }
+  }
+  if (parts.length === 0) throw error(400, 'Missing image file')
 
   // Optional chat re-extract: prior result + a reviewer correction. When both
   // are present we run a multi-turn call so the model sees its own previous
