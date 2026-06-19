@@ -1,6 +1,7 @@
 // Learned extraction corrections (compounding) — list + save.
 //
-// GET    /api/extraction-hints?clientId=<id>           → { hints: [...] }
+// GET    /api/extraction-hints?clientId=<id>           → { hints: [...] }  (active only)
+//        ?all=1 also includes inactive hints, each carrying an `active` flag
 // POST   /api/extraction-hints                          → { id, deduped }
 //          body: { clientId, scope, category?, venue?, hint, source }
 // PATCH  /api/extraction-hints                          → { ok }   (toggle active)
@@ -21,8 +22,12 @@ export const GET: RequestHandler = async ({ url }) => {
   if (!convexUrl) throw error(500, 'CONVEX_URL not configured')
   const clientId = url.searchParams.get('clientId')
   if (!clientId) throw error(400, 'Missing clientId')
+  const all = url.searchParams.get('all') === '1'
   const client = new ConvexHttpClient(convexUrl)
-  const hints = await client.query(api.extractionHints.listForClient, { clientId })
+  const queryFn = all
+    ? api.extractionHints.listAllForClient
+    : api.extractionHints.listForClient
+  const hints = await client.query(queryFn, { clientId })
   return json({ hints })
 }
 

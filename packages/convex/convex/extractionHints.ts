@@ -34,6 +34,28 @@ export const listForClient = query({
   },
 });
 
+export const listAllForClient = query({
+  args: { clientId: v.string() },
+  handler: async (ctx, args) => {
+    const rows = await ctx.db
+      .query("extractionHints")
+      .withIndex("by_client", (q) => q.eq("clientId", args.clientId))
+      .collect();
+    return rows
+      .map((r) => ({
+        id: r._id as unknown as string,
+        scope: r.scope,
+        category: r.category,
+        venue: r.venue,
+        hint: r.hint,
+        source: r.source,
+        active: r.active,
+        createdAt: r.createdAt,
+      }))
+      .sort((a, b) => b.createdAt - a.createdAt);
+  },
+});
+
 export const add = mutation({
   args: {
     clientId: v.string(),
