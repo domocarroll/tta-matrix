@@ -37,6 +37,17 @@ export interface RunOutcome {
 }
 
 /**
+ * Optional "fix this sheet" re-extract context. When `feedback` + `priorResult`
+ * are both set, the endpoint runs a multi-turn correction; `clientId` lets it
+ * inject the client's GLOBAL learned hints.
+ */
+export interface ReExtractOptions {
+  feedback?: string
+  priorResult?: ExtractionResult | null
+  clientId?: string
+}
+
+/**
  * Run a single extraction with retry on transient failures (rate limit,
  * network glitches, refusal-then-success, parse failures). Refusal
  * detection runs over the streamed reasoning + result payload.
@@ -46,7 +57,9 @@ export async function runExtractionWithRetry(
   cb: RunCallbacks,
   signal?: AbortSignal,
   /** V2 grounding: JSON of the meeting's locked field ({races:[...]}). */
-  fieldJson?: string
+  fieldJson?: string,
+  /** "Fix this sheet" re-extract context (feedback + prior result + clientId). */
+  reExtract?: ReExtractOptions
 ): Promise<RunOutcome> {
   const maxAttempts = MAX_RETRIES + 1
   let lastOutcome: RunOutcome = {
@@ -65,7 +78,7 @@ export async function runExtractionWithRetry(
       }
     }
     cb.onAttempt?.(attempt + 1, maxAttempts)
-    const outcome = await runExtractionOnce(file, cb, signal, fieldJson)
+    const outcome = await runExtractionOnce(file, cb, signal, fieldJson, reExtract)
 
     if (outcome.errorMessage === 'cancelled') return outcome
 
@@ -116,20 +129,28 @@ export async function runExtraction(
   file: File,
   cb: RunCallbacks,
   signal?: AbortSignal,
-  fieldJson?: string
+  fieldJson?: string,
+  reExtract?: ReExtractOptions
 ): Promise<RunOutcome> {
-  return runExtractionOnce(file, cb, signal, fieldJson)
+  return runExtractionOnce(file, cb, signal, fieldJson, reExtract)
 }
 
 async function runExtractionOnce(
   file: File,
   cb: RunCallbacks,
   signal?: AbortSignal,
-  fieldJson?: string
+  fieldJson?: string,
+  reExtract?: ReExtractOptions
 ): Promise<RunOutcome> {
   const fd = new FormData()
   fd.append('image', file)
   if (fieldJson) fd.append('field', fieldJson)
+  // "Fix this sheet": feedback + prior JSON drive a multi-turn correction.
+  if (reExtract?.feedback && reExtract.priorResult) {
+    fd.append('feedback', reExtract.feedback)
+    fd.append('priorResult', JSON.stringify(reExtract.priorResult))
+  }
+  if (reExtract?.clientId) fd.append('clientId', reExtract.clientId)
 
   const t0 = performance.now()
   let tokensIn = 0
@@ -259,6 +280,34 @@ export async function persistExtraction(args: {
     return (await res.json()) as PersistRouteResult
   } catch {
     return null
+  }
+}
+
+/**
+ * Replace a persisted extraction's content in place after a "fix this sheet"
+ * re-extract. Returns true on success. The row's identity + meeting routing
+ * are preserved server-side; only the AI content + run metadata change.
+ */
+export async function replaceExtraction(args: {
+  clientId: string
+  id: string
+  durationMs: number
+  tokensIn: number
+  tokensOut: number
+  model: string
+  payload: ExtractionResult
+  /** Workspace category strip selection — overrides the agent's category. */
+  overrideCategory?: string
+}): Promise<boolean> {
+  try {
+    const res = await fetch('/api/reextract-persist', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(args)
+    })
+    return res.ok
+  } catch {
+    return false
   }
 }
 

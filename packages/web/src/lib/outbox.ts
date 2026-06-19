@@ -147,7 +147,13 @@ function backoff(attempts: number): number {
   return ceiling / 2 + Math.random() * (ceiling / 2) // half fixed, half jitter
 }
 
-async function deliver(clientId: string, job: OutboxJob): Promise<void> {
+/**
+ * Deliver one job. For persist jobs the server echoes the routing decision
+ * including the document `id`; we return it (keyed by clientTxId) so the caller
+ * can attach the `extractionId` to its in-session photo — the handle a later
+ * "fix this sheet" re-extract needs to replace the row in place.
+ */
+async function deliver(clientId: string, job: OutboxJob): Promise<string | null> {
   if (job.kind === 'correction') {
     const res = await fetch('/api/corrections', {
       method: 'PUT',
@@ -155,7 +161,7 @@ async function deliver(clientId: string, job: OutboxJob): Promise<void> {
       body: JSON.stringify({ clientId, ...job.body })
     })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    return
+    return null
   }
   const res = await fetch('/api/persist', {
     method: 'POST',
@@ -163,12 +169,20 @@ async function deliver(clientId: string, job: OutboxJob): Promise<void> {
     body: JSON.stringify(job.body)
   })
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  try {
+    const j = (await res.json()) as { id?: string }
+    return typeof j.id === 'string' ? j.id : null
+  } catch {
+    return null
+  }
 }
 
 export interface FlushResult {
   delivered: number
   failed: number
   pending: number
+  /** Persisted document ids by their originating clientTxId (this flush only). */
+  persistedIds: Record<string, string>
 }
 
 const inFlight = new Set<string>()
@@ -180,7 +194,7 @@ const inFlight = new Set<string>()
  */
 export async function flush(clientId: string): Promise<FlushResult> {
   if (inFlight.has(clientId)) {
-    return { delivered: 0, failed: 0, pending: read(clientId).length }
+    return { delivered: 0, failed: 0, pending: read(clientId).length, persistedIds: {} }
   }
   inFlight.add(clientId)
   try {
@@ -188,10 +202,12 @@ export async function flush(clientId: string): Promise<FlushResult> {
     const now = Date.now()
     let delivered = 0
     let failed = 0
+    const persistedIds: Record<string, string> = {}
     for (const job of jobs) {
       if (job.nextMs > now) continue
       try {
-        await deliver(clientId, job)
+        const id = await deliver(clientId, job)
+        if (id && job.kind === 'persist') persistedIds[job.body.clientTxId] = id
         // Re-read: an edit may have coalesced this job while it was in flight.
         // Only drop it if untouched (same updatedAt) so a newer edit survives.
         const current = read(clientId)
@@ -219,7 +235,7 @@ export async function flush(clientId: string): Promise<FlushResult> {
         }
       }
     }
-    return { delivered, failed, pending: read(clientId).length }
+    return { delivered, failed, pending: read(clientId).length, persistedIds }
   } finally {
     inFlight.delete(clientId)
   }

@@ -278,6 +278,56 @@ export const create = mutation({
 });
 
 /**
+ * Replace an existing extraction's CONTENT in place after a "fix this sheet"
+ * re-extract. The reviewer corrected the AI in plain English and the image was
+ * re-read; we overwrite the extracted fields on the SAME row so the workspace
+ * shows the corrected result instead of a duplicate.
+ *
+ * Deliberately preserves identity + routing: `_id`, `clientId`, `meetingKey`,
+ * and `state` are NOT touched. Only the AI-produced content + run metadata
+ * change. Verifies the row belongs to the requesting client (soft auth).
+ */
+export const replaceById = mutation({
+  args: {
+    clientId: v.string(),
+    id: v.id("extractions"),
+    publication: v.string(),
+    meeting: v.string(),
+    category: v.string(),
+    tipstersDetected: v.array(v.string()),
+    reasoning: v.array(v.string()),
+    races: v.array(raceValidator),
+    flags: v.array(flagValidator),
+    tokensIn: v.number(),
+    tokensOut: v.number(),
+    durationMs: v.number(),
+    model: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const row = await ctx.db.get(args.id);
+    if (!row) return { ok: false, reason: "not_found" as const };
+    if (row.clientId !== args.clientId) {
+      return { ok: false, reason: "wrong_client" as const };
+    }
+    // Patch only the content fields; identity + routing stay put.
+    await ctx.db.patch(args.id, {
+      publication: args.publication,
+      meeting: args.meeting,
+      category: args.category,
+      tipstersDetected: args.tipstersDetected,
+      reasoning: args.reasoning,
+      races: normaliseRaces(args.races as IncomingRace[]),
+      flags: args.flags,
+      tokensIn: args.tokensIn,
+      tokensOut: args.tokensOut,
+      durationMs: args.durationMs,
+      model: args.model,
+    });
+    return { ok: true as const, id: args.id };
+  },
+});
+
+/**
  * Re-route a single existing extraction. Called from /api/meetings PUT
  * after Pete locks a meeting so previously-pending extractions for that
  * key flip to `routed` without re-uploading.

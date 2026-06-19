@@ -16,9 +16,19 @@ import { error } from '@sveltejs/kit'
 import { env } from '$env/dynamic/private'
 import Anthropic from '@anthropic-ai/sdk'
 import { categoriseError } from '@tta/shared'
+import { ConvexHttpClient } from 'convex/browser'
+import { anyApi } from 'convex/server'
 import type { ExtractionResult, StreamEvent } from '$lib/types'
 import { makeReasoningEmitter } from '$lib/reasoningEmitter.ts'
 import { sanitiseRaces } from '$lib/sanitiseRaces.ts'
+import {
+  selectRelevantHints,
+  hintsPromptBlock,
+  type ExtractionHint
+} from '$lib/extractionHints'
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const convexApi = anyApi as any
 
 const MODEL = () => env.TTA_MODEL || 'claude-sonnet-4-6'
 // 32K output ceiling. This endpoint streams (no HTTP-timeout risk), and a dense
@@ -159,6 +169,26 @@ Use the field to resolve every pick:
 - If a selection's number/name is not in that race's field, it is a misread or cross-race contamination — correct it to the right runner if obvious, else OMIT it and add an "uncertain" flag. Never emit a pick that isn't in the field.`
 }
 
+/**
+ * Fetch this client's learned hints and keep only the ones that always apply.
+ * On the tips surface we don't know the meeting's category/venue up front (the
+ * agent reads them from the image), so we pass empty context — which yields
+ * only GLOBAL-scoped hints. Degrades to [] on any failure.
+ */
+async function relevantHintsFor(clientId: string): Promise<ExtractionHint[]> {
+  const convexUrl = env.CONVEX_URL
+  if (!convexUrl) return []
+  try {
+    const client = new ConvexHttpClient(convexUrl)
+    const hints = (await client.query(convexApi.extractionHints.listForClient, {
+      clientId
+    })) as ExtractionHint[]
+    return selectRelevantHints(hints, { category: '', venue: '' })
+  } catch {
+    return []
+  }
+}
+
 export const POST: RequestHandler = async ({ request }) => {
   const apiKey = env.ANTHROPIC_API_KEY
   if (!apiKey) {
@@ -190,9 +220,47 @@ export const POST: RequestHandler = async ({ request }) => {
       : 'image/jpeg'
   ) as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif'
 
+  // Optional "fix this sheet" re-extract: prior result + a reviewer correction.
+  // When both are present we run a multi-turn call so the model sees its own
+  // previous answer and the fix, then re-extracts the WHOLE sheet.
+  const feedback = (fd.get('feedback') as string | null)?.trim() || ''
+  const priorResult = (fd.get('priorResult') as string | null) || ''
+  // Optional context for injecting this client's GLOBAL learned corrections.
+  const clientId = (fd.get('clientId') as string | null) || ''
+
   // V2: anchor extraction to the meeting's locked field when the client sends it.
   const fieldBlock = buildFieldBlock(fd.get('field'))
-  const systemText = SYSTEM_PROMPT + fieldBlock
+  const hints = clientId ? await relevantHintsFor(clientId) : []
+  const systemText = SYSTEM_PROMPT + fieldBlock + hintsPromptBlock(hints)
+
+  const baseInstruction =
+    'Extract this tip sheet. Reason first, then output the JSON object. No prose outside JSON.'
+  // Multi-turn correction (image → prior JSON → fix) vs single-shot.
+  const messages: Anthropic.MessageParam[] =
+    feedback && priorResult
+      ? [
+          {
+            role: 'user',
+            content: [
+              { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+              { type: 'text', text: baseInstruction }
+            ]
+          },
+          { role: 'assistant', content: priorResult },
+          {
+            role: 'user',
+            content: `A human reviewer checked your previous extraction (above) and found problems:\n\n${feedback}\n\nRe-extract the ENTIRE tip sheet from the image, applying this correction. Return the FULL JSON object for ALL races — not only the part you fixed. Reason first, then output JSON only.`
+          }
+        ]
+      : [
+          {
+            role: 'user',
+            content: [
+              { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+              { type: 'text', text: baseInstruction }
+            ]
+          }
+        ]
 
   // Always Anthropic direct. baseURL is pinned EXPLICITLY — not just omitted —
   // because the SDK auto-falls-back to process.env.ANTHROPIC_BASE_URL when it's
@@ -223,15 +291,7 @@ export const POST: RequestHandler = async ({ request }) => {
           max_tokens: MAX_TOKENS,
           ...dial,
           system: [{ type: 'text', text: systemText, cache_control: { type: 'ephemeral' } }],
-          messages: [
-            {
-              role: 'user',
-              content: [
-                { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
-                { type: 'text', text: 'Extract this tip sheet. Reason first, then output the JSON object. No prose outside JSON.' }
-              ]
-            }
-          ]
+          messages
         } as Parameters<typeof client.messages.stream>[0])
 
         anthropicStream.on('text', (delta: string) => {

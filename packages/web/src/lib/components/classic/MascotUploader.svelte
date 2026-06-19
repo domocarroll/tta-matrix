@@ -9,8 +9,32 @@
     onAddFiles: (files: File[], category: RaceCategory) => void
     onRetry: (id: string) => void
     onRemove: (id: string) => void
+    /** "Fix this sheet": re-read the image with a plain-English correction. */
+    onReExtract: (id: string, feedback: string) => void
   }
-  let { photos, onAddFiles, onRetry, onRemove }: Props = $props()
+  let { photos, onAddFiles, onRetry, onRemove, onReExtract }: Props = $props()
+
+  // Which photo's "fix this sheet" box is open, and its draft feedback text.
+  let fixOpenId = $state<string | null>(null)
+  let fixDraft = $state('')
+
+  function toggleFix(id: string): void {
+    if (fixOpenId === id) {
+      fixOpenId = null
+      fixDraft = ''
+    } else {
+      fixOpenId = id
+      fixDraft = ''
+    }
+  }
+
+  function submitFix(id: string): void {
+    const text = fixDraft.trim()
+    if (!text) return
+    onReExtract(id, text)
+    fixOpenId = null
+    fixDraft = ''
+  }
 
   let raceCategory = $state<RaceCategory>('SR')
   let isDragActive = $state(false)
@@ -63,7 +87,15 @@
   }
 
   const statusText = (s: ProcessedPhoto['status']) =>
-    s === 'uploading' ? 'Uploading…' : s === 'processing' ? 'Processing…' : s === 'ready' ? 'Saved' : 'Failed'
+    s === 'uploading'
+      ? 'Uploading…'
+      : s === 'processing'
+        ? 'Processing…'
+        : s === 'reextracting'
+          ? 'Re-reading…'
+          : s === 'ready'
+            ? 'Saved'
+            : 'Failed'
 </script>
 
 <div class="animate-fade-in space-y-8">
@@ -142,7 +174,9 @@
         <ul class="max-h-96 space-y-3 overflow-y-auto">
           {#each photos as photo (photo.id)}
             {@const config = categoryConfig[photo.category]}
-            <li class="bg-soft flex items-center justify-between rounded-lg border border-soft p-4">
+            {@const canFix = photo.status === 'ready' && !!photo.extractionId && !!photo.lastResult}
+            <li class="bg-soft rounded-lg border border-soft p-4">
+            <div class="flex items-center justify-between">
               <div class="flex flex-1 items-center gap-4">
                 <div class="relative">
                   <img src={photo.preview} alt="Preview" class="h-16 w-16 rounded-lg object-cover" />
@@ -172,14 +206,59 @@
                 {#if photo.status === 'error'}
                   <button type="button" class="c-accent" title="Retry" onclick={() => onRetry(photo.id)}>↻</button>
                 {/if}
+                {#if canFix}
+                  <button
+                    type="button"
+                    class="c-accent text-xs font-bold uppercase tracking-wider hover:underline"
+                    title="Tell Claude what's wrong and re-read this sheet"
+                    onclick={() => toggleFix(photo.id)}
+                  >fix this sheet</button>
+                {/if}
                 <button
                   type="button"
                   class="c-muted hover:opacity-70 disabled:opacity-40"
                   title="Remove"
-                  disabled={photo.status === 'processing' || photo.status === 'uploading'}
+                  disabled={photo.status === 'processing' || photo.status === 'uploading' || photo.status === 'reextracting'}
                   onclick={() => onRemove(photo.id)}
                 >✕</button>
               </div>
+            </div>
+
+            {#if photo.status === 'reextracting'}
+              <p class="c-accent mt-3 flex items-center gap-2 text-xs font-semibold">
+                <svg class="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                </svg>
+                Re-reading with your correction…
+              </p>
+            {:else if canFix && fixOpenId === photo.id}
+              <div class="mt-3 space-y-2 border-t border-soft pt-3">
+                <label class="c-muted block text-xs font-bold uppercase tracking-wider" for="fix-{photo.id}">
+                  What's wrong with this sheet?
+                </label>
+                <textarea
+                  id="fix-{photo.id}"
+                  bind:value={fixDraft}
+                  rows="2"
+                  placeholder="e.g. you merged race 3 and 4 — they're separate; Smith and J Smith are the same tipster"
+                  class="bg-white c-fg w-full rounded-lg border border-soft px-3 py-2 text-sm"
+                ></textarea>
+                <div class="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    class="btn btn-outline text-xs"
+                    onclick={() => toggleFix(photo.id)}
+                  >Cancel</button>
+                  <button
+                    type="button"
+                    class="btn btn-primary text-xs"
+                    disabled={!fixDraft.trim()}
+                    onclick={() => submitFix(photo.id)}
+                  >Re-extract</button>
+                </div>
+              </div>
+            {/if}
             </li>
           {/each}
         </ul>

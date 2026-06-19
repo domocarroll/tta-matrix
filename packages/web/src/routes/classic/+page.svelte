@@ -7,7 +7,7 @@
   import ClassicHeader from '$lib/components/classic/ClassicHeader.svelte'
   import MascotUploader from '$lib/components/classic/MascotUploader.svelte'
   import ClassicMeetingCard from '$lib/components/classic/ClassicMeetingCard.svelte'
-  import { runExtractionWithRetry } from '$lib/extractionRunner'
+  import { runExtractionWithRetry, replaceExtraction } from '$lib/extractionRunner'
   import {
     buildMeetingGroups,
     type MeetingGroup,
@@ -21,7 +21,8 @@
     flush as flushOutbox,
     flushBeacon,
     pendingCorrections,
-    pendingCount
+    pendingCount,
+    type FlushResult
   } from '$lib/outbox'
   import { resolveField, type ResolvedField } from '$lib/fieldResolution'
   import { loadUserFields, userFieldsToResolvedMap, type UserField } from '$lib/userFields'
@@ -107,8 +108,8 @@
     }, delayMs)
   }
 
-  async function runFlush(): Promise<void> {
-    if (!clientId) return
+  async function runFlush(): Promise<FlushResult | null> {
+    if (!clientId) return null
     const res = await flushOutbox(clientId)
     // Pull server truth only after a delivery; the draft overlay stays put
     // until the outbox confirms, so nothing flickers or disappears.
@@ -119,6 +120,7 @@
     } else if (lastError?.includes('still saving')) {
       lastError = null
     }
+    return res
   }
 
   function openUploadModal(group: MeetingGroup): void {
@@ -212,9 +214,10 @@
     // Durable: the extraction result is buffered in the outbox before delivery.
     // Even if persist fails or the tab closes now, the result is safe and will
     // be delivered on retry / next load — never re-extract the same image.
+    const clientTxId = crypto.randomUUID()
     enqueuePersist(clientId, {
       clientId,
-      clientTxId: crypto.randomUUID(),
+      clientTxId,
       filename: photo.file.name,
       durationMs: outcome.durationMs,
       tokensIn: outcome.tokensIn,
@@ -224,13 +227,65 @@
       overrideCategory: photo.category
     })
     syncOutboxState()
-    setPhoto(id, { status: 'ready' })
-    await runFlush()
+    // Keep the raw result on the photo so a "fix this sheet" re-extract can
+    // replay it as the prior assistant turn.
+    setPhoto(id, { status: 'ready', lastResult: outcome.result })
+    // Capture the persisted document id (when delivery succeeds now) so the
+    // re-extract can replace the row in place rather than duplicating it.
+    const flushed = await runFlush()
+    const persistedId = flushed?.persistedIds[clientTxId]
+    if (persistedId) setPhoto(id, { extractionId: persistedId })
   }
 
   function retryPhoto(id: string): void {
     setPhoto(id, { status: 'uploading', error: undefined })
     if (!processing) void drainQueue()
+  }
+
+  // ── "Fix this sheet" re-extract (in-session only) ──
+  // The reviewer types what's wrong in plain English; we re-read the SAME
+  // image with the prior result + correction as a multi-turn turn, then
+  // replace the persisted row in place. Only possible while the photo's File
+  // is still in memory (this session) — rows loaded from a prior session have
+  // no File and don't expose this affordance.
+  async function reExtractPhoto(id: string, feedback: string): Promise<void> {
+    if (!clientId) return
+    const trimmed = feedback.trim()
+    if (!trimmed) return
+    const photo = photos.find((p) => p.id === id)
+    if (!photo || !photo.extractionId || !photo.lastResult) return
+
+    setPhoto(id, { status: 'reextracting', error: undefined })
+
+    const outcome = await runExtractionWithRetry(photo.file, {}, undefined, undefined, {
+      feedback: trimmed,
+      priorResult: photo.lastResult,
+      clientId
+    })
+
+    if (outcome.errorMessage || !outcome.result) {
+      setPhoto(id, { status: 'ready', error: outcome.errorMessage ?? 're-extract failed' })
+      return
+    }
+
+    const ok = await replaceExtraction({
+      clientId,
+      id: photo.extractionId,
+      durationMs: outcome.durationMs,
+      tokensIn: outcome.tokensIn,
+      tokensOut: outcome.tokensOut,
+      model: MODEL,
+      payload: outcome.result,
+      overrideCategory: photo.category
+    })
+
+    if (!ok) {
+      setPhoto(id, { status: 'ready', error: 'Could not save the corrected sheet — try again.' })
+      return
+    }
+
+    setPhoto(id, { status: 'ready', lastResult: outcome.result, error: undefined })
+    await refresh()
   }
 
   function removePhoto(id: string): void {
@@ -334,7 +389,13 @@
   {/if}
 
   <!-- Upload -->
-  <MascotUploader {photos} onAddFiles={addFiles} onRetry={retryPhoto} onRemove={removePhoto} />
+  <MascotUploader
+    {photos}
+    onAddFiles={addFiles}
+    onRetry={retryPhoto}
+    onRemove={removePhoto}
+    onReExtract={reExtractPhoto}
+  />
 
   {#if finishedCount > 0}
     <div class="mt-3 text-center">
