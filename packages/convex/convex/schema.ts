@@ -346,6 +346,29 @@ export default defineSchema({
     approvedAt: v.number(),
   }).index("by_client_meeting", ["clientId", "meetingKey"]),
 
+  // ────────────────────────────────────────────────
+  // Compounding: learned extraction corrections
+  // ────────────────────────────────────────────────
+  //
+  // When Pete corrects an extraction ("emergencies belong to the race
+  // above"), the fix can be saved as a standing hint scoped to this client
+  // (optionally narrowed to a category or venue). Active hints are injected
+  // into the extraction system prompt for future runs, so a correction made
+  // once compounds — the system gets better at THIS customer's layouts.
+
+  extractionHints: defineTable({
+    clientId: v.string(),
+    /** global = always; category = when category matches; venue = when venue matches. */
+    scope: v.union(v.literal("global"), v.literal("category"), v.literal("venue")),
+    category: v.optional(v.string()),
+    venue: v.optional(v.string()),
+    hint: v.string(),
+    /** manual = Pete wrote it; derived = distilled from a correction he made. */
+    source: v.union(v.literal("manual"), v.literal("derived")),
+    active: v.boolean(),
+    createdAt: v.number(),
+  }).index("by_client", ["clientId"]),
+
   /** Public read-only snapshots for Pete's "share to customers" links. */
   meetingSnapshots: defineTable({
     /** Random url-safe token used in the share link. */

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { saveUserField, type UserFieldRace, type UserFieldRunner } from '$lib/userFields'
+  import { saveHint } from '$lib/extractionHints'
 
   interface Props {
     clientId: string
@@ -19,22 +20,36 @@
   let sourceFilenames = $state<string[]>([])
   let progressMsg = $state<string>('')
 
+  // Chat re-extract state. Files are retained so a correction can re-send them.
+  let files = $state<File[]>([])
+  let feedback = $state('')
+  let feedbackHistory = $state<string[]>([])
+  let reExtracting = $state(false)
+  let rememberHint = $state(false)
+  let hintsApplied = $state(0)
+
+  const meetingCategory = $derived(meetingKey.split('|')[1] ?? '')
+
   async function extractFile(file: File): Promise<{ races: UserFieldRace[]; filename: string } | null> {
     const fd = new FormData()
     fd.append('image', file)
+    fd.append('clientId', clientId)
+    fd.append('meetingKey', meetingKey)
     const r = await fetch('/api/extract-card', { method: 'POST', body: fd })
     const j = (await r.json()) as
-      | { ok: true; races: UserFieldRace[]; filename: string }
+      | { ok: true; races: UserFieldRace[]; filename: string; hintsApplied?: number }
       | { ok: false; error: string }
     if (!r.ok || !('ok' in j) || j.ok !== true) {
       errorMsg = 'ok' in j && !j.ok ? j.error : `HTTP ${r.status}`
       return null
     }
+    hintsApplied = j.hintsApplied ?? 0
     return { races: j.races, filename: j.filename }
   }
 
   async function handleFiles(list: FileList | null): Promise<void> {
     if (!list || list.length === 0) return
+    files = Array.from(list)
     stage = 'extracting'
     errorMsg = null
     const mergedByRace = new Map<number, UserFieldRunner[]>()
@@ -71,6 +86,42 @@
     sourceFilenames = filenames
     stage = races.length > 0 ? 'review' : 'error'
     if (races.length === 0) errorMsg = 'No races extracted from the upload.'
+  }
+
+  // Chat re-extract: re-run the whole card with the reviewer's correction
+  // (and the current table state as the prior answer), then replace the table.
+  async function reExtract(): Promise<void> {
+    const note = feedback.trim()
+    if (!note || files.length === 0 || reExtracting) return
+    reExtracting = true
+    errorMsg = null
+    try {
+      const fd = new FormData()
+      for (const f of files) fd.append('image', f)
+      fd.append('feedback', note)
+      fd.append('priorResult', JSON.stringify({ races }))
+      fd.append('clientId', clientId)
+      fd.append('meetingKey', meetingKey)
+      const r = await fetch('/api/extract-card', { method: 'POST', body: fd })
+      const j = (await r.json()) as
+        | { ok: true; races: UserFieldRace[]; hintsApplied?: number }
+        | { ok: false; error: string }
+      if (!r.ok || !('ok' in j) || j.ok !== true) {
+        errorMsg = 'ok' in j && !j.ok ? j.error : `HTTP ${r.status}`
+        return
+      }
+      races = j.races
+        .slice()
+        .sort((a, b) => a.raceNumber - b.raceNumber)
+        .map((race) => ({ ...race, runners: race.runners.slice().sort((a, b) => a.number - b.number) }))
+      hintsApplied = j.hintsApplied ?? hintsApplied
+      feedbackHistory = [...feedbackHistory, note]
+      feedback = ''
+    } catch (e) {
+      errorMsg = e instanceof Error ? e.message : 'Re-extract failed'
+    } finally {
+      reExtracting = false
+    }
   }
 
   function updateRunner(rIdx: number, runnerIdx: number, field: keyof UserFieldRunner, value: string): void {
@@ -130,6 +181,18 @@
 
   async function approve(): Promise<void> {
     stage = 'saving'
+    // Compounding: if Pete corrected this card and opted in, persist the
+    // correction as a venue-scoped hint so future cards for this venue carry it.
+    if (rememberHint && feedbackHistory.length > 0) {
+      await saveHint({
+        clientId,
+        scope: 'venue',
+        category: meetingCategory,
+        venue: meetingLabel,
+        hint: feedbackHistory.join(' '),
+        source: 'derived'
+      })
+    }
     const ok = await saveUserField({ clientId, meetingKey, races, sourceFilenames })
     if (!ok) {
       stage = 'error'
@@ -311,6 +374,51 @@
             </section>
           {/each}
         </div>
+
+        <!-- Chat re-extract: tell it what's wrong and have it redo the card -->
+        <div class="mt-5 rounded-md border border-border bg-bg-surface/20 px-4 py-3">
+          <div class="flex items-baseline justify-between">
+            <p class="mono text-[11px] uppercase tracking-wider text-text-muted">
+              not right? tell it what to fix
+            </p>
+            {#if hintsApplied > 0}
+              <span class="mono text-[10px] uppercase tracking-wider text-accent" title="Learned corrections applied to this extraction">
+                {hintsApplied} learned hint{hintsApplied === 1 ? '' : 's'} applied
+              </span>
+            {/if}
+          </div>
+          {#if feedbackHistory.length > 0}
+            <ul class="mt-2 space-y-1">
+              {#each feedbackHistory as note, i (i)}
+                <li class="text-text-secondary text-xs flex gap-2">
+                  <span class="text-text-muted">↳</span><span>{note}</span>
+                </li>
+              {/each}
+            </ul>
+          {/if}
+          <textarea
+            bind:value={feedback}
+            rows="2"
+            disabled={reExtracting}
+            placeholder="e.g. the emergencies for race 1 bled into race 2 — keep them in race 1"
+            class="mt-2 w-full bg-bg-surface border border-border rounded px-2 py-1.5 text-text-primary text-sm"
+          ></textarea>
+          <div class="mt-2 flex items-center justify-between gap-3">
+            <label class="flex items-center gap-2 text-text-secondary text-xs select-none">
+              <input type="checkbox" bind:checked={rememberHint} disabled={feedbackHistory.length === 0} />
+              remember this for future {meetingLabel} cards
+            </label>
+            <button
+              type="button"
+              disabled={reExtracting || !feedback.trim()}
+              class="rounded-md border border-border bg-bg-card hover:bg-bg-card-hover disabled:opacity-40 mono text-[11px] uppercase tracking-wider px-3 py-1.5 text-text-primary"
+              onclick={reExtract}
+            >
+              {reExtracting ? 're-reading…' : 'Re-extract with this note'}
+            </button>
+          </div>
+        </div>
+
         <footer class="mt-5 flex items-center justify-end gap-3">
           <button
             type="button"

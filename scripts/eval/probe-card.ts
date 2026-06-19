@@ -14,7 +14,7 @@
 // as that experiment's testbed.
 
 import { dirname, basename, resolve } from 'node:path'
-import { call, imageBlock, liftPrompt, parseLooseJson } from './lib.ts'
+import { call, client, MODEL, imageBlock, liftPrompt, parseLooseJson } from './lib.ts'
 
 const ROUTE = 'packages/web/src/routes/api/extract-card/+server.ts'
 
@@ -68,21 +68,75 @@ async function probe(imgPath: string, feedback?: string): Promise<void> {
   }
 }
 
+function printRaces(label: string, parsed: { races?: Race[] } | null): void {
+  if (!parsed?.races?.length) {
+    console.log(`  ${label}: no races parsed`)
+    return
+  }
+  for (const race of parsed.races) {
+    const runners = race.runners ?? []
+    const nums = runners.map((r) => r.number).filter((n): n is number => typeof n === 'number')
+    const max = nums.length ? Math.max(...nums) : 0
+    const emg = runners.filter((r) => r.emergency).length
+    console.log(`  ${label} R${race.raceNumber}: ${runners.length} runners (max#${max}${emg ? `, ${emg} emergency` : ''})`)
+  }
+}
+
+// Faithful two-turn re-extract: pass 1 extracts, pass 2 sends the prior result
+// + a reviewer correction (mirrors the /api/extract-card feedback path).
+async function twoPass(imgPath: string, feedback: string): Promise<void> {
+  const system = liftPrompt(ROUTE, 'SYSTEM_PROMPT')
+  const dir = dirname(resolve(imgPath))
+  const file = basename(imgPath)
+  const img = imageBlock(dir, file)
+  const instruction = 'Extract this race card. Output the JSON object only.'
+
+  console.log(`\n=== ${file} — TWO-PASS ===`)
+  const first = await call({ system, content: [img, { type: 'text', text: instruction }], maxTokens: 16384 })
+  const firstParsed = parseLooseJson(first.text) as { races?: Race[] } | null
+  printRaces('pass1', firstParsed)
+
+  console.log(`  -- feedback: "${feedback}"`)
+  const msg = await client.messages.create({
+    model: MODEL,
+    max_tokens: 16384,
+    temperature: 0.1,
+    system,
+    messages: [
+      { role: 'user', content: [img, { type: 'text', text: instruction }] },
+      { role: 'assistant', content: first.text },
+      {
+        role: 'user',
+        content: `A human reviewer found problems:\n\n${feedback}\n\nRe-extract the ENTIRE card, applying this correction. Return the FULL JSON for ALL races. Output JSON only.`
+      }
+    ]
+  })
+  const secondRaw = msg.content.filter((c) => c.type === 'text').map((c) => (c as { type: 'text'; text: string }).text).join('')
+  printRaces('pass2', parseLooseJson(secondRaw) as { races?: Race[] } | null)
+}
+
 async function main(): Promise<void> {
   const argv = process.argv.slice(2)
   let feedback: string | undefined
+  let twoPassNote: string | undefined
   const fi = argv.indexOf('--feedback')
   if (fi !== -1) {
     feedback = argv[fi + 1]
     argv.splice(fi, 2)
   }
+  const ti = argv.indexOf('--two-pass')
+  if (ti !== -1) {
+    twoPassNote = argv[ti + 1]
+    argv.splice(ti, 2)
+  }
   if (!argv.length) {
-    console.error('usage: tsx scripts/eval/probe-card.ts [--feedback "..."] <image> [<image> ...]')
+    console.error('usage: tsx scripts/eval/probe-card.ts [--feedback "..."] [--two-pass "<correction>"] <image> [...]')
     process.exit(1)
   }
   for (const img of argv) {
     try {
-      await probe(img, feedback)
+      if (twoPassNote) await twoPass(img, twoPassNote)
+      else await probe(img, feedback)
     } catch (err) {
       console.error(`\n=== ${img} === FAILED:`, err instanceof Error ? err.message : err)
     }

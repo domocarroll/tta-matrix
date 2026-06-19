@@ -1,9 +1,15 @@
-// Race-card extraction — single-shot Claude vision call.
+// Race-card extraction — Claude vision call (single-shot, or multi-turn chat
+// re-extract when a reviewer correction is supplied).
 //
 // POST /api/extract-card
-//   FormData: image (file)
+//   FormData:
+//     image        one or more image files (FormData may repeat the key)
+//     feedback?    reviewer correction → triggers a multi-turn re-extract
+//     priorResult? JSON of the previous extraction (the assistant turn)
+//     clientId?    + meetingKey?  → inject this client's learned hints
 //
-// Returns: { races: [{raceNumber, distance?, runners: [{number,name,jockey?,trainer?,barrier?,scratched?}]}] }
+// Returns: { ok, races:[{raceNumber, distance?, runners:[{number,name,jockey?,
+//   trainer?,barrier?,scratched?,emergency?}]}], flags, hintsApplied, ... }
 //
 // This is NOT persisted — caller reviews + approves, then POSTs to
 // /api/user-fields to lock the field in for that meetingKey.
@@ -12,7 +18,67 @@ import type { RequestHandler } from './$types'
 import { error, json } from '@sveltejs/kit'
 import { env } from '$env/dynamic/private'
 import Anthropic from '@anthropic-ai/sdk'
+import { ConvexHttpClient } from 'convex/browser'
+import { anyApi } from 'convex/server'
 import { sanitiseRaces } from '$lib/sanitiseRaces.ts'
+import {
+  selectRelevantHints,
+  hintsPromptBlock,
+  type ExtractionHint
+} from '$lib/extractionHints'
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const convexApi = anyApi as any
+
+type MediaType = 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif'
+
+interface ImagePart {
+  type: 'image'
+  source: { type: 'base64'; media_type: MediaType; data: string }
+}
+
+/** Read every uploaded image (FormData may carry one or several). */
+async function readImages(fd: FormData): Promise<{ parts: ImagePart[]; filenames: string[] }> {
+  const files = fd.getAll('image').filter((f): f is File => f instanceof File)
+  if (files.length === 0) throw error(400, 'Missing image file')
+  const parts: ImagePart[] = []
+  const filenames: string[] = []
+  for (const file of files) {
+    if (!file.type.startsWith('image/')) throw error(400, `Invalid image type: ${file.type}`)
+    if (file.size > MAX_IMAGE_BYTES) {
+      const mb = (file.size / (1024 * 1024)).toFixed(1)
+      throw error(413, `Image too large (${mb} MB; limit 8 MB)`)
+    }
+    const media: MediaType = (
+      ['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)
+        ? file.type
+        : 'image/jpeg'
+    ) as MediaType
+    parts.push({
+      type: 'image',
+      source: { type: 'base64', media_type: media, data: Buffer.from(await file.arrayBuffer()).toString('base64') }
+    })
+    filenames.push(file.name)
+  }
+  return { parts, filenames }
+}
+
+/** Fetch + filter this client's learned hints for the meeting being extracted. */
+async function relevantHintsFor(clientId: string, meetingKey: string): Promise<ExtractionHint[]> {
+  const convexUrl = env.CONVEX_URL
+  if (!convexUrl) return []
+  // meetingKey is `YYYY-MM-DD|CATEGORY|Venue Name`.
+  const [, category = '', venue = ''] = meetingKey.split('|')
+  try {
+    const client = new ConvexHttpClient(convexUrl)
+    const hints = (await client.query(convexApi.extractionHints.listForClient, {
+      clientId
+    })) as ExtractionHint[]
+    return selectRelevantHints(hints, { category, venue })
+  } catch {
+    return []
+  }
+}
 
 const MODEL = () => env.TTA_MODEL || 'claude-sonnet-4-6'
 const MAX_TOKENS = 16384
@@ -89,21 +155,32 @@ export const POST: RequestHandler = async ({ request }) => {
   if (!apiKey) throw error(500, 'ANTHROPIC_API_KEY not configured')
 
   const fd = await request.formData()
-  const file = fd.get('image')
-  if (!(file instanceof File)) throw error(400, 'Missing image file')
-  if (!file.type.startsWith('image/')) throw error(400, `Invalid image type: ${file.type}`)
-  if (file.size > MAX_IMAGE_BYTES) {
-    const mb = (file.size / (1024 * 1024)).toFixed(1)
-    throw error(413, `Image too large (${mb} MB; limit 8 MB)`)
-  }
+  const { parts, filenames } = await readImages(fd)
 
-  const buf = Buffer.from(await file.arrayBuffer())
-  const base64 = buf.toString('base64')
-  const mediaType = (
-    ['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)
-      ? file.type
-      : 'image/jpeg'
-  ) as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif'
+  // Optional chat re-extract: prior result + a reviewer correction. When both
+  // are present we run a multi-turn call so the model sees its own previous
+  // answer and the fix, then re-extracts the WHOLE card.
+  const feedback = (fd.get('feedback') as string | null)?.trim() || ''
+  const priorResult = (fd.get('priorResult') as string | null) || ''
+  // Optional context for injecting this client's learned corrections (hints).
+  const clientId = (fd.get('clientId') as string | null) || ''
+  const meetingKey = (fd.get('meetingKey') as string | null) || ''
+
+  const hints = clientId && meetingKey ? await relevantHintsFor(clientId, meetingKey) : []
+  const system = SYSTEM_PROMPT + hintsPromptBlock(hints)
+
+  const baseInstruction = 'Extract this race card. Output the JSON object only.'
+  const messages: Anthropic.MessageParam[] =
+    feedback && priorResult
+      ? [
+          { role: 'user', content: [...parts, { type: 'text', text: baseInstruction }] },
+          { role: 'assistant', content: priorResult },
+          {
+            role: 'user',
+            content: `A human reviewer checked your previous extraction (above) and found problems:\n\n${feedback}\n\nRe-extract the ENTIRE card from the image(s), applying this correction. Return the FULL JSON object for ALL races — not only the race you fixed. Output JSON only.`
+          }
+        ]
+      : [{ role: 'user', content: [...parts, { type: 'text', text: baseInstruction }] }]
 
   // Always Anthropic direct, baseURL pinned explicitly so the SDK can't fall
   // back to a stale process.env.ANTHROPIC_BASE_URL (see extract/+server.ts).
@@ -113,22 +190,8 @@ export const POST: RequestHandler = async ({ request }) => {
     model: MODEL(),
     max_tokens: MAX_TOKENS,
     temperature: 0.1,
-    system: SYSTEM_PROMPT,
-    messages: [
-      {
-        role: 'user',
-        content: [
-          {
-            type: 'image',
-            source: { type: 'base64', media_type: mediaType, data: base64 }
-          },
-          {
-            type: 'text',
-            text: 'Extract this race card. Output the JSON object only.'
-          }
-        ]
-      }
-    ]
+    system,
+    messages
   })
 
   const raw = msg.content
@@ -147,8 +210,10 @@ export const POST: RequestHandler = async ({ request }) => {
     ok: true,
     races,
     flags,
+    hintsApplied: hints.length,
     tokensIn: msg.usage.input_tokens,
     tokensOut: msg.usage.output_tokens,
-    filename: file.name
+    filename: filenames[0] ?? '',
+    filenames
   })
 }
