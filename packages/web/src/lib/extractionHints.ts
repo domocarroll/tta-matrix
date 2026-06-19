@@ -75,3 +75,48 @@ export async function saveHint(input: {
     return false
   }
 }
+
+export async function setHintActive(clientId: string, id: string, active: boolean): Promise<boolean> {
+  try {
+    const r = await fetch('/api/extraction-hints', {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ clientId, id, active })
+    })
+    return r.ok
+  } catch {
+    return false
+  }
+}
+
+export async function deleteHint(clientId: string, id: string): Promise<boolean> {
+  try {
+    const r = await fetch(
+      `/api/extraction-hints?clientId=${encodeURIComponent(clientId)}&id=${encodeURIComponent(id)}`,
+      { method: 'DELETE' }
+    )
+    return r.ok
+  } catch {
+    return false
+  }
+}
+
+/** Turn a raw reviewer correction into a clean, general, reusable rule. */
+export async function distillHint(input: {
+  feedback: string
+  category?: string
+  venue?: string
+}): Promise<string> {
+  try {
+    const r = await fetch('/api/distill-hint', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(input)
+    })
+    if (!r.ok) return input.feedback
+    const j = (await r.json()) as { hint?: string }
+    return j.hint?.trim() || input.feedback
+  } catch {
+    return input.feedback
+  }
+}

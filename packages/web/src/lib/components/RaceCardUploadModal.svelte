@@ -1,6 +1,15 @@
 <script lang="ts">
+  import { onMount } from 'svelte'
   import { saveUserField, type UserFieldRace, type UserFieldRunner } from '$lib/userFields'
-  import { saveHint } from '$lib/extractionHints'
+  import {
+    saveHint,
+    loadHints,
+    deleteHint,
+    distillHint,
+    selectRelevantHints,
+    type ExtractionHint,
+    type HintScope
+  } from '$lib/extractionHints'
 
   interface Props {
     clientId: string
@@ -25,10 +34,69 @@
   let feedback = $state('')
   let feedbackHistory = $state<string[]>([])
   let reExtracting = $state(false)
-  let rememberHint = $state(false)
   let hintsApplied = $state(0)
 
+  // Learned-hints (compounding) state.
+  let relevantHints = $state<ExtractionHint[]>([])
+  let showHints = $state(false)
+  let teaching = $state(false) // distillation in flight
+  let proposedHint = $state('') // editable distilled rule awaiting save
+  let hintScope = $state<HintScope>('venue')
+  let savingHint = $state(false)
+
+  // meetingKey = `YYYY-MM-DD|CATEGORY|Venue`. Use the key's venue (not the
+  // display label) so creation + the server-side filter agree.
   const meetingCategory = $derived(meetingKey.split('|')[1] ?? '')
+  const meetingVenue = $derived(meetingKey.split('|')[2] ?? meetingLabel)
+
+  async function refreshHints(): Promise<void> {
+    const all = await loadHints(clientId)
+    relevantHints = selectRelevantHints(all, { category: meetingCategory, venue: meetingVenue })
+  }
+
+  onMount(() => {
+    void refreshHints()
+  })
+
+  async function removeHint(h: ExtractionHint): Promise<void> {
+    await deleteHint(clientId, h.id)
+    await refreshHints()
+  }
+
+  // Distill the accumulated corrections into a proposed rule for Pete to edit.
+  async function suggestRule(): Promise<void> {
+    if (feedbackHistory.length === 0 || teaching) return
+    teaching = true
+    try {
+      proposedHint = await distillHint({
+        feedback: feedbackHistory.join(' '),
+        category: meetingCategory,
+        venue: meetingVenue
+      })
+    } finally {
+      teaching = false
+    }
+  }
+
+  async function saveProposedHint(): Promise<void> {
+    const hint = proposedHint.trim()
+    if (!hint || savingHint) return
+    savingHint = true
+    try {
+      await saveHint({
+        clientId,
+        scope: hintScope,
+        category: hintScope === 'global' ? undefined : meetingCategory,
+        venue: hintScope === 'venue' ? meetingVenue : undefined,
+        hint,
+        source: 'derived'
+      })
+      proposedHint = ''
+      await refreshHints()
+    } finally {
+      savingHint = false
+    }
+  }
 
   async function extractFile(file: File): Promise<{ races: UserFieldRace[]; filename: string } | null> {
     const fd = new FormData()
@@ -181,18 +249,6 @@
 
   async function approve(): Promise<void> {
     stage = 'saving'
-    // Compounding: if Pete corrected this card and opted in, persist the
-    // correction as a venue-scoped hint so future cards for this venue carry it.
-    if (rememberHint && feedbackHistory.length > 0) {
-      await saveHint({
-        clientId,
-        scope: 'venue',
-        category: meetingCategory,
-        venue: meetingLabel,
-        hint: feedbackHistory.join(' '),
-        source: 'derived'
-      })
-    }
     const ok = await saveUserField({ clientId, meetingKey, races, sourceFilenames })
     if (!ok) {
       stage = 'error'
@@ -230,8 +286,33 @@
       </button>
     </header>
 
+    {#snippet learnedHints(heading: string)}
+      {#if relevantHints.length > 0}
+        <div class="mb-4 rounded-md border border-border bg-bg-surface/20 px-4 py-2.5">
+          <button type="button" class="flex w-full items-center justify-between" onclick={() => (showHints = !showHints)}>
+            <span class="mono text-[11px] uppercase tracking-wider text-accent">
+              {showHints ? '▾' : '▸'} {heading} ({relevantHints.length})
+            </span>
+            <span class="mono text-[10px] uppercase tracking-wider text-text-muted">applied automatically</span>
+          </button>
+          {#if showHints}
+            <ul class="mt-2 space-y-1.5">
+              {#each relevantHints as h (h.id)}
+                <li class="flex items-start gap-2 text-sm">
+                  <span class="mono text-[9px] uppercase tracking-wider px-1 py-0.5 rounded bg-bg-surface text-text-muted shrink-0" title="{h.scope} scope">{h.scope}</span>
+                  <span class="flex-1 text-text-secondary">{h.hint}</span>
+                  <button type="button" class="mono text-[10px] uppercase tracking-wider text-text-muted hover:text-error shrink-0" title="Stop applying & remove this hint" onclick={() => removeHint(h)}>✕</button>
+                </li>
+              {/each}
+            </ul>
+          {/if}
+        </div>
+      {/if}
+    {/snippet}
+
     <div class="px-6 py-5">
       {#if stage === 'pick'}
+        {@render learnedHints(`learned for ${meetingVenue}`)}
         <div class="rounded-md border border-dashed border-border bg-bg-surface/40 px-6 py-10 text-center">
           <p class="serif text-xl text-text-primary">Drop the official card image(s)</p>
           <p class="mt-2 text-text-secondary">
@@ -271,6 +352,7 @@
             edit any field — then approve to lock in
           </p>
         </div>
+        {@render learnedHints('learned & applied to this card')}
         <div class="space-y-5 max-h-[60vh] overflow-y-auto pr-1">
           {#each races as race, rIdx (race.raceNumber)}
             <section class="rounded-md border border-border bg-bg-surface/30">
@@ -403,11 +485,7 @@
             placeholder="e.g. the emergencies for race 1 bled into race 2 — keep them in race 1"
             class="mt-2 w-full bg-bg-surface border border-border rounded px-2 py-1.5 text-text-primary text-sm"
           ></textarea>
-          <div class="mt-2 flex items-center justify-between gap-3">
-            <label class="flex items-center gap-2 text-text-secondary text-xs select-none">
-              <input type="checkbox" bind:checked={rememberHint} disabled={feedbackHistory.length === 0} />
-              remember this for future {meetingLabel} cards
-            </label>
+          <div class="mt-2 flex items-center justify-end">
             <button
               type="button"
               disabled={reExtracting || !feedback.trim()}
@@ -417,6 +495,50 @@
               {reExtracting ? 're-reading…' : 'Re-extract with this note'}
             </button>
           </div>
+
+          <!-- Teach: distill the corrections into a reusable rule (Pete reviews) -->
+          {#if feedbackHistory.length > 0}
+            <div class="mt-3 border-t border-border/60 pt-3">
+              {#if !proposedHint}
+                <button
+                  type="button"
+                  disabled={teaching}
+                  class="mono text-[11px] uppercase tracking-wider text-accent hover:underline disabled:opacity-40"
+                  onclick={suggestRule}
+                >
+                  {teaching ? 'thinking…' : '✦ teach this for future cards'}
+                </button>
+              {:else}
+                <p class="mono text-[10px] uppercase tracking-wider text-text-muted">review the rule, then save</p>
+                <textarea
+                  bind:value={proposedHint}
+                  rows="2"
+                  class="mt-1.5 w-full bg-bg-surface border border-accent/40 rounded px-2 py-1.5 text-text-primary text-sm"
+                ></textarea>
+                <div class="mt-2 flex items-center justify-between gap-3">
+                  <label class="flex items-center gap-2 text-text-secondary text-xs">
+                    apply to
+                    <select bind:value={hintScope} class="bg-bg-surface border border-border rounded px-1.5 py-0.5 text-text-primary">
+                      <option value="venue">{meetingVenue} only</option>
+                      <option value="category">all {meetingCategory} cards</option>
+                      <option value="global">all cards</option>
+                    </select>
+                  </label>
+                  <div class="flex items-center gap-2">
+                    <button type="button" class="mono text-[10px] uppercase tracking-wider text-text-muted hover:text-text-primary" onclick={() => (proposedHint = '')}>cancel</button>
+                    <button
+                      type="button"
+                      disabled={savingHint || !proposedHint.trim()}
+                      class="rounded-md border border-accent bg-accent text-bg-primary mono text-[11px] uppercase tracking-wider px-3 py-1.5 hover:bg-accent-bright disabled:opacity-40"
+                      onclick={saveProposedHint}
+                    >
+                      {savingHint ? 'saving…' : 'save rule'}
+                    </button>
+                  </div>
+                </div>
+              {/if}
+            </div>
+          {/if}
         </div>
 
         <footer class="mt-5 flex items-center justify-end gap-3">

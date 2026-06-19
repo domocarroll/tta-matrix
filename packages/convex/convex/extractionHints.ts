@@ -76,13 +76,25 @@ export const add = mutation({
   },
 });
 
-export const deactivate = mutation({
+export const setActive = mutation({
+  args: { clientId: v.string(), id: v.id("extractionHints"), active: v.boolean() },
+  handler: async (ctx, args) => {
+    const row = await ctx.db.get(args.id);
+    if (row && row.clientId === args.clientId) {
+      await ctx.db.patch(args.id, { active: args.active });
+    }
+    return { ok: true };
+  },
+});
+
+export const remove = mutation({
   args: { clientId: v.string(), id: v.id("extractionHints") },
   handler: async (ctx, args) => {
     const row = await ctx.db.get(args.id);
     if (row && row.clientId === args.clientId) {
-      await ctx.db.patch(args.id, { active: false });
+      await ctx.db.delete(args.id);
+      return { deleted: 1 };
     }
-    return { ok: true };
+    return { deleted: 0 };
   },
 });

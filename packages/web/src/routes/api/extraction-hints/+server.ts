@@ -1,8 +1,11 @@
 // Learned extraction corrections (compounding) — list + save.
 //
-// GET  /api/extraction-hints?clientId=<id>   → { hints: [...] }
-// POST /api/extraction-hints                  → { id, deduped }
-//        body: { clientId, scope, category?, venue?, hint, source }
+// GET    /api/extraction-hints?clientId=<id>           → { hints: [...] }
+// POST   /api/extraction-hints                          → { id, deduped }
+//          body: { clientId, scope, category?, venue?, hint, source }
+// PATCH  /api/extraction-hints                          → { ok }   (toggle active)
+//          body: { clientId, id, active }
+// DELETE /api/extraction-hints?clientId=<id>&id=<id>    → { deleted }
 
 import type { RequestHandler } from './$types'
 import { error, json } from '@sveltejs/kit'
@@ -55,5 +58,34 @@ export const POST: RequestHandler = async ({ request }) => {
     hint: body.hint.trim(),
     source: body.source ?? 'derived'
   })
+  return json(out)
+}
+
+export const PATCH: RequestHandler = async ({ request }) => {
+  const convexUrl = env.CONVEX_URL
+  if (!convexUrl) throw error(500, 'CONVEX_URL not configured')
+  const body = (await request.json().catch(() => null)) as
+    | { clientId?: string; id?: string; active?: boolean }
+    | null
+  if (!body?.clientId || !body.id || typeof body.active !== 'boolean') {
+    throw error(400, 'Missing clientId, id, or active')
+  }
+  const client = new ConvexHttpClient(convexUrl)
+  const out = await client.mutation(api.extractionHints.setActive, {
+    clientId: body.clientId,
+    id: body.id,
+    active: body.active
+  })
+  return json(out)
+}
+
+export const DELETE: RequestHandler = async ({ url }) => {
+  const convexUrl = env.CONVEX_URL
+  if (!convexUrl) throw error(500, 'CONVEX_URL not configured')
+  const clientId = url.searchParams.get('clientId')
+  const id = url.searchParams.get('id')
+  if (!clientId || !id) throw error(400, 'Missing clientId or id')
+  const client = new ConvexHttpClient(convexUrl)
+  const out = await client.mutation(api.extractionHints.remove, { clientId, id })
   return json(out)
 }
