@@ -7,7 +7,7 @@
   import ClassicHeader from '$lib/components/classic/ClassicHeader.svelte'
   import MascotUploader from '$lib/components/classic/MascotUploader.svelte'
   import ClassicMeetingCard from '$lib/components/classic/ClassicMeetingCard.svelte'
-  import { runExtractionWithRetry, persistExtraction } from '$lib/extractionRunner'
+  import { runExtractionWithRetry } from '$lib/extractionRunner'
   import {
     buildMeetingGroups,
     type MeetingGroup,
@@ -15,6 +15,14 @@
     type MeetingCorrection,
     type HorsePatch
   } from '$lib/workspace'
+  import {
+    enqueueCorrection,
+    enqueuePersist,
+    flush as flushOutbox,
+    flushBeacon,
+    pendingCorrections,
+    pendingCount
+  } from '$lib/outbox'
   import { resolveField, type ResolvedField } from '$lib/fieldResolution'
   import { loadUserFields, userFieldsToResolvedMap, type UserField } from '$lib/userFields'
   import RaceCardUploadModal from '$lib/components/RaceCardUploadModal.svelte'
@@ -37,6 +45,15 @@
   let lastError = $state<string | null>(null)
   let onlyToday = $state(true)
   let activeCategory = $state<'ALL' | RaceCategory>('ALL')
+
+  // ── Durable autosave (outbox) ──
+  // Edits + extractions are written to a localStorage outbox first, then
+  // delivered. `draftCorrections` overlays unsynced edits so they show
+  // instantly and survive a reload/crash; `pendingWrites` drives the
+  // "syncing…" indicator. See $lib/outbox.
+  let draftCorrections = $state<MeetingCorrection[]>([])
+  let pendingWrites = $state(0)
+  let flushTimer: ReturnType<typeof setTimeout> | null = null
 
   function todayStartUtcMs(): number {
     const d = new Date()
@@ -71,7 +88,38 @@
     for (const [k, v] of user) merged.set(k, v)
     return merged
   })
-  const allGroups = $derived<MeetingGroup[]>(buildMeetingGroups(rows, corrections, mergedFieldsByKey()))
+  // Drafts last → an unsynced local edit wins over the stale server value.
+  const allGroups = $derived<MeetingGroup[]>(
+    buildMeetingGroups(rows, [...corrections, ...draftCorrections], mergedFieldsByKey())
+  )
+
+  function syncOutboxState(): void {
+    if (!clientId) return
+    draftCorrections = pendingCorrections(clientId)
+    pendingWrites = pendingCount(clientId)
+  }
+
+  function scheduleFlush(delayMs = 800): void {
+    if (flushTimer) clearTimeout(flushTimer)
+    flushTimer = setTimeout(() => {
+      flushTimer = null
+      void runFlush()
+    }, delayMs)
+  }
+
+  async function runFlush(): Promise<void> {
+    if (!clientId) return
+    const res = await flushOutbox(clientId)
+    // Pull server truth only after a delivery; the draft overlay stays put
+    // until the outbox confirms, so nothing flickers or disappears.
+    if (res.delivered > 0) await refresh()
+    syncOutboxState()
+    if (res.failed > 0) {
+      lastError = 'Some changes are still saving — retrying automatically…'
+    } else if (lastError?.includes('still saving')) {
+      lastError = null
+    }
+  }
 
   function openUploadModal(group: MeetingGroup): void {
     uploadModalKey = group.meetingKey
@@ -161,8 +209,12 @@
       return
     }
 
-    const persistedId = await persistExtraction({
+    // Durable: the extraction result is buffered in the outbox before delivery.
+    // Even if persist fails or the tab closes now, the result is safe and will
+    // be delivered on retry / next load — never re-extract the same image.
+    enqueuePersist(clientId, {
       clientId,
+      clientTxId: crypto.randomUUID(),
       filename: photo.file.name,
       durationMs: outcome.durationMs,
       tokensIn: outcome.tokensIn,
@@ -171,13 +223,9 @@
       payload: outcome.result,
       overrideCategory: photo.category
     })
-
-    if (!persistedId) {
-      setPhoto(id, { status: 'error', error: 'extracted but failed to save' })
-      return
-    }
+    syncOutboxState()
     setPhoto(id, { status: 'ready' })
-    await refresh()
+    await runFlush()
   }
 
   function retryPhoto(id: string): void {
@@ -193,24 +241,19 @@
     photos = photos.filter((p) => p.status !== 'ready')
   }
 
-  async function persistCorrections(
+  function persistCorrections(
     group: MeetingGroup,
     patches: HorsePatch[],
     label?: string,
     notes?: string
-  ): Promise<void> {
+  ): void {
     if (!clientId) return
-    try {
-      const res = await fetch('/api/corrections', {
-        method: 'PUT',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ clientId, meetingKey: group.meetingKey, label, notes, horsePatches: patches })
-      })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      await refresh()
-    } catch (err) {
-      lastError = err instanceof Error ? err.message : 'save failed'
-    }
+    // Durable + optimistic: the edit lands in the outbox (localStorage) and
+    // the overlay shows it instantly. Delivery is debounced and retried — a
+    // crash, exit, or network error no longer loses the edit.
+    enqueueCorrection(clientId, { meetingKey: group.meetingKey, label, notes, horsePatches: patches })
+    syncOutboxState()
+    scheduleFlush()
   }
 
   async function clearMeeting(group: MeetingGroup): Promise<void> {
@@ -229,7 +272,43 @@
 
   onMount(() => {
     clientId = getClientId()
-    void refresh()
+    syncOutboxState()
+    void (async () => {
+      await refresh()
+      // Deliver anything left over from a previous session (crash, offline exit).
+      await runFlush()
+    })()
+
+    const onOnline = () => void runFlush()
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void runFlush()
+    }
+    // pagehide is the reliable unload signal (esp. mobile/bfcache).
+    const onPageHide = () => {
+      if (clientId && pendingCount(clientId) > 0) flushBeacon(clientId)
+    }
+    // Warn + beacon if the user tries to leave with unsaved work.
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (clientId && pendingCount(clientId) > 0) {
+        flushBeacon(clientId)
+        e.preventDefault()
+        e.returnValue = ''
+      }
+    }
+    const intervalId = setInterval(() => void runFlush(), 15_000)
+    window.addEventListener('online', onOnline)
+    document.addEventListener('visibilitychange', onVisible)
+    window.addEventListener('pagehide', onPageHide)
+    window.addEventListener('beforeunload', onBeforeUnload)
+
+    return () => {
+      clearInterval(intervalId)
+      if (flushTimer) clearTimeout(flushTimer)
+      window.removeEventListener('online', onOnline)
+      document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('pagehide', onPageHide)
+      window.removeEventListener('beforeunload', onBeforeUnload)
+    }
   })
 
   $effect(() => {
@@ -268,7 +347,14 @@
   <!-- Results -->
   <section class="mt-12">
     <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
-      <h2 class="c-primary text-3xl font-bold tracking-tight">Today's Meetings</h2>
+      <div class="flex items-baseline gap-3">
+        <h2 class="c-primary text-3xl font-bold tracking-tight">Today's Meetings</h2>
+        {#if pendingWrites > 0}
+          <span class="c-muted text-xs font-bold uppercase tracking-wider" title="Saving your changes — safe to close, they'll finish on reload">
+            ⟳ saving {pendingWrites} change{pendingWrites === 1 ? '' : 's'}…
+          </span>
+        {/if}
+      </div>
       <label class="c-muted flex items-center gap-2 text-xs font-bold uppercase tracking-wider">
         <input type="checkbox" bind:checked={onlyToday} /> today only
       </label>

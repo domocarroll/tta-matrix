@@ -14,6 +14,7 @@ const runnerSchema = v.object({
   trainer: v.optional(v.string()),
   barrier: v.optional(v.number()),
   scratched: v.optional(v.boolean()),
+  emergency: v.optional(v.boolean()),
 });
 
 const raceSchema = v.object({

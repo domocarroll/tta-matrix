@@ -20,6 +20,14 @@ export interface FieldRunner {
   readonly trainer: string;
   readonly barrier: number;
   readonly scratched: boolean;
+  /**
+   * Reserve/emergency runner — listed in the card's "Emergencies" block under
+   * its race. Belongs to THAT race (the one above the block), keeps its own
+   * saddlecloth number, and only starts if a scratching opens a spot. Tagged
+   * so it can never bleed into the next race and so the UI can show it apart
+   * from the main field. Absent on legacy/auto-resolved fields.
+   */
+  readonly emergency?: boolean;
 }
 
 /** A correctness/quality flag raised during matching */

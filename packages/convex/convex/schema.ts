@@ -225,9 +225,17 @@ export default defineSchema({
     ),
     /** Reason a row is pending, e.g. "no_locked_meeting_for_key". */
     pendingReason: v.optional(v.string()),
+    /**
+     * Client-generated idempotency key for the durable write outbox. The
+     * client retries a persist (on error, reconnect, or next page load) with
+     * the SAME key; `create` returns the existing row instead of inserting a
+     * duplicate. Absent on legacy rows.
+     */
+    clientTxId: v.optional(v.string()),
   })
     .index("by_client", ["clientId"])
-    .index("by_client_meeting", ["clientId", "meetingKey"]),
+    .index("by_client_meeting", ["clientId", "meetingKey"])
+    .index("by_client_tx", ["clientId", "clientTxId"]),
 
   // ────────────────────────────────────────────────
   // 3-Gate workspace — Customer meeting registry (Gate 1)
@@ -328,6 +336,8 @@ export default defineSchema({
             trainer: v.optional(v.string()),
             barrier: v.optional(v.number()),
             scratched: v.optional(v.boolean()),
+            /** Reserve/emergency runner — belongs to this race, only starts on a scratching. */
+            emergency: v.optional(v.boolean()),
           }),
         ),
       }),

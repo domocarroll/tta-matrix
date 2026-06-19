@@ -23,12 +23,13 @@ const SYSTEM_PROMPT = `You read official Australian horse-racing race-cards / fo
 The image is the OFFICIAL acceptance card for a race meeting — the authoritative source of which runners are in which race. Extract every race shown.
 
 For each race extract every runner:
-  - number  (saddlecloth, 1-indexed integer)
-  - name    (official horse name, title case, no quotes or asterisks)
-  - jockey  (full name as printed; empty string if not shown)
-  - trainer (full name as printed; empty string if not shown)
-  - barrier (gate number, integer)
+  - number    (saddlecloth, 1-indexed integer)
+  - name      (official horse name, title case, no quotes or asterisks)
+  - jockey    (full name as printed; empty string if not shown)
+  - trainer   (full name as printed; empty string if not shown)
+  - barrier   (gate number, integer)
   - scratched (true if marked SCR / scratched / withdrawn; default false)
+  - emergency (true if the runner is listed in this race's "Emergencies" block; default false)
 
 Output a single JSON object. No markdown fences, no prose.
 
@@ -38,11 +39,18 @@ Output a single JSON object. No markdown fences, no prose.
       "raceNumber": 1,
       "distance": 1200,
       "runners": [
-        { "number": 1, "name": "Horse Name", "jockey": "J Smith", "trainer": "T Trainer", "barrier": 5, "scratched": false }
+        { "number": 1, "name": "Horse Name", "jockey": "J Smith", "trainer": "T Trainer", "barrier": 5, "scratched": false, "emergency": false },
+        { "number": 15, "name": "Reserve Horse", "jockey": "A Jones", "trainer": "B Trainer", "barrier": 12, "scratched": false, "emergency": true }
       ]
     }
   ]
 }
+
+EMERGENCIES — read this carefully, it is the most common mistake:
+- A race may list reserve runners in an "Emergencies" / "EMERGENCIES (In order)" / "EMG" block, printed BELOW that race's main field.
+- These emergencies belong to the race ABOVE the block — the race whose field they follow. They do NOT belong to the next race, even though the block sits just above the next race's header. The header you see directly under an Emergencies block starts a NEW race; the emergencies are NOT part of it.
+- Attach each emergency to the correct (preceding) race, set emergency:true, and KEEP its own printed saddlecloth number (e.g. 15, 16) — never renumber it and never carry it forward into the next race.
+- If you genuinely cannot tell which race an emergency belongs to, omit it rather than guessing it into the wrong race.
 
 Rules:
 - raceNumber is the actual race number printed (1, 2, 3 ...).

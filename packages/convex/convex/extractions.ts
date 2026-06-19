@@ -160,10 +160,37 @@ export const create = mutation({
     // workspace; venue-matching below is now only a fallback for any legacy
     // caller that still omits the key.
     forceMeetingKey: v.optional(v.string()),
+    // Idempotency key from the client's durable outbox. Same key on retry →
+    // we return the existing row instead of inserting a duplicate.
+    clientTxId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    // Idempotent retry guard: if this exact write already landed, echo it back.
+    if (args.clientTxId) {
+      const prior = await ctx.db
+        .query("extractions")
+        .withIndex("by_client_tx", (q) =>
+          q.eq("clientId", args.clientId).eq("clientTxId", args.clientTxId),
+        )
+        .first();
+      if (prior) {
+        const cat = (prior.category || "OR").toUpperCase();
+        return {
+          id: prior._id,
+          meetingKey: prior.meetingKey ?? "",
+          state: prior.state ?? ("routed" as const),
+          pendingReason: prior.pendingReason,
+          derivedKey: prior.meetingKey ?? "",
+          derivedDate: utcDateString(prior._creationTime),
+          derivedCategory: cat,
+          derivedMeetingName: prior.meeting.trim().replace(/\s+/g, " "),
+        };
+      }
+    }
+
     // `forceMeetingKey` is a routing directive, not a stored column — strip
-    // it from the document payload spread into inserts below.
+    // it from the document payload spread into inserts below. `clientTxId`
+    // stays in `doc` so it persists on the row for future dedupe.
     const { forceMeetingKey, ...doc } = args;
     const races = normaliseRaces(args.races as IncomingRace[]);
 

@@ -61,6 +61,12 @@ interface PersistRequest {
    * to it directly — no venue inference, no pending state.
    */
   meetingKey?: string
+  /**
+   * Client-generated idempotency key from the durable write outbox. Retries
+   * carry the same key so the mutation returns the existing row rather than
+   * inserting a duplicate.
+   */
+  clientTxId?: string
 }
 
 export const POST: RequestHandler = async ({ request }) => {
@@ -103,7 +109,8 @@ export const POST: RequestHandler = async ({ request }) => {
       tokensOut: body.tokensOut,
       durationMs: body.durationMs,
       model: body.model,
-      ...(body.meetingKey ? { forceMeetingKey: body.meetingKey } : {})
+      ...(body.meetingKey ? { forceMeetingKey: body.meetingKey } : {}),
+      ...(body.clientTxId ? { clientTxId: body.clientTxId } : {})
     })
     // Echo the routing decision so /work can show "routed → Gate 3" or
     // "pending — lock now" without re-deriving (which is racy). Existing

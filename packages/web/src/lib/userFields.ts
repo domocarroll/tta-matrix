@@ -14,6 +14,8 @@ export interface UserFieldRunner {
   trainer?: string
   barrier?: number
   scratched?: boolean
+  /** Reserve/emergency runner — belongs to this race, only starts on a scratching. */
+  emergency?: boolean
 }
 
 export interface UserFieldRace {
@@ -91,7 +93,8 @@ export function userFieldsToResolvedMap(fields: UserField[]): Map<string, Resolv
           jockey: rn.jockey ?? '',
           trainer: rn.trainer ?? '',
           barrier: rn.barrier ?? 0,
-          scratched: rn.scratched ?? false
+          scratched: rn.scratched ?? false,
+          emergency: rn.emergency ?? false
         }))
       }))
     })

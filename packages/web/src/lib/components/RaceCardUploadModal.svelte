@@ -107,6 +107,19 @@
     races = next
   }
 
+  function toggleEmergency(rIdx: number, runnerIdx: number): void {
+    const next = races.map((r, i) => {
+      if (i !== rIdx) return r
+      return {
+        ...r,
+        runners: r.runners.map((rn, j) =>
+          j === runnerIdx ? { ...rn, emergency: !rn.emergency } : rn
+        )
+      }
+    })
+    races = next
+  }
+
   function removeRunner(rIdx: number, runnerIdx: number): void {
     const next = races.map((r, i) => {
       if (i !== rIdx) return r
@@ -160,7 +173,7 @@
           <p class="serif text-xl text-text-primary">Drop the official card image(s)</p>
           <p class="mt-2 text-text-secondary">
             One image for the full meeting, or several — they merge by race number.
-            We'll extract <span class="mono">number · horse · jockey · trainer · barrier · scratched</span>,
+            We'll extract <span class="mono">number · horse · jockey · trainer · barrier · scratched · emergency</span>,
             then you review and approve.
           </p>
           <label class="inline-block mt-6 cursor-pointer rounded-md border border-border bg-bg-card hover:bg-bg-card-hover px-5 py-2 text-text-primary">
@@ -215,19 +228,25 @@
                       <th class="px-2 py-1.5">Trainer</th>
                       <th class="px-2 py-1.5">Brr</th>
                       <th class="px-2 py-1.5">Scr</th>
+                      <th class="px-2 py-1.5" title="Emergency / reserve runner">Emg</th>
                       <th class="px-2 py-1.5"></th>
                     </tr>
                   </thead>
                   <tbody>
                     {#each race.runners as runner, runnerIdx (runnerIdx)}
-                      <tr class="border-t border-border/60 {runner.scratched ? 'opacity-50 line-through' : ''}">
+                      <tr class="border-t border-border/60 {runner.scratched ? 'opacity-50 line-through' : ''} {runner.emergency ? 'bg-accent/5' : ''}">
                         <td class="px-2 py-1">
-                          <input
-                            type="number"
-                            value={runner.number}
-                            class="w-14 bg-bg-surface border border-border rounded px-1.5 py-0.5 text-text-primary"
-                            onchange={(e) => updateRunner(rIdx, runnerIdx, 'number', (e.currentTarget as HTMLInputElement).value)}
-                          />
+                          <div class="flex items-center gap-1">
+                            <input
+                              type="number"
+                              value={runner.number}
+                              class="w-14 bg-bg-surface border border-border rounded px-1.5 py-0.5 text-text-primary"
+                              onchange={(e) => updateRunner(rIdx, runnerIdx, 'number', (e.currentTarget as HTMLInputElement).value)}
+                            />
+                            {#if runner.emergency}
+                              <span class="mono text-[9px] uppercase tracking-wider text-accent" title="Emergency runner">e</span>
+                            {/if}
+                          </div>
                         </td>
                         <td class="px-2 py-1">
                           <input
@@ -266,6 +285,13 @@
                             type="checkbox"
                             checked={runner.scratched ?? false}
                             onchange={() => toggleScratched(rIdx, runnerIdx)}
+                          />
+                        </td>
+                        <td class="px-2 py-1 text-center">
+                          <input
+                            type="checkbox"
+                            checked={runner.emergency ?? false}
+                            onchange={() => toggleEmergency(rIdx, runnerIdx)}
                           />
                         </td>
                         <td class="px-2 py-1 text-right">

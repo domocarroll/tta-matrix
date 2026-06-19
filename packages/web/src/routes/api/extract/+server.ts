@@ -101,6 +101,7 @@ Rules:
 - Race numbers are 1-indexed integers, never strings, never 0.
 - If you see a horse with an "XX"/"xxx" prefix that matches another horse without the prefix in the same race, the prefix is publication markup — strip it and de-duplicate. Add a publication_artefact_stripped flag.
 - If a horse name looks like it migrated from an adjacent race column, do NOT include it in this race. Add an anomaly flag.
+- EMERGENCIES: a reserve/"Emergencies" block printed below a race belongs to THAT race (the one above it), never the race whose header follows the block. Keep emergency runners in the preceding race; do not let them bleed into the next race's selections.
 - If you can't read a tipster column or selection clearly, OMIT it and add an uncertain flag rather than guessing.`
 
 function send(controller: ReadableStreamDefaultController, encoder: TextEncoder, ev: StreamEvent) {
