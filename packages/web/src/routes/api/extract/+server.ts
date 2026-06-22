@@ -322,8 +322,11 @@ export const POST: RequestHandler = async ({ request }) => {
         })
         controller.enqueue(encoder.encode('data: [DONE]\n\n'))
       } catch (err) {
-        const msg = err instanceof Error ? err.message : 'stream failed'
-        send(controller, encoder, { type: 'error', message: msg })
+        // Human-readable reason (usage limit, auth, network, …) rather than a
+        // raw SDK error string — surfaced verbatim in the tip dropzone.
+        const cat = categoriseError(err)
+        console.error('extract: stream failed', cat.category, err)
+        send(controller, encoder, { type: 'error', message: cat.userMessage })
       } finally {
         controller.close()
       }

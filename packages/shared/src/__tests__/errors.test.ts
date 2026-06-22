@@ -32,6 +32,23 @@ describe("categoriseError", () => {
     expect(result.isRetryable).toBe(true);
   });
 
+  it("categorises an Anthropic usage-limit 400 as SERVICE_LIMIT (non-retryable)", () => {
+    // Real shape: BadRequestError, status 400, message mentions usage limits.
+    const err = Object.assign(new Error("You have reached your specified API usage limits."), {
+      status: 400,
+    });
+    const result = categoriseError(err);
+    expect(result.category).toBe("SERVICE_LIMIT");
+    expect(result.isRetryable).toBe(false);
+    expect(result.userMessage).toMatch(/usage limit/i);
+  });
+
+  it("categorises a low credit-balance error as SERVICE_LIMIT", () => {
+    const result = categoriseError(new Error("Your credit balance is too low to access the API"));
+    expect(result.category).toBe("SERVICE_LIMIT");
+    expect(result.isRetryable).toBe(false);
+  });
+
   // Anthropic SDK throws APIError subclasses with a numeric `.status` (not a
   // Response). These must be categorised by status so rate limits get retried.
   it("categorises an Anthropic RateLimitError (status 429)", () => {

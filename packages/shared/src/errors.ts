@@ -4,6 +4,7 @@
 
 export type ErrorCategory =
   | "RATE_LIMITED"
+  | "SERVICE_LIMIT"
   | "TEXT_RESPONSE"
   | "NETWORK_ERROR"
   | "INVALID_IMAGE"
@@ -28,6 +29,11 @@ const ERROR_CONFIG: Record<
   RATE_LIMITED: {
     isRetryable: true,
     userMessage: "Rate limited — retrying shortly.",
+  },
+  SERVICE_LIMIT: {
+    isRetryable: false,
+    userMessage:
+      "The AI service is temporarily unavailable — its usage limit has been reached. Your meeting and any tips you've added are saved. Please try again later, or contact support if this persists.",
   },
   TEXT_RESPONSE: {
     isRetryable: true,
@@ -95,7 +101,17 @@ export function categoriseError(error: unknown): CategorisedError {
 
   let category: ErrorCategory;
 
-  if (statusCode === 429 || message.includes("rate limit") || message.includes("quota")) {
+  // Account/billing usage limits (Anthropic returns these as a 400 with a
+  // distinctive message). Check before rate-limit: retrying won't help until
+  // the limit resets, so this must be non-retryable with a clear message.
+  if (
+    message.includes("usage limit") ||
+    message.includes("credit balance") ||
+    message.includes("billing") ||
+    message.includes("insufficient")
+  ) {
+    category = "SERVICE_LIMIT";
+  } else if (statusCode === 429 || message.includes("rate limit") || message.includes("quota")) {
     category = "RATE_LIMITED";
   } else if (statusCode === 413 || message.includes("payload too large")) {
     category = "PAYLOAD_TOO_LARGE";

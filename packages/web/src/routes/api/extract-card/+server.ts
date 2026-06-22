@@ -27,6 +27,7 @@ import {
   type ExtractionHint
 } from '$lib/extractionHints'
 import { imagePartsFromStorage } from '$lib/server/storageImages'
+import { categoriseError } from '@tta/shared'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const convexApi = anyApi as any
@@ -201,13 +202,23 @@ export const POST: RequestHandler = async ({ request }) => {
   // back to a stale process.env.ANTHROPIC_BASE_URL (see extract/+server.ts).
   const client = new Anthropic({ apiKey, baseURL: 'https://api.anthropic.com' })
 
-  const msg = await client.messages.create({
-    model: MODEL(),
-    max_tokens: MAX_TOKENS,
-    temperature: 0.1,
-    system,
-    messages
-  })
+  let msg: Anthropic.Message
+  try {
+    msg = await client.messages.create({
+      model: MODEL(),
+      max_tokens: MAX_TOKENS,
+      temperature: 0.1,
+      system,
+      messages
+    })
+  } catch (err) {
+    // Surface a human-readable reason (usage limit, auth, network, …) instead
+    // of an opaque 500 — Pete is non-technical and the card review modal shows
+    // this string verbatim. Status 200 so the client reads the JSON body.
+    const cat = categoriseError(err)
+    console.error('extract-card: Anthropic call failed', cat.category, err)
+    return json({ ok: false, error: cat.userMessage, category: cat.category }, { status: 200 })
+  }
 
   const raw = msg.content
     .filter((c) => c.type === 'text')
