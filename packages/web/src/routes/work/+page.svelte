@@ -175,10 +175,20 @@
   async function onNewMeetingCreated(meetingKey: string): Promise<void> {
     showNewMeeting = false
     jumpPrefill = null
-    await refresh()
-    // Open card upload immediately so Pete can finish the lock.
-    const m = meetings.find((x) => x.meetingKey === meetingKey)
-    if (m) openUploadForMeeting(m)
+    // Advance straight to the card-upload step from the key we just created.
+    // Deliberately NOT gated on a list refresh: a slow or failed refresh must
+    // never strand Pete on the meeting list after pressing "create" — that is
+    // exactly the "won't take me to the next phase" symptom he reported.
+    // meetingKey is `YYYY-MM-DD|CATEGORY|Venue Name` (the venue may itself
+    // contain '|', so rebuild the name from the 3rd part onward).
+    const parts = meetingKey.split('|')
+    const date = parts[0] ?? todayUtc()
+    const name = parts.slice(2).join('|') || 'New meeting'
+    uploadModalKey = meetingKey
+    uploadModalMeeting = { date, meeting: name }
+    // Refresh the card list behind the modal (best-effort; the modal is
+    // already open regardless of how this resolves).
+    void refresh()
   }
 
   onMount(() => {

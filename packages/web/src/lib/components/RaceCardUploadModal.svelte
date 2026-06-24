@@ -641,8 +641,8 @@
         </div>
       {:else if stage === 'error'}
         <div class="rounded-md border border-error/40 bg-error/10 px-6 py-10 text-center">
-          <p class="serif text-xl text-text-primary">Something went wrong.</p>
-          <p class="mt-2 text-error mono text-xs">{errorMsg}</p>
+          <p class="serif text-xl text-text-primary">Couldn't read that one.</p>
+          <p class="mx-auto mt-3 max-w-md text-sm leading-relaxed text-text-secondary">{errorMsg}</p>
           <button
             type="button"
             class="mt-5 mono text-[11px] uppercase tracking-wider text-text-muted hover:text-text-primary px-3 py-2"
