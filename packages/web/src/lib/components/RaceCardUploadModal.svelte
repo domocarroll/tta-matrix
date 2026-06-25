@@ -329,22 +329,22 @@
 </script>
 
 <div
-  class="fixed inset-0 z-50 flex items-start justify-center bg-black/70 p-4 overflow-y-auto"
+  class="fixed inset-0 z-50 flex items-start justify-center bg-[#1e3a5f]/40 backdrop-blur-sm p-4 overflow-y-auto"
   role="dialog"
   aria-modal="true"
 >
-  <div class="w-full max-w-5xl my-8 rounded-md border border-border bg-bg-card shadow-2xl">
-    <header class="flex items-baseline justify-between px-6 py-4 border-b border-border">
+  <div class="w-full max-w-5xl my-8 rounded-2xl border border-[#1e3a5f]/10 bg-white shadow-2xl overflow-hidden">
+    <header class="flex items-baseline justify-between px-6 py-4 border-b border-[#1e3a5f]/10 bg-[#f8f9fa]">
       <div>
-        <div class="mono text-[10px] uppercase tracking-[0.2em] text-text-muted">
+        <div class="text-[10px] uppercase tracking-[0.2em] text-[#e94e37] font-bold">
           official race card · {meetingDate}
         </div>
-        <h2 class="serif text-2xl text-text-primary mt-1">{meetingLabel}</h2>
+        <h2 class="text-2xl font-bold text-[#1e3a5f] mt-1">{meetingLabel}</h2>
       </div>
       <button
         type="button"
         onclick={close}
-        class="mono text-[11px] uppercase tracking-wider text-text-muted hover:text-text-primary"
+        class="text-[11px] uppercase tracking-wider text-[#5f6368] hover:text-[#1e3a5f] font-bold"
       >
         close ✕
       </button>
@@ -352,20 +352,20 @@
 
     {#snippet learnedHints(heading: string)}
       {#if relevantHints.length > 0}
-        <div class="mb-4 rounded-md border border-border bg-bg-surface/20 px-4 py-2.5">
+        <div class="mb-4 rounded-lg border border-[#4285f4]/25 bg-[#4285f4]/5 px-4 py-2.5">
           <button type="button" class="flex w-full items-center justify-between" onclick={() => (showHints = !showHints)}>
-            <span class="mono text-[11px] uppercase tracking-wider text-accent">
+            <span class="text-[11px] uppercase tracking-wider text-[#4285f4] font-bold">
               {showHints ? '▾' : '▸'} {heading} ({relevantHints.length})
             </span>
-            <span class="mono text-[10px] uppercase tracking-wider text-text-muted">applied automatically</span>
+            <span class="text-[10px] uppercase tracking-wider text-[#5f6368] font-bold">applied automatically</span>
           </button>
           {#if showHints}
             <ul class="mt-2 space-y-1.5">
               {#each relevantHints as h (h.id)}
                 <li class="flex items-start gap-2 text-sm">
-                  <span class="mono text-[9px] uppercase tracking-wider px-1 py-0.5 rounded bg-bg-surface text-text-muted shrink-0" title="{h.scope} scope">{h.scope}</span>
-                  <span class="flex-1 text-text-secondary">{h.hint}</span>
-                  <button type="button" class="mono text-[10px] uppercase tracking-wider text-text-muted hover:text-error shrink-0" title="Stop applying & remove this hint" onclick={() => removeHint(h)}>✕</button>
+                  <span class="text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded bg-white border border-[#1e3a5f]/10 text-[#5f6368] shrink-0" title="{h.scope} scope">{h.scope}</span>
+                  <span class="flex-1 text-[#1e3a5f]/90">{h.hint}</span>
+                  <button type="button" class="text-[10px] uppercase tracking-wider font-bold text-[#5f6368] hover:text-[#e94e37] shrink-0" title="Stop applying & remove this hint" onclick={() => removeHint(h)}>✕</button>
                 </li>
               {/each}
             </ul>
@@ -377,14 +377,14 @@
     <div class="px-6 py-5">
       {#if stage === 'pick'}
         {@render learnedHints(`learned for ${meetingVenue}`)}
-        <div class="rounded-md border border-dashed border-border bg-bg-surface/40 px-6 py-10 text-center">
-          <p class="serif text-xl text-text-primary">Drop the official card image(s)</p>
-          <p class="mt-2 text-text-secondary">
+        <div class="rounded-xl border-2 border-dashed border-[#1e3a5f]/15 bg-[#f8f9fa] px-6 py-10 text-center">
+          <p class="text-xl font-bold text-[#1e3a5f]">Drop the official card image(s)</p>
+          <p class="mt-2 text-[#4a4a4a]">
             One image for the full meeting, or several — they merge by race number.
-            We'll extract <span class="mono">number · horse · jockey · trainer · barrier · scratched · emergency</span>,
+            We'll extract <span class="font-semibold text-[#1e3a5f]">number · horse · jockey · trainer · barrier · scratched · emergency</span>,
             then you review and approve.
           </p>
-          <label class="inline-block mt-6 cursor-pointer rounded-md border border-border bg-bg-card hover:bg-bg-card-hover px-5 py-2 text-text-primary">
+          <label class="inline-block mt-6 cursor-pointer rounded-lg bg-[#1e3a5f] hover:bg-[#18304d] px-5 py-2.5 text-white text-sm font-bold shadow-sm transition-colors">
             <input
               type="file"
               accept="image/*"
@@ -399,20 +399,20 @@
           </label>
         </div>
       {:else if stage === 'extracting'}
-        <div class="rounded-md border border-border bg-bg-surface/40 px-6 py-10 text-center">
-          <p class="serif text-xl text-text-primary">Reading the card…</p>
-          <p class="mt-2 mono text-xs uppercase tracking-wider text-text-muted">
+        <div class="rounded-xl border border-[#1e3a5f]/10 bg-[#f8f9fa] px-6 py-10 text-center">
+          <p class="text-xl font-bold text-[#1e3a5f]">Reading the card…</p>
+          <p class="mt-2 text-xs uppercase tracking-wider text-[#5f6368] font-bold">
             {progressMsg}
           </p>
         </div>
       {:else if stage === 'review'}
         <div class="mb-4 flex items-baseline justify-between">
-          <p class="mono text-[11px] uppercase tracking-wider text-text-muted">
+          <p class="text-[11px] uppercase tracking-wider text-[#5f6368] font-bold">
             review {races.length} race{races.length === 1 ? '' : 's'} ·
             {races.reduce((n, r) => n + r.runners.length, 0)} runners ·
             source{sourceFilenames.length === 1 ? '' : 's'} · {sourceFilenames.join(' + ')}
           </p>
-          <p class="mono text-[10px] uppercase tracking-wider text-text-muted">
+          <p class="text-[10px] uppercase tracking-wider text-[#5f6368] font-bold">
             edit any field — then approve to lock in
           </p>
         </div>
@@ -421,25 +421,25 @@
           <div class="mb-4 flex gap-2 overflow-x-auto pb-1">
             {#each previewUrls as src, i (i)}
               <a href={src} target="_blank" rel="noreferrer" title="Open full card image" class="shrink-0">
-                <img src={src} alt="source card {i + 1}" class="h-24 rounded border border-border" />
+                <img src={src} alt="source card {i + 1}" class="h-24 rounded-lg border border-[#1e3a5f]/15" />
               </a>
             {/each}
           </div>
         {/if}
         <div class="space-y-5 max-h-[60vh] overflow-y-auto pr-1">
           {#each races as race, rIdx (race.raceNumber)}
-            <section class="rounded-md border border-border bg-bg-surface/30">
-              <header class="px-3 py-2 border-b border-border flex items-baseline gap-3">
-                <span class="mono text-[10px] uppercase tracking-wider text-text-muted">race</span>
-                <span class="serif text-xl text-accent">{race.raceNumber}</span>
-                <span class="text-text-secondary text-sm">
+            <section class="rounded-xl border border-[#1e3a5f]/10 bg-white overflow-hidden shadow-sm">
+              <header class="px-3 py-2 border-b border-[#1e3a5f]/10 bg-[#f8f9fa] flex items-baseline gap-3">
+                <span class="text-[10px] uppercase tracking-wider text-[#5f6368] font-bold">race</span>
+                <span class="text-xl font-bold text-[#4285f4]">{race.raceNumber}</span>
+                <span class="text-[#4a4a4a] text-sm">
                   {race.runners.length} runner{race.runners.length === 1 ? '' : 's'}
                 </span>
               </header>
               <div class="overflow-x-auto">
                 <table class="w-full text-sm">
                   <thead>
-                    <tr class="text-left text-text-muted mono text-[10px] uppercase tracking-wider">
+                    <tr class="text-left text-[#5f6368] text-[10px] uppercase tracking-wider font-bold bg-[#f8f9fa]/60">
                       <th class="px-2 py-1.5">#</th>
                       <th class="px-2 py-1.5">Horse</th>
                       <th class="px-2 py-1.5">Jockey</th>
@@ -452,17 +452,17 @@
                   </thead>
                   <tbody>
                     {#each race.runners as runner, runnerIdx (runnerIdx)}
-                      <tr class="border-t border-border/60 {runner.scratched ? 'opacity-50 line-through' : ''} {runner.emergency ? 'bg-accent/5' : ''}">
+                      <tr class="border-t border-[#1e3a5f]/8 {runner.scratched ? 'opacity-50 line-through' : ''} {runner.emergency ? 'bg-[#e94e37]/5' : ''}">
                         <td class="px-2 py-1">
                           <div class="flex items-center gap-1">
                             <input
                               type="number"
                               value={runner.number}
-                              class="w-14 bg-bg-surface border border-border rounded px-1.5 py-0.5 text-text-primary"
+                              class="w-14 bg-[#f8f9fa] border border-[#1e3a5f]/15 rounded px-1.5 py-1 text-[#1e3a5f] focus:border-[#4285f4] focus:ring-2 focus:ring-[#4285f4]/30 focus:outline-none"
                               onchange={(e) => updateRunner(rIdx, runnerIdx, 'number', (e.currentTarget as HTMLInputElement).value)}
                             />
                             {#if runner.emergency}
-                              <span class="mono text-[9px] uppercase tracking-wider text-accent" title="Emergency runner">e</span>
+                              <span class="text-[9px] uppercase tracking-wider font-bold text-[#e94e37]" title="Emergency runner">e</span>
                             {/if}
                           </div>
                         </td>
@@ -470,7 +470,7 @@
                           <input
                             type="text"
                             value={runner.name}
-                            class="w-full bg-bg-surface border border-border rounded px-1.5 py-0.5 text-text-primary"
+                            class="w-full bg-[#f8f9fa] border border-[#1e3a5f]/15 rounded px-1.5 py-1 text-[#1e3a5f] focus:border-[#4285f4] focus:ring-2 focus:ring-[#4285f4]/30 focus:outline-none"
                             onchange={(e) => updateRunner(rIdx, runnerIdx, 'name', (e.currentTarget as HTMLInputElement).value)}
                           />
                         </td>
@@ -478,7 +478,7 @@
                           <input
                             type="text"
                             value={runner.jockey ?? ''}
-                            class="w-full bg-bg-surface border border-border rounded px-1.5 py-0.5 text-text-primary"
+                            class="w-full bg-[#f8f9fa] border border-[#1e3a5f]/15 rounded px-1.5 py-1 text-[#1e3a5f] focus:border-[#4285f4] focus:ring-2 focus:ring-[#4285f4]/30 focus:outline-none"
                             onchange={(e) => updateRunner(rIdx, runnerIdx, 'jockey', (e.currentTarget as HTMLInputElement).value)}
                           />
                         </td>
@@ -486,7 +486,7 @@
                           <input
                             type="text"
                             value={runner.trainer ?? ''}
-                            class="w-full bg-bg-surface border border-border rounded px-1.5 py-0.5 text-text-primary"
+                            class="w-full bg-[#f8f9fa] border border-[#1e3a5f]/15 rounded px-1.5 py-1 text-[#1e3a5f] focus:border-[#4285f4] focus:ring-2 focus:ring-[#4285f4]/30 focus:outline-none"
                             onchange={(e) => updateRunner(rIdx, runnerIdx, 'trainer', (e.currentTarget as HTMLInputElement).value)}
                           />
                         </td>
@@ -494,13 +494,14 @@
                           <input
                             type="number"
                             value={runner.barrier ?? ''}
-                            class="w-14 bg-bg-surface border border-border rounded px-1.5 py-0.5 text-text-primary"
+                            class="w-14 bg-[#f8f9fa] border border-[#1e3a5f]/15 rounded px-1.5 py-1 text-[#1e3a5f] focus:border-[#4285f4] focus:ring-2 focus:ring-[#4285f4]/30 focus:outline-none"
                             onchange={(e) => updateRunner(rIdx, runnerIdx, 'barrier', (e.currentTarget as HTMLInputElement).value)}
                           />
                         </td>
                         <td class="px-2 py-1 text-center">
                           <input
                             type="checkbox"
+                            class="accent-[#4285f4]"
                             checked={runner.scratched ?? false}
                             onchange={() => toggleScratched(rIdx, runnerIdx)}
                           />
@@ -508,6 +509,7 @@
                         <td class="px-2 py-1 text-center">
                           <input
                             type="checkbox"
+                            class="accent-[#e94e37]"
                             checked={runner.emergency ?? false}
                             onchange={() => toggleEmergency(rIdx, runnerIdx)}
                           />
@@ -515,7 +517,7 @@
                         <td class="px-2 py-1 text-right">
                           <button
                             type="button"
-                            class="mono text-[10px] uppercase tracking-wider text-text-muted hover:text-error"
+                            class="text-[10px] uppercase tracking-wider font-bold text-[#5f6368] hover:text-[#e94e37]"
                             onclick={() => removeRunner(rIdx, runnerIdx)}
                           >
                             remove
@@ -531,13 +533,13 @@
         </div>
 
         <!-- Chat re-extract: tell it what's wrong and have it redo the card -->
-        <div class="mt-5 rounded-md border border-border bg-bg-surface/20 px-4 py-3">
+        <div class="mt-5 rounded-xl border border-[#1e3a5f]/10 bg-[#f8f9fa] px-4 py-3">
           <div class="flex items-baseline justify-between">
-            <p class="mono text-[11px] uppercase tracking-wider text-text-muted">
+            <p class="text-[11px] uppercase tracking-wider text-[#5f6368] font-bold">
               not right? tell it what to fix
             </p>
             {#if hintsApplied > 0}
-              <span class="mono text-[10px] uppercase tracking-wider text-accent" title="Learned corrections applied to this extraction">
+              <span class="text-[10px] uppercase tracking-wider text-[#4285f4] font-bold" title="Learned corrections applied to this extraction">
                 {hintsApplied} learned hint{hintsApplied === 1 ? '' : 's'} applied
               </span>
             {/if}
@@ -545,8 +547,8 @@
           {#if feedbackHistory.length > 0}
             <ul class="mt-2 space-y-1">
               {#each feedbackHistory as note, i (i)}
-                <li class="text-text-secondary text-xs flex gap-2">
-                  <span class="text-text-muted">↳</span><span>{note}</span>
+                <li class="text-[#4a4a4a] text-xs flex gap-2">
+                  <span class="text-[#5f6368]">↳</span><span>{note}</span>
                 </li>
               {/each}
             </ul>
@@ -556,13 +558,13 @@
             rows="2"
             disabled={reExtracting}
             placeholder="e.g. the emergencies for race 1 bled into race 2 — keep them in race 1"
-            class="mt-2 w-full bg-bg-surface border border-border rounded px-2 py-1.5 text-text-primary text-sm"
+            class="mt-2 w-full bg-white border border-[#1e3a5f]/15 rounded-lg px-2.5 py-1.5 text-[#1e3a5f] text-sm focus:border-[#4285f4] focus:ring-2 focus:ring-[#4285f4]/30 focus:outline-none"
           ></textarea>
           <div class="mt-2 flex items-center justify-end">
             <button
               type="button"
               disabled={reExtracting || !feedback.trim()}
-              class="rounded-md border border-border bg-bg-card hover:bg-bg-card-hover disabled:opacity-40 mono text-[11px] uppercase tracking-wider px-3 py-1.5 text-text-primary"
+              class="rounded-lg border border-[#1e3a5f]/20 bg-white hover:bg-[#f1f3f4] disabled:opacity-40 text-[11px] uppercase tracking-wider font-bold px-3 py-1.5 text-[#1e3a5f] transition-colors"
               onclick={reExtract}
             >
               {reExtracting ? 're-reading…' : 'Re-extract with this note'}
@@ -571,38 +573,38 @@
 
           <!-- Teach: distill the corrections into a reusable rule (Pete reviews) -->
           {#if feedbackHistory.length > 0}
-            <div class="mt-3 border-t border-border/60 pt-3">
+            <div class="mt-3 border-t border-[#1e3a5f]/10 pt-3">
               {#if !proposedHint}
                 <button
                   type="button"
                   disabled={teaching}
-                  class="mono text-[11px] uppercase tracking-wider text-accent hover:underline disabled:opacity-40"
+                  class="text-[11px] uppercase tracking-wider font-bold text-[#4285f4] hover:underline disabled:opacity-40"
                   onclick={suggestRule}
                 >
                   {teaching ? 'thinking…' : '✦ teach this for future cards'}
                 </button>
               {:else}
-                <p class="mono text-[10px] uppercase tracking-wider text-text-muted">review the rule, then save</p>
+                <p class="text-[10px] uppercase tracking-wider text-[#5f6368] font-bold">review the rule, then save</p>
                 <textarea
                   bind:value={proposedHint}
                   rows="2"
-                  class="mt-1.5 w-full bg-bg-surface border border-accent/40 rounded px-2 py-1.5 text-text-primary text-sm"
+                  class="mt-1.5 w-full bg-white border border-[#4285f4]/40 rounded-lg px-2.5 py-1.5 text-[#1e3a5f] text-sm focus:border-[#4285f4] focus:ring-2 focus:ring-[#4285f4]/30 focus:outline-none"
                 ></textarea>
                 <div class="mt-2 flex items-center justify-between gap-3">
-                  <label class="flex items-center gap-2 text-text-secondary text-xs">
+                  <label class="flex items-center gap-2 text-[#4a4a4a] text-xs">
                     apply to
-                    <select bind:value={hintScope} class="bg-bg-surface border border-border rounded px-1.5 py-0.5 text-text-primary">
+                    <select bind:value={hintScope} class="bg-white border border-[#1e3a5f]/15 rounded px-1.5 py-1 text-[#1e3a5f] focus:border-[#4285f4] focus:outline-none">
                       <option value="venue">{meetingVenue} only</option>
                       <option value="category">all {meetingCategory} cards</option>
                       <option value="global">all cards</option>
                     </select>
                   </label>
                   <div class="flex items-center gap-2">
-                    <button type="button" class="mono text-[10px] uppercase tracking-wider text-text-muted hover:text-text-primary" onclick={() => (proposedHint = '')}>cancel</button>
+                    <button type="button" class="text-[10px] uppercase tracking-wider font-bold text-[#5f6368] hover:text-[#1e3a5f]" onclick={() => (proposedHint = '')}>cancel</button>
                     <button
                       type="button"
                       disabled={savingHint || !proposedHint.trim()}
-                      class="rounded-md border border-accent bg-accent text-bg-primary mono text-[11px] uppercase tracking-wider px-3 py-1.5 hover:bg-accent-bright disabled:opacity-40"
+                      class="rounded-lg bg-[#4285f4] text-white text-[11px] uppercase tracking-wider font-bold px-3 py-1.5 hover:bg-[#3573d6] disabled:opacity-40 transition-colors"
                       onclick={saveProposedHint}
                     >
                       {savingHint ? 'saving…' : 'save rule'}
@@ -617,35 +619,35 @@
         <footer class="mt-5 flex items-center justify-end gap-3">
           <button
             type="button"
-            class="mono text-[11px] uppercase tracking-wider text-text-muted hover:text-text-primary px-3 py-2"
+            class="text-[11px] uppercase tracking-wider font-bold text-[#5f6368] hover:text-[#1e3a5f] px-3 py-2"
             onclick={close}
           >
             cancel
           </button>
           <button
             type="button"
-            class="rounded-md border border-accent bg-accent text-bg-primary mono text-[11px] uppercase tracking-wider px-4 py-2 hover:bg-accent-bright"
+            class="rounded-lg bg-[#1e3a5f] text-white text-[11px] uppercase tracking-wider font-bold px-5 py-2.5 hover:bg-[#18304d] shadow-sm transition-colors"
             onclick={approve}
           >
             approve &amp; lock field →
           </button>
         </footer>
       {:else if stage === 'saving'}
-        <div class="rounded-md border border-border bg-bg-surface/40 px-6 py-10 text-center">
-          <p class="serif text-xl text-text-primary">Locking field…</p>
+        <div class="rounded-xl border border-[#1e3a5f]/10 bg-[#f8f9fa] px-6 py-10 text-center">
+          <p class="text-xl font-bold text-[#1e3a5f]">Locking field…</p>
         </div>
       {:else if stage === 'done'}
-        <div class="rounded-md border border-success/30 bg-success/10 px-6 py-10 text-center">
-          <p class="serif text-xl text-text-primary">Field approved.</p>
-          <p class="mt-2 text-text-secondary">Tips are now anchored to your authoritative card.</p>
+        <div class="rounded-xl border border-[#16a34a]/30 bg-[#16a34a]/10 px-6 py-10 text-center">
+          <p class="text-xl font-bold text-[#1e3a5f]">Field approved.</p>
+          <p class="mt-2 text-[#4a4a4a]">Tips are now anchored to your authoritative card.</p>
         </div>
       {:else if stage === 'error'}
-        <div class="rounded-md border border-error/40 bg-error/10 px-6 py-10 text-center">
-          <p class="serif text-xl text-text-primary">Couldn't read that one.</p>
-          <p class="mx-auto mt-3 max-w-md text-sm leading-relaxed text-text-secondary">{errorMsg}</p>
+        <div class="rounded-xl border border-[#e94e37]/40 bg-[#e94e37]/8 px-6 py-10 text-center">
+          <p class="text-xl font-bold text-[#1e3a5f]">Couldn't read that one.</p>
+          <p class="mx-auto mt-3 max-w-md text-sm leading-relaxed text-[#4a4a4a]">{errorMsg}</p>
           <button
             type="button"
-            class="mt-5 mono text-[11px] uppercase tracking-wider text-text-muted hover:text-text-primary px-3 py-2"
+            class="mt-5 text-[11px] uppercase tracking-wider font-bold text-[#5f6368] hover:text-[#1e3a5f] px-3 py-2"
             onclick={() => {
               stage = 'pick'
               errorMsg = null
