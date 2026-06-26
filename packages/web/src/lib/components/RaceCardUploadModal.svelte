@@ -47,9 +47,6 @@
   let races = $state<UserFieldRace[]>([])
   let sourceFilenames = $state<string[]>([])
   let progressMsg = $state<string>('')
-  // Card images already persisted for this field. Carried through approve()
-  // so editing/re-approving without a fresh upload never orphans them.
-  let carriedImageStorageIds = $state<string[]>([])
 
   // Chat re-extract state. Files are retained so a correction can re-send them.
   let files = $state<File[]>([])
@@ -100,9 +97,9 @@
       .sort((a, b) => a.raceNumber - b.raceNumber)
       .map((race) => ({ ...race, runners: race.runners.slice() }))
     sourceFilenames = ['approved field']
-    carriedImageStorageIds = existingImageStorageIds ?? []
-    if (carriedImageStorageIds.length > 0) {
-      previewUrls = (await Promise.all(carriedImageStorageIds.map((id) => loadImageUrl(id)))).filter(
+    const ids = existingImageStorageIds ?? []
+    if (ids.length > 0) {
+      previewUrls = (await Promise.all(ids.map((id) => loadImageUrl(id)))).filter(
         (u): u is string => !!u
       )
     }
@@ -132,7 +129,6 @@
         .sort((a, b) => a.raceNumber - b.raceNumber)
         .map((race) => ({ ...race, runners: race.runners.slice().sort((a, b) => a.number - b.number) }))
       hintsApplied = j.hintsApplied ?? 0
-      carriedImageStorageIds = storageIds
       sourceFilenames = ['saved card']
       previewUrls = (await Promise.all(storageIds.map((id) => loadImageUrl(id)))).filter(
         (u): u is string => !!u
@@ -345,10 +341,11 @@
     const uploaded = (await Promise.all(files.map((f) => uploadImage(f)))).filter(
       (id): id is string => !!id
     )
-    // Fresh uploads replace the card images; otherwise (edit / re-extract with
-    // no new files) carry the already-persisted ones forward so re-approving
-    // never deletes them.
-    const imageStorageIds = uploaded.length > 0 ? uploaded : carriedImageStorageIds
+    // Fresh uploads replace the card images. With no new files (edit /
+    // re-extract) OMIT imageStorageIds entirely — "leave the stored images
+    // alone" — rather than resend the existing ids, which an older backend
+    // would delete-then-rewrite. Omitting is safe against any backend.
+    const imageStorageIds = uploaded.length > 0 ? uploaded : undefined
     const ok = await saveUserField({ clientId, meetingKey, races, sourceFilenames, imageStorageIds })
     if (!ok) {
       stage = 'error'
