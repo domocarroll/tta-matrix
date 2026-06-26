@@ -42,9 +42,12 @@ export const setForMeeting = mutation({
     const now = Date.now();
     let result: { id: string; replaced: boolean };
     if (existing) {
-      // Re-approving replaces the field. If new card images were supplied,
-      // the previous ones are superseded — delete them so storage doesn't orphan.
-      if (args.imageStorageIds && existing.imageStorageIds) {
+      // Re-approving replaces the field. If NEW card images were supplied,
+      // the previous ones are superseded — delete them so storage doesn't
+      // orphan. An empty array means "no new images" (an edit-only re-approve)
+      // — keep the existing images untouched.
+      const hasNewImages = !!args.imageStorageIds && args.imageStorageIds.length > 0;
+      if (hasNewImages && existing.imageStorageIds) {
         for (const old of existing.imageStorageIds) {
           await ctx.storage.delete(old);
         }
@@ -52,7 +55,7 @@ export const setForMeeting = mutation({
       await ctx.db.patch(existing._id, {
         races: args.races,
         sourceFilenames: args.sourceFilenames,
-        ...(args.imageStorageIds ? { imageStorageIds: args.imageStorageIds } : {}),
+        ...(hasNewImages ? { imageStorageIds: args.imageStorageIds } : {}),
         approvedAt: now,
       });
       result = { id: existing._id as unknown as string, replaced: true };

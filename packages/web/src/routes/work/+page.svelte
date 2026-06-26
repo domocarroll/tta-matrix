@@ -24,7 +24,7 @@
     type MeetingCorrection,
     type HorsePatch
   } from '$lib/workspace'
-  import { loadUserFields, userFieldsToResolvedMap, deleteUserField, type UserField } from '$lib/userFields'
+  import { loadUserFields, userFieldsToResolvedMap, deleteUserField, type UserField, type UserFieldRace } from '$lib/userFields'
   import {
     listCustomerMeetings,
     deleteCustomerMeeting,
@@ -45,6 +45,8 @@
   let showNewMeeting = $state(false)
   let uploadModalKey = $state<string | null>(null)
   let uploadModalMeeting = $state<{ date: string; meeting: string } | null>(null)
+  // Seed for the EDIT path — the already-approved field. Null = fresh upload.
+  let uploadModalSeed = $state<{ races: UserFieldRace[]; imageStorageIds?: string[] } | null>(null)
 
   const today = $state(todayUtc())
 
@@ -93,12 +95,23 @@
   const readyMeetingCount = $derived(allGroups.filter((g) => g.aggregated.some((r) => r.tips.length > 0)).length)
 
   function openUploadForMeeting(m: CustomerMeeting): void {
+    // Fresh upload — no seed, starts at the file picker.
+    uploadModalSeed = null
+    uploadModalKey = m.meetingKey
+    uploadModalMeeting = { date: m.date, meeting: m.name }
+  }
+  function editFieldForMeeting(m: CustomerMeeting): void {
+    // Edit — seed from the saved field so corrections land on top of the
+    // existing runners instead of wiping them.
+    const uf = userFieldsByKey.get(m.meetingKey)
+    uploadModalSeed = uf ? { races: uf.races, imageStorageIds: uf.imageStorageIds } : null
     uploadModalKey = m.meetingKey
     uploadModalMeeting = { date: m.date, meeting: m.name }
   }
   function closeUploadModal(): void {
     uploadModalKey = null
     uploadModalMeeting = null
+    uploadModalSeed = null
   }
   async function onFieldApproved(): Promise<void> {
     closeUploadModal()
@@ -278,7 +291,7 @@
             group={groupByKey.get(m.meetingKey)}
             clientId={clientId!}
             onUploadCard={() => openUploadForMeeting(m)}
-            onEditField={() => openUploadForMeeting(m)}
+            onEditField={() => editFieldForMeeting(m)}
             onUnlock={() => handleUnlock(m)}
             onDelete={() => handleDelete(m)}
             onTipsChange={refresh}
@@ -321,6 +334,8 @@
     meetingDate={uploadModalMeeting.date}
     onClose={closeUploadModal}
     onApproved={onFieldApproved}
+    existingRaces={uploadModalSeed?.races}
+    existingImageStorageIds={uploadModalSeed?.imageStorageIds}
   />
 {/if}
 

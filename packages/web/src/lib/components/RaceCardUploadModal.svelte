@@ -22,6 +22,12 @@
     onApproved: () => void | Promise<void>
     /** Re-extract an already-approved card from its stored images (no fresh upload). */
     existingImageStorageIds?: string[]
+    /**
+     * Seed the review with the already-approved field and skip extraction.
+     * This is the EDIT path: Pete's prior corrections are the starting point,
+     * so editing one cell never wipes the rest of the field.
+     */
+    existingRaces?: UserFieldRace[]
   }
 
   let {
@@ -31,7 +37,8 @@
     meetingDate,
     onClose,
     onApproved,
-    existingImageStorageIds
+    existingImageStorageIds,
+    existingRaces
   }: Props = $props()
 
   type Stage = 'pick' | 'extracting' | 'review' | 'saving' | 'done' | 'error'
@@ -40,6 +47,9 @@
   let races = $state<UserFieldRace[]>([])
   let sourceFilenames = $state<string[]>([])
   let progressMsg = $state<string>('')
+  // Card images already persisted for this field. Carried through approve()
+  // so editing/re-approving without a fresh upload never orphans them.
+  let carriedImageStorageIds = $state<string[]>([])
 
   // Chat re-extract state. Files are retained so a correction can re-send them.
   let files = $state<File[]>([])
@@ -70,12 +80,34 @@
 
   onMount(() => {
     void refreshHints()
+    // Edit mode: seed straight from the already-approved field. No extraction —
+    // Pete's existing runners (with all prior corrections) ARE the starting
+    // point, so editing one cell can never reset the rest of the field.
+    if (existingRaces && existingRaces.length > 0) {
+      void seedFromApprovedField(existingRaces)
+      return
+    }
     // Re-extract mode: no fresh upload — pull the saved card from storage and
     // go straight to review (Pete can then correct + re-approve).
     if (existingImageStorageIds && existingImageStorageIds.length > 0) {
       void extractFromStorage(existingImageStorageIds)
     }
   })
+
+  async function seedFromApprovedField(seed: UserFieldRace[]): Promise<void> {
+    races = seed
+      .slice()
+      .sort((a, b) => a.raceNumber - b.raceNumber)
+      .map((race) => ({ ...race, runners: race.runners.slice() }))
+    sourceFilenames = ['approved field']
+    carriedImageStorageIds = existingImageStorageIds ?? []
+    if (carriedImageStorageIds.length > 0) {
+      previewUrls = (await Promise.all(carriedImageStorageIds.map((id) => loadImageUrl(id)))).filter(
+        (u): u is string => !!u
+      )
+    }
+    stage = 'review'
+  }
 
   async function extractFromStorage(storageIds: string[]): Promise<void> {
     stage = 'extracting'
@@ -100,6 +132,7 @@
         .sort((a, b) => a.raceNumber - b.raceNumber)
         .map((race) => ({ ...race, runners: race.runners.slice().sort((a, b) => a.number - b.number) }))
       hintsApplied = j.hintsApplied ?? 0
+      carriedImageStorageIds = storageIds
       sourceFilenames = ['saved card']
       previewUrls = (await Promise.all(storageIds.map((id) => loadImageUrl(id)))).filter(
         (u): u is string => !!u
@@ -309,9 +342,13 @@
     stage = 'saving'
     // Persist the card image(s) so the field can be re-extracted in a later
     // session (best-effort — keep whatever uploads succeed).
-    const imageStorageIds = (await Promise.all(files.map((f) => uploadImage(f)))).filter(
+    const uploaded = (await Promise.all(files.map((f) => uploadImage(f)))).filter(
       (id): id is string => !!id
     )
+    // Fresh uploads replace the card images; otherwise (edit / re-extract with
+    // no new files) carry the already-persisted ones forward so re-approving
+    // never deletes them.
+    const imageStorageIds = uploaded.length > 0 ? uploaded : carriedImageStorageIds
     const ok = await saveUserField({ clientId, meetingKey, races, sourceFilenames, imageStorageIds })
     if (!ok) {
       stage = 'error'
