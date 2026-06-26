@@ -70,7 +70,16 @@ Process:
   5. NORMALISE horse names: strip publication prefixes (XX, xxx, ★, etc.), title-case consistently
   6. DE-DUPLICATE: if a horse appears with and without a prefix, treat as one horse
   7. FLAG ambiguity: if you can't tell which race a tip belongs to, flag it — never guess
-  8. Record genuinely non-trivial decisions (stripped prefixes, resolved duplicates) as flags[]. Keep reasoning[] to AT MOST 4 short steps — do not narrate every observation.
+  8. VERIFY before you finalise: every selection's horse is in THAT race's field (when a field is supplied); no horse appears twice in one tipster's race; a tipster seen in one race appears in the others too (a gap usually means a misread or a cut-off, not a real omission — flag it).
+  9. Record genuinely non-trivial decisions (stripped prefixes, resolved duplicates) as flags[]. Keep reasoning[] to AT MOST 4 short steps — do not narrate every observation.
+
+NEVER treat these as selections — they are not a tipster's pick of a horse:
+  - ratings / points / star counts printed next to a horse (these RANK, they are not extra picks)
+  - odds / prices ($3.50, 7/2), barrier and weight columns, jockey or trainer names
+  - form figures (digit-dash strings like 1-3-2x4), speed-map positions
+  - Quaddie / First-Four / Multi / "Bet of the Day" / "Best of Day" boxes — cross-race callouts, not a per-race ranked pick
+  - headers, footers, mastheads, ads, and "Scratchings" lists
+A token is a selection ONLY if it identifies a HORSE (number and/or name) inside a tipster's per-race pick list.
 
 Output a single JSON object matching this schema. No markdown fences, no prose outside JSON.
 
@@ -309,7 +318,7 @@ export const POST: RequestHandler = async ({ request }) => {
         const final = await anthropicStream.finalMessage()
         const result = parseLooseJson(raw)
         if (result) {
-          const { races, flags } = sanitiseRaces(result.races)
+          const { races, flags } = sanitiseRaces([...(result.races ?? [])])
           const payload = { ...result, races, flags: [...(result.flags ?? []), ...flags] }
           send(controller, encoder, { type: 'extraction', payload })
         } else {

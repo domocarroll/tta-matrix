@@ -87,7 +87,14 @@ const MAX_IMAGE_BYTES = 8 * 1024 * 1024
 
 const SYSTEM_PROMPT = `You read official Australian horse-racing race-cards / form-guides.
 
-The image is the OFFICIAL acceptance card for a race meeting — the authoritative source of which runners are in which race. Extract every race shown.
+The image is the OFFICIAL acceptance card for a race meeting — the authoritative source of which runners are in which race.
+
+SCOPE — extract only what the photo is actually OF:
+- A photo is usually framed on one race (or a few). Extract the race(s) that are the clear focus — centred, largest, fully in frame and legible.
+- IGNORE races that are clipped at the edges, only partially visible, faint, or in the background of an adjacent column/page. They are not what this photo is about; pulling them in contaminates the field.
+- If you genuinely cannot tell whether a race is in-focus or background, extract it but lower your confidence — never invent runners to "complete" a half-visible race.
+
+ORIENTATION — the photo may be rotated (90°, 180°, or skewed from a phone held sideways). Reorient mentally and read every label in its true upright orientation before extracting. A sideways card is still a valid card.
 
 For each race extract every runner:
   - number    (saddlecloth, 1-indexed integer)
