@@ -23,11 +23,17 @@
     /** Re-extract an already-approved card from its stored images (no fresh upload). */
     existingImageStorageIds?: string[]
     /**
-     * Seed the review with the already-approved field and skip extraction.
-     * This is the EDIT path: Pete's prior corrections are the starting point,
-     * so editing one cell never wipes the rest of the field.
+     * Seed the review with the already-approved field. This is the EDIT/ADD
+     * path: Pete's prior corrections are the starting point, so editing never
+     * wipes the rest, and a freshly-dropped card MERGES into them.
      */
     existingRaces?: UserFieldRace[]
+    /**
+     * Where to land when seeded. 'review' → edit in place (default).
+     * 'pick'   → show the dropzone so Pete can ADD another card; the drop
+     *            merges into the seeded field rather than replacing it.
+     */
+    seedStage?: 'review' | 'pick'
   }
 
   let {
@@ -38,7 +44,8 @@
     onClose,
     onApproved,
     existingImageStorageIds,
-    existingRaces
+    existingRaces,
+    seedStage = 'review'
   }: Props = $props()
 
   type Stage = 'pick' | 'extracting' | 'review' | 'saving' | 'done' | 'error'
@@ -103,7 +110,9 @@
         (u): u is string => !!u
       )
     }
-    stage = 'review'
+    // 'pick' for ADD mode: keep the seeded races as the merge base but show the
+    // dropzone so the next card extends the field. handleFiles merges into it.
+    stage = seedStage
   }
 
   async function extractFromStorage(storageIds: string[]): Promise<void> {
@@ -200,16 +209,23 @@
 
   async function handleFiles(list: FileList | null): Promise<void> {
     if (!list || list.length === 0) return
-    files = Array.from(list)
-    previewUrls = files.map((f) => URL.createObjectURL(f))
+    const incoming = Array.from(list)
+    // Append, don't replace — retain prior files (re-extract source) and any
+    // seeded field so dropping another card ADDS to it.
+    files = [...files, ...incoming]
+    previewUrls = [...previewUrls, ...incoming.map((f) => URL.createObjectURL(f))]
     stage = 'extracting'
     errorMsg = null
-    const mergedByRace = new Map<number, UserFieldRunner[]>()
-    const filenames: string[] = []
+    // Seed the merge from whatever's already in the table (the approved field
+    // on ADD, or earlier drops). New races extend it; same race numbers gain
+    // any runners not already present; existing distance is kept.
+    const mergedByRace = new Map<number, UserFieldRace>()
+    for (const r of races) mergedByRace.set(r.raceNumber, { ...r, runners: r.runners.slice() })
+    const filenames = [...sourceFilenames]
     let i = 0
-    for (const file of Array.from(list)) {
+    for (const file of incoming) {
       i += 1
-      progressMsg = `Extracting ${i}/${list.length} — ${file.name}`
+      progressMsg = `Extracting ${i}/${incoming.length} — ${file.name}`
       const out = await extractFile(file)
       if (!out) {
         stage = 'error'
@@ -217,36 +233,48 @@
       }
       filenames.push(out.filename)
       for (const race of out.races) {
-        const arr = mergedByRace.get(race.raceNumber) ?? []
-        // Append runners not already present (by number)
-        const seenNumbers = new Set(arr.map((r) => r.number))
+        const existingRace = mergedByRace.get(race.raceNumber)
+        if (!existingRace) {
+          mergedByRace.set(race.raceNumber, { ...race, runners: race.runners.slice() })
+          continue
+        }
+        const seenNumbers = new Set(existingRace.runners.map((r) => r.number))
         for (const rn of race.runners) {
           if (!seenNumbers.has(rn.number)) {
-            arr.push(rn)
+            existingRace.runners.push(rn)
             seenNumbers.add(rn.number)
           }
         }
-        mergedByRace.set(race.raceNumber, arr)
+        if (existingRace.distance == null && race.distance != null) {
+          existingRace.distance = race.distance
+        }
       }
     }
-    races = Array.from(mergedByRace.entries())
-      .sort((a, b) => a[0] - b[0])
-      .map(([raceNumber, runners]) => ({
-        raceNumber,
-        runners: runners.sort((a, b) => a.number - b.number)
-      }))
-    sourceFilenames = filenames
+    races = Array.from(mergedByRace.values())
+      .sort((a, b) => a.raceNumber - b.raceNumber)
+      .map((r) => ({ ...r, runners: r.runners.slice().sort((a, b) => a.number - b.number) }))
+    sourceFilenames = Array.from(new Set(filenames))
     stage = races.length > 0 ? 'review' : 'error'
     if (races.length === 0) errorMsg = 'No races extracted from the upload.'
   }
+
+  // Whether a re-extract has an image to read: a retained upload, or a saved card.
+  const hasReExtractSource = $derived(files.length > 0 || (existingImageStorageIds?.length ?? 0) > 0)
 
   // Chat re-extract: re-run the whole card with the reviewer's correction
   // (and the current table state as the prior answer), then replace the table.
   async function reExtract(): Promise<void> {
     const note = feedback.trim()
     const storageIds = existingImageStorageIds ?? []
-    // Need the image source: either retained upload files, or the saved card.
-    if (!note || (files.length === 0 && storageIds.length === 0) || reExtracting) return
+    if (!note || reExtracting) return
+    // Need the image source: retained upload files, or the saved card. When a
+    // field was approved without a stored image (or the original was edited
+    // away), there's nothing to re-read — say so instead of silently no-opping.
+    if (files.length === 0 && storageIds.length === 0) {
+      errorMsg =
+        'Re-extract needs the source card image, but none is saved for this field. Attach the card below, then re-extract.'
+      return
+    }
     reExtracting = true
     errorMsg = null
     try {
@@ -277,6 +305,16 @@
     } finally {
       reExtracting = false
     }
+  }
+
+  // Attach a card image purely as the re-extract source (no merge/replace) —
+  // lets Pete re-read a field whose original image was never stored.
+  function attachReExtractSource(list: FileList | null): void {
+    if (!list || list.length === 0) return
+    const incoming = Array.from(list)
+    files = [...files, ...incoming]
+    previewUrls = [...previewUrls, ...incoming.map((f) => URL.createObjectURL(f))]
+    errorMsg = null
   }
 
   function updateRunner(rIdx: number, runnerIdx: number, field: keyof UserFieldRunner, value: string): void {
@@ -334,18 +372,30 @@
     races = next
   }
 
+  // Drop a whole race — for when the extractor pulled in a race that isn't the
+  // focus of this card (an adjacent/background race that bled in).
+  function removeRace(rIdx: number): void {
+    races = races.filter((_, i) => i !== rIdx)
+  }
+
   async function approve(): Promise<void> {
     stage = 'saving'
     // Persist the card image(s) so the field can be re-extracted in a later
     // session (best-effort — keep whatever uploads succeed).
-    const uploaded = (await Promise.all(files.map((f) => uploadImage(f)))).filter(
-      (id): id is string => !!id
-    )
-    // Fresh uploads replace the card images. With no new files (edit /
-    // re-extract) OMIT imageStorageIds entirely — "leave the stored images
-    // alone" — rather than resend the existing ids, which an older backend
-    // would delete-then-rewrite. Omitting is safe against any backend.
-    const imageStorageIds = uploaded.length > 0 ? uploaded : undefined
+    const seeded = (existingRaces?.length ?? 0) > 0
+    // Fresh upload (no seed): the uploaded images ARE the card set.
+    // Seeded (edit / add): OMIT imageStorageIds — "leave the stored images
+    // alone". This keeps the originals and is safe against the current backend,
+    // whose replace-on-supply would otherwise delete them. (Persisting the
+    // newly-added card's image for re-extract waits on the diff-based image
+    // logic in userFields.setForMeeting being deployed.)
+    let imageStorageIds: string[] | undefined
+    if (!seeded) {
+      const uploaded = (await Promise.all(files.map((f) => uploadImage(f)))).filter(
+        (id): id is string => !!id
+      )
+      imageStorageIds = uploaded.length > 0 ? uploaded : undefined
+    }
     const ok = await saveUserField({ clientId, meetingKey, races, sourceFilenames, imageStorageIds })
     if (!ok) {
       stage = 'error'
@@ -469,6 +519,14 @@
                 <span class="text-[#4a4a4a] text-sm">
                   {race.runners.length} runner{race.runners.length === 1 ? '' : 's'}
                 </span>
+                <button
+                  type="button"
+                  class="ml-auto text-[10px] font-bold uppercase tracking-wider text-[#5f6368] hover:text-red-600"
+                  title="Remove this race — it isn't the focus of this card"
+                  onclick={() => removeRace(rIdx)}
+                >
+                  remove race
+                </button>
               </header>
               <div class="overflow-x-auto">
                 <table class="w-full text-sm">
@@ -594,6 +652,19 @@
             placeholder="e.g. the emergencies for race 1 bled into race 2 — keep them in race 1"
             class="mt-2 w-full bg-white border border-[#1e3a5f]/15 rounded-lg px-2.5 py-1.5 text-[#1e3a5f] text-sm focus:border-[#4285f4] focus:ring-2 focus:ring-[#4285f4]/30 focus:outline-none"
           ></textarea>
+          {#if !hasReExtractSource}
+            <label class="mt-2 flex cursor-pointer items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-[#4285f4]">
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                class="hidden"
+                onchange={(e) => attachReExtractSource((e.currentTarget as HTMLInputElement).files)}
+              />
+              <span class="rounded-lg border border-dashed border-[#4285f4]/40 px-3 py-1.5 hover:bg-[#4285f4]/5">+ attach card image to re-read</span>
+            </label>
+            <p class="mt-1 text-[10px] text-[#5f6368]">No source image is saved for this field — attach the card to enable re-extract.</p>
+          {/if}
           <div class="mt-2 flex items-center justify-end">
             <button
               type="button"

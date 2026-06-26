@@ -3,7 +3,9 @@
   //   ① FIELD  → upload race card, review, approve → LOCKED
   //   ② TIPS   → drop ALL tip sheets for this meeting (bound, no routing)
   //   ③ REVIEW → aggregate / quaddie / export (when tips exist)
-  // Lock is sealed: editing/replacing the card needs an explicit unlock.
+  // After locking, the field stays editable in place — "edit field" mutates
+  // the saved runners, "+ add card" merges another card's races in. Neither
+  // wipes data; only "delete" (confirmed) removes the meeting.
   import type { CustomerMeeting } from '$lib/customerMeetings'
   import type { UserField } from '$lib/userFields'
   import type { MeetingGroup, HorsePatch } from '$lib/workspace'
@@ -19,7 +21,7 @@
     clientId: string
     onUploadCard: () => void
     onEditField: () => void
-    onUnlock: () => Promise<void>
+    onAddCards: () => void
     onDelete: () => Promise<void>
     onTipsChange: () => void | Promise<void>
     onPatchesChange: (patches: HorsePatch[], label?: string, notes?: string) => void
@@ -33,7 +35,7 @@
     clientId,
     onUploadCard,
     onEditField,
-    onUnlock,
+    onAddCards,
     onDelete,
     onTipsChange,
     onPatchesChange,
@@ -52,12 +54,6 @@
     if (typeof window === 'undefined') return
     if (window.confirm(`Delete "${meeting.name}" (${meeting.date})? This removes the locked field and any tips.`)) {
       void onDelete()
-    }
-  }
-  function confirmUnlock(): void {
-    if (typeof window === 'undefined') return
-    if (window.confirm(`Unlock "${meeting.name}"? Re-approve after editing the card. Existing tips stay attached.`)) {
-      void onUnlock()
     }
   }
 </script>
@@ -90,7 +86,7 @@
     <div class="flex shrink-0 flex-wrap items-baseline gap-2">
       {#if isLocked}
         <button type="button" class="rounded-md border border-soft bg-white px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider c-fg hover:bg-soft" onclick={onEditField}>edit field</button>
-        <button type="button" class="rounded-md border border-soft bg-white px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider c-muted hover:bg-soft" onclick={confirmUnlock}>unlock</button>
+        <button type="button" class="rounded-md border border-soft bg-white px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider c-fg hover:bg-soft" onclick={onAddCards}>+ add card</button>
       {:else}
         <button type="button" class="rounded-md bg-blue-600 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white hover:bg-blue-700" onclick={onUploadCard}>upload race card →</button>
       {/if}

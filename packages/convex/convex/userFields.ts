@@ -42,14 +42,15 @@ export const setForMeeting = mutation({
     const now = Date.now();
     let result: { id: string; replaced: boolean };
     if (existing) {
-      // Re-approving replaces the field. If NEW card images were supplied,
-      // the previous ones are superseded — delete them so storage doesn't
-      // orphan. An empty array means "no new images" (an edit-only re-approve)
-      // — keep the existing images untouched.
+      // Re-approving sets the card images to exactly the supplied set. Delete
+      // only the images that are NO LONGER referenced (a diff, not a blanket
+      // wipe) so an ADD that passes old∪new keeps the originals. An omitted
+      // array means "no change" — keep the existing images untouched.
       const hasNewImages = !!args.imageStorageIds && args.imageStorageIds.length > 0;
       if (hasNewImages && existing.imageStorageIds) {
+        const keep = new Set(args.imageStorageIds);
         for (const old of existing.imageStorageIds) {
-          await ctx.storage.delete(old);
+          if (!keep.has(old)) await ctx.storage.delete(old);
         }
       }
       await ctx.db.patch(existing._id, {

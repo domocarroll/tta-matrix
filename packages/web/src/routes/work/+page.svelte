@@ -24,7 +24,7 @@
     type MeetingCorrection,
     type HorsePatch
   } from '$lib/workspace'
-  import { loadUserFields, userFieldsToResolvedMap, deleteUserField, type UserField, type UserFieldRace } from '$lib/userFields'
+  import { loadUserFields, userFieldsToResolvedMap, type UserField, type UserFieldRace } from '$lib/userFields'
   import {
     listCustomerMeetings,
     deleteCustomerMeeting,
@@ -45,8 +45,12 @@
   let showNewMeeting = $state(false)
   let uploadModalKey = $state<string | null>(null)
   let uploadModalMeeting = $state<{ date: string; meeting: string } | null>(null)
-  // Seed for the EDIT path — the already-approved field. Null = fresh upload.
-  let uploadModalSeed = $state<{ races: UserFieldRace[]; imageStorageIds?: string[] } | null>(null)
+  // Seed for the EDIT/ADD path — the already-approved field. Null = fresh upload.
+  let uploadModalSeed = $state<{
+    races: UserFieldRace[]
+    imageStorageIds?: string[]
+    seedStage: 'review' | 'pick'
+  } | null>(null)
 
   const today = $state(todayUtc())
 
@@ -102,9 +106,21 @@
   }
   function editFieldForMeeting(m: CustomerMeeting): void {
     // Edit — seed from the saved field so corrections land on top of the
-    // existing runners instead of wiping them.
+    // existing runners instead of wiping them. Land in review.
     const uf = userFieldsByKey.get(m.meetingKey)
-    uploadModalSeed = uf ? { races: uf.races, imageStorageIds: uf.imageStorageIds } : null
+    uploadModalSeed = uf
+      ? { races: uf.races, imageStorageIds: uf.imageStorageIds, seedStage: 'review' }
+      : null
+    uploadModalKey = m.meetingKey
+    uploadModalMeeting = { date: m.date, meeting: m.name }
+  }
+  function addCardsForMeeting(m: CustomerMeeting): void {
+    // Add cards — seed from the saved field, but land on the dropzone so the
+    // next card MERGES into it (extra races/runners) instead of replacing it.
+    const uf = userFieldsByKey.get(m.meetingKey)
+    uploadModalSeed = uf
+      ? { races: uf.races, imageStorageIds: uf.imageStorageIds, seedStage: 'pick' }
+      : null
     uploadModalKey = m.meetingKey
     uploadModalMeeting = { date: m.date, meeting: m.name }
   }
@@ -115,18 +131,6 @@
   }
   async function onFieldApproved(): Promise<void> {
     closeUploadModal()
-    await refresh()
-  }
-
-  async function handleUnlock(m: CustomerMeeting): Promise<void> {
-    if (!clientId) return
-    // Unapprove the userFields row — its mutation cascades the meeting
-    // back to 'draft' AND keeps existing routed tips routed.
-    const ok = await deleteUserField(clientId, m.meetingKey)
-    if (!ok) {
-      lastError = 'unlock failed'
-      return
-    }
     await refresh()
   }
 
@@ -292,7 +296,7 @@
             clientId={clientId!}
             onUploadCard={() => openUploadForMeeting(m)}
             onEditField={() => editFieldForMeeting(m)}
-            onUnlock={() => handleUnlock(m)}
+            onAddCards={() => addCardsForMeeting(m)}
             onDelete={() => handleDelete(m)}
             onTipsChange={refresh}
             onPatchesChange={(patches, label, notes) => {
@@ -336,6 +340,7 @@
     onApproved={onFieldApproved}
     existingRaces={uploadModalSeed?.races}
     existingImageStorageIds={uploadModalSeed?.imageStorageIds}
+    seedStage={uploadModalSeed?.seedStage ?? 'review'}
   />
 {/if}
 
