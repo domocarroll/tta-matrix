@@ -10,8 +10,9 @@
   const topHorse = $derived(race.tips[0])
   const hasDetails = $derived(race.tips.some((t) => t.jockey || t.trainer || t.barrier))
 
+  // Pete's formula: tips on this horse ÷ total tips in the race × 100
   function pct(count: number, total: number): string {
-    return total > 0 ? ((count / total) * 100).toFixed(1) : '0.0'
+    return total > 0 ? ((count / total) * 100).toFixed(2) : '0.00'
   }
 </script>
 
@@ -59,7 +60,7 @@
               <th class="px-2 py-4 text-center hidden lg:table-cell">Bar</th>
             {/if}
             <th class="px-4 py-4 text-center">Total</th>
-            <th class="px-4 py-4 text-center">Tipster %</th>
+            <th class="px-4 py-4 text-center">Tip %</th>
             <th class="px-4 py-4 text-center">Win</th>
             <th class="px-4 py-4 text-center">2nd</th>
             <th class="px-4 py-4 text-center hidden sm:table-cell">3rd</th>
@@ -90,19 +91,16 @@
                 {#if tip.totalTips === 0}
                   <span class="c-muted">-</span>
                 {:else}
-                  <div class="flex flex-col items-center justify-center font-bold">
-                    <span class="text-base font-bold c-accent">{tip.totalTips}</span>
-                    <span class="text-xs c-muted">({pct(tip.totalTips, race.totalSelectionsInRace)}%)</span>
-                  </div>
+                  <span class="text-base font-bold c-accent">{tip.totalTips}</span>
                 {/if}
               </td>
 
-              <!-- Tipster % -->
+              <!-- Tip % — tips on horse ÷ total tips in race -->
               <td class="px-4 py-4 text-center">
-                {#if race.totalTipstersInRace > 0}
+                {#if race.totalSelectionsInRace > 0 && tip.totalTips > 0}
                   <div class="flex flex-col items-center justify-center">
-                    <span class="font-bold c-fg">{Math.round((tip.tipsterCount / race.totalTipstersInRace) * 100)}%</span>
-                    <span class="text-xs c-muted">({tip.tipsterCount}/{race.totalTipstersInRace})</span>
+                    <span class="font-bold c-fg">{pct(tip.totalTips, race.totalSelectionsInRace)}%</span>
+                    <span class="text-xs c-muted">({tip.totalTips}/{race.totalSelectionsInRace})</span>
                   </div>
                 {:else}
                   <span class="c-muted">-</span>

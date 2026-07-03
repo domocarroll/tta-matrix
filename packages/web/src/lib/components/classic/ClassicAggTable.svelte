@@ -74,8 +74,9 @@
   const isPatched = (raceNumber: number, name: string) =>
     patches.some((p) => p.raceNumber === raceNumber && p.originalName === name)
 
-  function tipsterPct(tip: AggregatedTip, totalTipsters: number): number {
-    return totalTipsters <= 0 ? 0 : Math.round((tip.tipsterCount / totalTipsters) * 100)
+  // Pete's formula: tips on this horse ÷ total tips in the race × 100
+  function tipPct(tip: AggregatedTip, totalSelections: number): string {
+    return totalSelections <= 0 ? '0.00' : ((tip.totalTips / totalSelections) * 100).toFixed(2)
   }
 </script>
 
@@ -133,7 +134,7 @@
                 </td>
                 <td class="c-fg py-1.5 text-right font-semibold">{tip.totalTips}</td>
                 <td class="c-muted py-1.5 text-right">{tip.tipsterCount}</td>
-                <td class="c-muted py-1.5 text-right">{tipsterPct(tip, race.totalTipstersInRace)}%</td>
+                <td class="c-muted py-1.5 text-right">{tipPct(tip, race.totalSelectionsInRace)}%</td>
                 <td class="c-muted py-1.5 text-right">{tip.winTips}</td>
                 <td class="c-muted py-1.5 text-right">{tip.place2Tips}</td>
                 <td class="c-muted py-1.5 text-right">{tip.place3Tips}</td>

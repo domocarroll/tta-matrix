@@ -60,10 +60,12 @@ export function buildMeetingCsv(
   lines.push(header.map(escape).join(","));
   for (const race of races) {
     for (const tip of race.tips) {
-      const tipsterPct =
-        race.totalTipstersInRace > 0
-          ? Math.round((tip.tipsterCount / race.totalTipstersInRace) * 100)
-          : 0;
+      // Pete's formula (3 Jul 2026): tips on this horse ÷ total tips in the
+      // race × 100, to two decimals. Column position/header unchanged.
+      const tipPct =
+        race.totalSelectionsInRace > 0
+          ? ((tip.totalTips / race.totalSelectionsInRace) * 100).toFixed(2)
+          : "0.00";
       const base = [
         race.category,
         race.raceNumber,
@@ -72,7 +74,7 @@ export function buildMeetingCsv(
         tip.totalTips,
         tip.tipsterCount,
         race.totalTipstersInRace,
-        tipsterPct,
+        tipPct,
         tip.winTips,
         tip.place2Tips,
         tip.place3Tips,

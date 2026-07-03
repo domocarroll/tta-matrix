@@ -101,9 +101,10 @@
     onPatch({ raceNumber, originalName: name, removed: true })
   }
 
-  function tipsterPct(tip: AggregatedTip, totalTipsters: number): number {
-    if (totalTipsters <= 0) return 0
-    return Math.round((tip.tipsterCount / totalTipsters) * 100)
+  // Pete's formula: tips on this horse ÷ total tips in the race × 100
+  function tipPct(tip: AggregatedTip, totalSelections: number): string {
+    if (totalSelections <= 0) return '0.00'
+    return ((tip.totalTips / totalSelections) * 100).toFixed(2)
   }
 
   function isPatched(raceNumber: number, name: string): boolean {
@@ -243,7 +244,7 @@
               </td>
               <td class="py-1.5 text-right text-text-primary font-medium">{tip.totalTips}</td>
               <td class="py-1.5 text-right text-text-secondary">{tip.tipsterCount}</td>
-              <td class="py-1.5 text-right text-text-secondary">{tipsterPct(tip, race.totalTipstersInRace)}%</td>
+              <td class="py-1.5 text-right text-text-secondary">{tipPct(tip, race.totalSelectionsInRace)}%</td>
               <td class="py-1.5 text-right text-text-secondary">{tip.winTips}</td>
               <td class="py-1.5 text-right text-text-secondary">{tip.place2Tips}</td>
               <td class="py-1.5 text-right text-text-secondary">{tip.place3Tips}</td>
